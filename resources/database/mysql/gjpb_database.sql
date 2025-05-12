@@ -1,3 +1,13 @@
+-- Drop existing databases if they exist
+DROP DATABASE IF EXISTS gjpb;
+
+-- Create new database
+CREATE DATABASE gjpb CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+-- Use the new database
+USE gjpb;
+
+-- create a table to store user login information
 CREATE TABLE IF NOT EXISTS am_users (
     `id` char(36) NOT NULL,
     `username` varchar(50) NOT NULL,
@@ -12,6 +22,7 @@ CREATE TABLE IF NOT EXISTS am_users (
     UNIQUE KEY `uq_users_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- create a table to store user roles
 CREATE TABLE IF NOT EXISTS am_roles (
     `id` char(36) NOT NULL,
     `code` varchar(30) NOT NULL,
@@ -26,6 +37,7 @@ CREATE TABLE IF NOT EXISTS am_roles (
     UNIQUE KEY `uq_roles_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- create a table to store user permissions
 CREATE TABLE IF NOT EXISTS am_user_roles (
     `user_id` char(36) NOT NULL,
     `role_id` char(36) NOT NULL,
@@ -38,6 +50,6 @@ CREATE TABLE IF NOT EXISTS am_user_roles (
     PRIMARY KEY (`user_id`, `role_id`),
     KEY `idx_user_roles_user_id` (`user_id`),
     KEY `idx_user_roles_role_id` (`role_id`),
-    CONSTRAINT `fk_user_roles_user_id` FOREIGN KEY (`user_id`) REFERENCES am_users(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_user_roles_role_id` FOREIGN KEY (`role_id`) REFERENCES am_roles(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT `fk_user_roles_user_id` FOREIGN KEY (`user_id`) REFERENCES `am_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_user_roles_role_id` FOREIGN KEY (`role_id`) REFERENCES `am_roles` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
