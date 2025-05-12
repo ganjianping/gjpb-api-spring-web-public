@@ -1,7 +1,0 @@
-spring:
-  application:
-    name: GJPB
-  profiles:
-    active: dev # Change to 'prod' for production environment
-
-# Common configurations that apply to all environments go here
