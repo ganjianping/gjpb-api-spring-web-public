@@ -23,16 +23,48 @@
 hs_err_pid*
 replay_pid*
 
-# Maven build directory
+### Spring Boot ###
+HELP.md
 target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 
-# IDE files
-.idea/
-*.iml
-.vscode/
-.project
+### STS ###
+.apt_generated
 .classpath
-.settings/
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
 
-# Mac OS
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Application-specific ###
+application-local.yml
+application-local.properties
+
+### Misc ###
 .DS_Store
+.env
+.env.local
+logs/
+tmp/
