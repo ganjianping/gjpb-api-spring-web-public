@@ -1,7 +1,16 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /api/
+
 spring:
   application:
     name: GJPB
   profiles:
     active: dev # Change to 'prod' for production environment
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
 
 # Common configurations that apply to all environments go here
