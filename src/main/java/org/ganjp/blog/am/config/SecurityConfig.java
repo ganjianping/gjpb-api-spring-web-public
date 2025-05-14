@@ -49,6 +49,7 @@ public class SecurityConfig {
     // Define public endpoints that don't require authentication
     private static final String[] PUBLIC_ENDPOINTS = {
         "/",                   // Root endpoint
+        "/v1/roles/**",
         "/v1/auth/**",         // Authentication endpoints
         "/v1/public/**",       // Public API endpoints
         "/actuator/health",    // Health check endpoint
