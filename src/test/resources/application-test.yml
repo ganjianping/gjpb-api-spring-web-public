@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    # Use H2 in-memory database for tests
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        # Override H2 dialect to use VARCHAR instead of CHAR for ID columns
+        dialect: org.hibernate.dialect.H2Dialect
+        globally_quoted_identifiers: true
+    database-platform: org.hibernate.dialect.H2Dialect
+  
+  # Disable Spring Boot's JPA open-in-view pattern
+  open-in-view: false
+  
+# Test-specific configurations
+test:
+  admin:
+    password: admin123
+
+# Test-specific security settings
+security:
+  jwt:
+    secret-key: JH3r9g2PmC7FzXk5qT8wAd6vBnLyDsE1jK4xRbW0uiM9oQ2Z5pY7aNfVcGtS8h3K
+    expiration: 86400000 # 24 hours in milliseconds
