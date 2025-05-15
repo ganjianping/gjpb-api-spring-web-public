@@ -6,21 +6,10 @@ spring:
   jackson:
     serialization:
       indent-output: true
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-
-# Development-specific security settings
-security:
-  jwt:
-    secret-key: ${JWT_SECRET_KEY}
-    expiration: 86400000 # 24 hours in milliseconds for development environment
 
 # Logging configuration
 logging:

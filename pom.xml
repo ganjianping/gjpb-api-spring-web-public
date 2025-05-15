@@ -120,6 +120,13 @@
 			<version>4.0.0</version>
 		</dependency>
 		
+		 <!-- Configuration Processor for @ConfigurationProperties -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
+		
 		<!-- Jakarta Bean Validation -->
 		<dependency>
 			<groupId>jakarta.validation</groupId>

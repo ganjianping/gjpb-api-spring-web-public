@@ -5,7 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import org.ganjp.blog.am.config.SecurityProperties;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -18,11 +18,13 @@ import java.util.function.Function;
 @Component
 public class JwtUtils {
 
-    @Value("${security.jwt.secret-key}")
-    private String secretKey;
+    private final String secretKey;
+    private final long jwtExpiration;
 
-    @Value("${security.jwt.expiration}")
-    private long jwtExpiration;
+    public JwtUtils(SecurityProperties securityProperties) {
+        this.secretKey = securityProperties.getJwt().getSecretKey();
+        this.jwtExpiration = securityProperties.getJwt().getExpiration();
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);

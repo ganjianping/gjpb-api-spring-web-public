@@ -2,6 +2,7 @@ package org.ganjp.blog.am.config;
 
 import org.ganjp.blog.am.repository.UserRepository;
 import org.ganjp.blog.am.security.JwtAuthenticationFilter;
+import org.ganjp.blog.am.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,10 +25,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.core.AuthenticationException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -42,25 +40,21 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserRepository userRepository;
+    private final SecurityProperties securityProperties;
     
-    @Value("${spring.profiles.active:dev}")
+    @Value("${spring.profiles.active}")
     private String activeProfile;
 
-    // Remove the JwtAuthenticationFilter dependency from the constructor
-    public SecurityConfig(UserRepository userRepository) {
+    public SecurityConfig(UserRepository userRepository, SecurityProperties securityProperties) {
         this.userRepository = userRepository;
+        this.securityProperties = securityProperties;
     }
 
-    // Define public endpoints that don't require authentication
-    private static final String[] PUBLIC_ENDPOINTS = {
-        "/",                   // Root endpoint
-        "/v1/roles/**",
-        "/v1/auth/**",         // Authentication endpoints
-        "/v1/public/**",       // Public API endpoints
-        "/actuator/health",    // Health check endpoint
-        "/swagger-ui/**",      // Swagger UI
-        "/v3/api-docs/**"      // API documentation
-    };
+    // Explicitly register JwtAuthenticationFilter as a bean
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService) {
+        return new JwtAuthenticationFilter(jwtUtils, userDetailsService);
+    }
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -89,7 +83,6 @@ public class SecurityConfig {
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
         return (request, response, authException) -> {
-            // Send 401 for all authentication failures
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
@@ -99,30 +92,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Allow different origins based on environment
-        if ("prod".equals(activeProfile)) {
-            configuration.setAllowedOrigins(List.of("https://ganjianping.com", "https://www.ganjianping.com"));
-        } else {
-            // Add more development origins - include plain localhost without port too
-            configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000", 
-                "http://127.0.0.1:3000", 
-                "http://localhost:8080",
-                "http://127.0.0.1:8080",
-                "http://localhost:8081", 
-                "http://127.0.0.1:8081",
-                "http://localhost",
-                "http://127.0.0.1"
-            ));
-        }
-        
+        configuration.setAllowedOrigins(securityProperties.getCors().getAllowedOrigins());
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Auth-Token", "Origin", "Accept"));
         configuration.setExposedHeaders(List.of("X-Auth-Token", "Authorization"));
         configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L); // 1 hour cache for preflight requests
-        
+        configuration.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -130,39 +105,26 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
+        // Use the injected JwtAuthenticationFilter bean instead of creating a new instance
+        
         http
-            // Disable CSRF as we're using stateless JWT authentication
             .csrf(AbstractHttpConfigurer::disable)
-            
-            // Configure CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            
-            // Configure authorization rules
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                .requestMatchers(securityProperties.getPublicEndpoints().toArray(new String[0])).permitAll()
                 .anyRequest().authenticated()
             )
-            
-            // Configure session management to be stateless
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            
-            // Configure exception handling to return 401 Unauthorized instead of 403 Forbidden
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint(authenticationEntryPoint())
             )
-            
-            // Add security headers
             .headers(headers -> headers
                 .frameOptions(frameOptions -> frameOptions.sameOrigin())
                 .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
             )
-            
-            // Configure authentication
             .authenticationProvider(authenticationProvider())
-            
-            // Add JWT filter before UsernamePasswordAuthenticationFilter
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

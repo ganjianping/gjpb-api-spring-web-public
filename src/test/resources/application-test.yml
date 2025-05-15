@@ -30,3 +30,16 @@ security:
   jwt:
     secret-key: JH3r9g2PmC7FzXk5qT8wAd6vBnLyDsE1jK4xRbW0uiM9oQ2Z5pY7aNfVcGtS8h3K
     expiration: 86400000 # 24 hours in milliseconds
+  public-endpoints:
+    - "/"                   # Root endpoint
+    - "/v1/auth/**"         # Authentication endpoints
+    - "/v1/public/**"       # Public API endpoints
+    - "/actuator/health"    # Health check endpoint
+    - "/swagger-ui/**"      # Swagger UI
+    - "/v3/api-docs/**"     # API documentation
+  cors:
+    allowed-origins:
+      - https://ganjianping.com
+      - https://www.ganjianping.com
+      - http://localhost:8081
+      - http://127.0.0.1:8081

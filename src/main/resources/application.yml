@@ -12,5 +12,26 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
-# Common configurations that apply to all environments go here
+security:
+  jwt:
+    secret-key: ${JWT_SECRET_KEY}
+    expiration: 43200000 # 12 hours in milliseconds for production environment
+  public-endpoints:
+    - "/"                   # Root endpoint
+    - "/v1/auth/**"         # Authentication endpoints
+    - "/v1/public/**"       # Public API endpoints
+    - "/actuator/health"    # Health check endpoint
+    - "/swagger-ui/**"      # Swagger UI
+    - "/v3/api-docs/**"     # API documentation
+  cors:
+    allowed-origins:
+      - https://ganjianping.com
+      - https://www.ganjianping.com
+      - http://localhost:8081
+      - http://127.0.0.1:8081

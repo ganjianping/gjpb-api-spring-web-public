@@ -11,21 +11,10 @@ spring:
   jackson:
     serialization:
       indent-output: false
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: none
     show-sql: false
-
-# Production-specific security settings
-security:
-  jwt:
-    secret-key: ${JWT_SECRET_KEY}
-    expiration: 43200000 # 12 hours in milliseconds for production environment
 
 # Logging configuration
 logging:
