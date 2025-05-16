@@ -56,7 +56,7 @@ public class AuthServiceIntegrationTest {
     
     private User testUser;
     private static final String TEST_USERNAME = "testuser";
-    private static final String TEST_PASSWORD = "password123";
+    private static final String TEST_PASSWORD = "password";
     private static final String TEST_TOKEN = "test.database.jwt.token";
     
     /**

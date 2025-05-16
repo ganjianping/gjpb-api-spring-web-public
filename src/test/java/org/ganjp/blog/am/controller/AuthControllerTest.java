@@ -52,8 +52,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("Login with valid credentials should return JWT token")
     void loginWithValidCredentialsShouldReturnJwtToken() throws Exception {
-        // Arrange
-        LoginRequest loginRequest = new LoginRequest("admin", "GANrubi@1");
+        LoginRequest loginRequest = new LoginRequest("admin", "correctPassword");
         String jwtToken = "valid.jwt.token";
         LoginResponse loginResponse = LoginResponse.builder().token(jwtToken).build();
         
