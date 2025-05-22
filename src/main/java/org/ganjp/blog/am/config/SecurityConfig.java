@@ -107,14 +107,26 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
         // Use the injected JwtAuthenticationFilter bean instead of creating a new instance
         
-        http
+        // Start building the authorization rules
+        var authRulesSpec = http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(securityProperties.getPublicEndpoints().toArray(new String[0])).permitAll()
-                .requestMatchers("/api/user/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                .anyRequest().authenticated()
-            )
+            .authorizeHttpRequests(auth -> {
+                // First add all public endpoints that don't require authentication
+                auth.requestMatchers(securityProperties.getPublicEndpoints().toArray(new String[0])).permitAll();
+                
+                // Then add all role-restricted endpoints from configuration
+                if (securityProperties.getAuthorizedEndpoints() != null) {
+                    securityProperties.getAuthorizedEndpoints().forEach((pattern, roles) -> {
+                        auth.requestMatchers(pattern).hasAnyAuthority(
+                            roles.toArray(new String[0])
+                        );
+                    });
+                }
+                
+                // Finally, require authentication for all other endpoints
+                auth.anyRequest().authenticated();
+            })
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )

@@ -1,6 +1,7 @@
 package org.ganjp.blog.am.config;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import lombok.Data;
 public class SecurityProperties {
     
     private List<String> publicEndpoints;
+    private Map<String, List<String>> authorizedEndpoints;
     private Cors cors;
     private Jwt jwt;
     

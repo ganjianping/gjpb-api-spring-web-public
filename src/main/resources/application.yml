@@ -29,6 +29,10 @@ security:
     - "/actuator/health"    # Health check endpoint
     - "/swagger-ui/**"      # Swagger UI
     - "/v3/api-docs/**"     # API documentation
+  authorized-endpoints:
+    "/v1/roles/**":
+      - "ROLE_USER"
+      - "ROLE_ADMIN"
   cors:
     allowed-origins:
       - https://ganjianping.com
