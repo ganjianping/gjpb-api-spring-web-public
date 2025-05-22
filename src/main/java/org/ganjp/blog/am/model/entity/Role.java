@@ -24,6 +24,7 @@ public class Role {
     
     private String code;
     private String name;
+    private String description;
     
     @Column(name = "display_order")
     private int displayOrder;

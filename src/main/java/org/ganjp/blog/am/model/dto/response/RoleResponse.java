@@ -15,6 +15,7 @@ public class RoleResponse {
     private String id;
     private String code;
     private String name;
+    private String description;
     private Integer displayOrder;
     private Boolean active;
     private LocalDateTime createdAt;

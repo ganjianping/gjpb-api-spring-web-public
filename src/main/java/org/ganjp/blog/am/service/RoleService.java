@@ -56,6 +56,7 @@ public class RoleService {
         role.setId(UUID.randomUUID().toString());
         role.setCode(roleRequest.getCode());
         role.setName(roleRequest.getName());
+        role.setDescription(roleRequest.getDescription());
         role.setDisplayOrder(roleRequest.getDisplayOrder() != null ? roleRequest.getDisplayOrder() : 0);
         role.setActive(roleRequest.getActive() != null ? roleRequest.getActive() : true);
         role.setCreatedAt(LocalDateTime.now());
@@ -79,6 +80,7 @@ public class RoleService {
 
         role.setCode(roleRequest.getCode());
         role.setName(roleRequest.getName());
+        role.setDescription(roleRequest.getDescription());
         role.setDisplayOrder(roleRequest.getDisplayOrder() != null ? roleRequest.getDisplayOrder() : role.getDisplayOrder());
         role.setActive(roleRequest.getActive() != null ? roleRequest.getActive() : role.isActive());
         role.setUpdatedAt(LocalDateTime.now());
@@ -114,6 +116,7 @@ public class RoleService {
                 .id(role.getId())
                 .code(role.getCode())
                 .name(role.getName())
+                .description(role.getDescription())
                 .displayOrder(role.getDisplayOrder())
                 .active(role.isActive())
                 .createdAt(role.getCreatedAt())

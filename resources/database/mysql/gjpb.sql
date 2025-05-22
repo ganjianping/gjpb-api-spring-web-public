@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS am_roles (
     `id` char(36) NOT NULL,
     `code` varchar(30) NOT NULL,
     `name` varchar(50) NOT NULL,
+    `description` varchar(255) DEFAULT NULL,
     `display_order` int NOT NULL DEFAULT '0',
     `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
