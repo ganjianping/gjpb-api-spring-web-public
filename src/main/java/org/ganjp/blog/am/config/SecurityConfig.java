@@ -85,7 +85,31 @@ public class SecurityConfig {
         return (request, response, authException) -> {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
+            
+            // Format the current date and time in the required format
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String currentDateTime = java.time.LocalDateTime.now().format(formatter);
+            
+            // Build the JSON response with the required format
+            String jsonResponse = String.format(
+                "{\n" +
+                "    \"status\": {\n" +
+                "        \"code\": 401,\n" +
+                "        \"message\": \"Unauthorized\",\n" +
+                "        \"errors\": {\n" +
+                "            \"error\": \"%s\"\n" +
+                "        }\n" +
+                "    },\n" +
+                "    \"data\": null,\n" +
+                "    \"meta\": {\n" +
+                "        \"serverDateTime\": \"%s\"\n" +
+                "    }\n" +
+                "}", 
+                authException.getMessage() != null ? authException.getMessage() : "Authentication required", 
+                currentDateTime
+            );
+            
+            response.getWriter().write(jsonResponse);
         };
     }
 
@@ -108,7 +132,7 @@ public class SecurityConfig {
         // Use the injected JwtAuthenticationFilter bean instead of creating a new instance
         
         // Start building the authorization rules
-        var authRulesSpec = http
+        http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> {
