@@ -29,7 +29,7 @@ public class PasswordGeneratorDemo {
         System.out.println("Password match verification: " + matches);
         
         // Example for encoding a known password (like 'admin123')
-        String knownPassword = "admin123";
+        String knownPassword = "123456";
         String encodedKnown = generator.encodePassword(knownPassword);
         System.out.println("\nKnown password: " + knownPassword);
         System.out.println("BCrypt encoded: " + encodedKnown);
