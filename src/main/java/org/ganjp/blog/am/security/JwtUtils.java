@@ -6,14 +6,15 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.ganjp.blog.am.config.SecurityProperties;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtUtils {
@@ -44,10 +45,18 @@ public class JwtUtils {
     }
 
     private String buildToken(
-            Map<String, Object> extraClaims,
-            UserDetails userDetails,
-            long expiration
+        Map<String, Object> extraClaims,
+        UserDetails userDetails,
+        long expiration
     ) {
+        // Get user authorities and convert to simple strings
+        List<String> authorities = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+        
+        // Add authorities to claims
+        extraClaims.put("authorities", authorities);
+        
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
@@ -78,6 +87,19 @@ public class JwtUtils {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public List<GrantedAuthority> extractAuthorities(String token) {
+        Claims claims = extractAllClaims(token);
+        List<String> authorities = claims.get("authorities", List.class);
+        
+        if (authorities == null) {
+            return Collections.emptyList();
+        }
+        
+        return authorities.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
     }
 
     private Key getSignInKey() {

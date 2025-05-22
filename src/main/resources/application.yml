@@ -21,7 +21,7 @@ spring:
 security:
   jwt:
     secret-key: ${JWT_SECRET_KEY}
-    expiration: 43200000 # 12 hours in milliseconds for production environment
+    expiration: ${JWT_EXPIRATION:43200000} # 12 hours in milliseconds for production environment
   public-endpoints:
     - "/"                   # Root endpoint
     - "/v1/auth/**"         # Authentication endpoints
