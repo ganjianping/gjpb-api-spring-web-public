@@ -4,6 +4,7 @@ import org.ganjp.blog.am.model.dto.request.LoginRequest;
 import org.ganjp.blog.am.model.dto.response.LoginResponse;
 import org.ganjp.blog.am.model.entity.Role;
 import org.ganjp.blog.am.model.entity.User;
+import org.ganjp.blog.am.repository.RoleRepository;
 import org.ganjp.blog.am.repository.UserRepository;
 import org.ganjp.blog.am.security.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
@@ -70,6 +72,16 @@ public class AuthServiceIntegrationTest {
         }
         
         @Bean
+        public RoleRepository roleRepository() {
+            return Mockito.mock(RoleRepository.class);
+        }
+        
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+            return Mockito.mock(PasswordEncoder.class);
+        }
+        
+        @Bean
         public UserDetailsService userDetailsService() {
             return Mockito.mock(UserDetailsService.class);
         }
@@ -85,8 +97,10 @@ public class AuthServiceIntegrationTest {
         }
         
         @Bean
-        public AuthService authService(AuthenticationManager authenticationManager, JwtUtils jwtUtils) {
-            return new AuthService(authenticationManager, jwtUtils);
+        public AuthService authService(AuthenticationManager authenticationManager, JwtUtils jwtUtils, 
+                                      UserRepository userRepository, RoleRepository roleRepository, 
+                                      PasswordEncoder passwordEncoder) {
+            return new AuthService(authenticationManager, jwtUtils, userRepository, roleRepository, passwordEncoder);
         }
     }
     
