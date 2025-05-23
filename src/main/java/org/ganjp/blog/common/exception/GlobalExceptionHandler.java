@@ -1,7 +1,6 @@
-package org.ganjp.blog.am.controller;
+package org.ganjp.blog.common.exception;
 
-import org.ganjp.blog.am.exception.ResourceNotFoundException;
-import org.ganjp.blog.am.model.dto.response.ApiResponse;
+import org.ganjp.blog.common.model.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;

@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.ganjp.blog.am.model.dto.request.RoleRequest;
 import org.ganjp.blog.am.model.dto.request.RoleUpdateRequest;
-import org.ganjp.blog.am.model.dto.response.ApiResponse;
+import org.ganjp.blog.common.model.ApiResponse;
 import org.ganjp.blog.am.model.dto.response.RoleResponse;
 import org.ganjp.blog.am.service.RoleService;
 import org.springframework.http.HttpStatus;

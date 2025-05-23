@@ -1,4 +1,4 @@
-package org.ganjp.blog.am.exception;
+package org.ganjp.blog.common.exception;
 
 /**
  * Exception thrown when a requested resource is not found.

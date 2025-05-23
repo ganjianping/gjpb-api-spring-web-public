@@ -3,7 +3,7 @@ package org.ganjp.blog.am.controller;
 import lombok.RequiredArgsConstructor;
 
 import org.ganjp.blog.am.model.dto.request.LoginRequest;
-import org.ganjp.blog.am.model.dto.response.ApiResponse;
+import org.ganjp.blog.common.model.ApiResponse;
 import org.ganjp.blog.am.model.dto.response.LoginResponse;
 import org.ganjp.blog.am.service.AuthService;
 import org.springframework.http.ResponseEntity;

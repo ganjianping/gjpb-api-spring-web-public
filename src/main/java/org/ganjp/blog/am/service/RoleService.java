@@ -1,7 +1,7 @@
 package org.ganjp.blog.am.service;
 
 import lombok.RequiredArgsConstructor;
-import org.ganjp.blog.am.exception.ResourceNotFoundException;
+import org.ganjp.blog.common.exception.ResourceNotFoundException;
 import org.ganjp.blog.am.model.dto.request.RoleRequest;
 import org.ganjp.blog.am.model.dto.request.RoleUpdateRequest;
 import org.ganjp.blog.am.model.dto.response.RoleResponse;
