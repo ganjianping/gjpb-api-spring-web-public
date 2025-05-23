@@ -1,7 +1,9 @@
 package org.ganjp.blog.am.service;
 
 import lombok.RequiredArgsConstructor;
+import org.ganjp.blog.am.exception.ResourceNotFoundException;
 import org.ganjp.blog.am.model.dto.request.RoleRequest;
+import org.ganjp.blog.am.model.dto.request.RoleUpdateRequest;
 import org.ganjp.blog.am.model.dto.response.RoleResponse;
 import org.ganjp.blog.am.model.entity.Role;
 import org.ganjp.blog.am.repository.RoleRepository;
@@ -37,13 +39,13 @@ public class RoleService {
     public RoleResponse getRoleById(String id) {
         return roleRepository.findById(id)
                 .map(this::mapToRoleResponse)
-                .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Role", "id", id));
     }
 
     public RoleResponse getRoleByCode(String code) {
         return roleRepository.findByCode(code)
                 .map(this::mapToRoleResponse)
-                .orElseThrow(() -> new RuntimeException("Role not found with code: " + code));
+                .orElseThrow(() -> new ResourceNotFoundException("Role", "code", code));
     }
 
     @Transactional
@@ -71,7 +73,7 @@ public class RoleService {
     @Transactional
     public RoleResponse updateRole(String id, RoleRequest roleRequest, String username) {
         Role role = roleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Role", "id", id));
 
         // Check if code is being changed and if new code already exists
         if (!role.getCode().equals(roleRequest.getCode()) && roleRepository.existsByCode(roleRequest.getCode())) {
@@ -83,6 +85,45 @@ public class RoleService {
         role.setDescription(roleRequest.getDescription());
         role.setDisplayOrder(roleRequest.getDisplayOrder() != null ? roleRequest.getDisplayOrder() : role.getDisplayOrder());
         role.setActive(roleRequest.getActive() != null ? roleRequest.getActive() : role.isActive());
+        role.setUpdatedAt(LocalDateTime.now());
+        role.setUpdatedBy(username);
+
+        Role updatedRole = roleRepository.save(role);
+        return mapToRoleResponse(updatedRole);
+    }
+
+    @Transactional
+    public RoleResponse updateRolePartially(String id, RoleUpdateRequest updateRequest, String username) {
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Role", "id", id));
+
+        // Check if code is being changed and if new code already exists
+        if (updateRequest.getCode() != null && !updateRequest.getCode().equals(role.getCode()) 
+                && roleRepository.existsByCode(updateRequest.getCode())) {
+            throw new RuntimeException("Role with code " + updateRequest.getCode() + " already exists");
+        }
+
+        // Only update fields that are not null in the request
+        if (updateRequest.getCode() != null) {
+            role.setCode(updateRequest.getCode());
+        }
+        
+        if (updateRequest.getName() != null) {
+            role.setName(updateRequest.getName());
+        }
+        
+        if (updateRequest.getDescription() != null) {
+            role.setDescription(updateRequest.getDescription());
+        }
+        
+        if (updateRequest.getDisplayOrder() != null) {
+            role.setDisplayOrder(updateRequest.getDisplayOrder());
+        }
+        
+        if (updateRequest.getActive() != null) {
+            role.setActive(updateRequest.getActive());
+        }
+        
         role.setUpdatedAt(LocalDateTime.now());
         role.setUpdatedBy(username);
 
