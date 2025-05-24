@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.ganjp.blog.am.model.enums.AccountStatus;
 
 /**
  * DTO for user registration responses.
@@ -15,5 +16,10 @@ import lombok.NoArgsConstructor;
 public class SignupResponse {
     private String id;
     private String username;
-    private Boolean active;
+    private String email;
+    private String firstName;
+    private String lastName;
+    private AccountStatus accountStatus;
+    private Boolean active; // Backward compatibility
+    private String message;
 }

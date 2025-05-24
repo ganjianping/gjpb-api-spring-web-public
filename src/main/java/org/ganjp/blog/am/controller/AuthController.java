@@ -31,17 +31,20 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest loginRequest) {
         try {
             LoginResponse loginResponse = authService.login(loginRequest);
-            return ResponseEntity.ok(ApiResponse.success(loginResponse, "User login successful"));
+            ApiResponse<LoginResponse> response = ApiResponse.<LoginResponse>success(loginResponse, "User login successful");
+            return ResponseEntity.ok(response);
         } catch (BadCredentialsException e) {
             Map<String, String> errors = new HashMap<>();
             errors.put("error", "Bad credentials");
+            ApiResponse<LoginResponse> response = ApiResponse.<LoginResponse>error(401, "Unauthorized", errors);
             return ResponseEntity.status(401)
-                    .body(ApiResponse.error(401, "Unauthorized", errors));
+                    .body(response);
         } catch (Exception e) {
             Map<String, String> errors = new HashMap<>();
             errors.put("error", e.getMessage());
+            ApiResponse<LoginResponse> response = ApiResponse.<LoginResponse>error(500, "Internal Server Error", errors);
             return ResponseEntity.status(500)
-                    .body(ApiResponse.error(500, "Internal Server Error", errors));
+                    .body(response);
         }
     }
     
@@ -55,18 +58,34 @@ public class AuthController {
     public ResponseEntity<ApiResponse<SignupResponse>> signup(@Valid @RequestBody SignupRequest signupRequest) {
         try {
             SignupResponse signupResponse = authService.signup(signupRequest);
+            ApiResponse<SignupResponse> response = ApiResponse.<SignupResponse>builder()
+                            .status(ApiResponse.Status.builder()
+                                    .code(HttpStatus.CREATED.value())
+                                    .message("User registered successfully")
+                                    .errors(null)
+                                    .build())
+                            .data(signupResponse)
+                            .meta(ApiResponse.Meta.builder()
+                                    .serverDateTime(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                                            .format(java.time.LocalDateTime.now()))
+                                    .build())
+                            .build();
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success(signupResponse, "User registered successfully"));
+                    .body(response);
         } catch (IllegalArgumentException e) {
             Map<String, String> errors = new HashMap<>();
             errors.put("error", e.getMessage());
+            ApiResponse<SignupResponse> response = ApiResponse.<SignupResponse>error(400, "Registration failed", errors);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(400, "Registration failed", errors));
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .body(response);
         } catch (Exception e) {
             Map<String, String> errors = new HashMap<>();
             errors.put("error", e.getMessage());
+            ApiResponse<SignupResponse> response = ApiResponse.<SignupResponse>error(500, "Internal Server Error", errors);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error(500, "Internal Server Error", errors));
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .body(response);
         }
     }
 }

@@ -2,10 +2,11 @@ package org.ganjp.blog.am.service;
 
 import org.ganjp.blog.am.model.dto.request.LoginRequest;
 import org.ganjp.blog.am.model.dto.response.LoginResponse;
-import org.ganjp.blog.am.model.entity.Role;
 import org.ganjp.blog.am.model.entity.User;
+import org.ganjp.blog.am.model.enums.AccountStatus;
 import org.ganjp.blog.am.repository.RoleRepository;
 import org.ganjp.blog.am.repository.UserRepository;
+import org.ganjp.blog.am.repository.UserRoleRepository;
 import org.ganjp.blog.am.security.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,7 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,12 +44,6 @@ public class AuthServiceIntegrationTest {
     
     @Autowired
     private AuthService authService;
-    
-    @Autowired
-    private UserRepository userRepository;
-    
-    @Autowired
-    private UserDetailsService userDetailsService;
     
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -87,6 +82,11 @@ public class AuthServiceIntegrationTest {
         }
         
         @Bean
+        public UserRoleRepository userRoleRepository() {
+            return Mockito.mock(UserRoleRepository.class);
+        }
+        
+        @Bean
         public AuthenticationManager authenticationManager() {
             return Mockito.mock(AuthenticationManager.class);
         }
@@ -99,33 +99,22 @@ public class AuthServiceIntegrationTest {
         @Bean
         public AuthService authService(AuthenticationManager authenticationManager, JwtUtils jwtUtils, 
                                       UserRepository userRepository, RoleRepository roleRepository, 
-                                      PasswordEncoder passwordEncoder) {
-            return new AuthService(authenticationManager, jwtUtils, userRepository, roleRepository, passwordEncoder);
+                                      UserRoleRepository userRoleRepository, PasswordEncoder passwordEncoder) {
+            return new AuthService(authenticationManager, jwtUtils, userRepository, roleRepository, userRoleRepository, passwordEncoder);
         }
     }
     
     @BeforeEach
     public void setUp() {
-        // Create a test user that would normally come from the database
-        Role adminRole = Role.builder()
-                .id("1")
-                .code("ADMIN")
-                .name("Administrator")
-                .displayOrder(1)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .active(true)
-                .build();
-        
         testUser = User.builder()
                 .id("1")
                 .username(TEST_USERNAME)
                 .password(TEST_PASSWORD) // In a real app, this would be encoded
-                .roles(Collections.singletonList(adminRole))
                 .displayOrder(1)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
-                .active(true)
+                .accountStatus(AccountStatus.active)
+                .userRoles(new ArrayList<>()) // Initialize userRoles to avoid null pointer
                 .build();
         
         // Set up authentication for valid credentials

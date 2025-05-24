@@ -7,72 +7,159 @@ CREATE DATABASE gjpb CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 -- Use the new database
 USE gjpb;
 
--- create a table to store user login information
-CREATE TABLE IF NOT EXISTS am_users (
-    `id` char(36) NOT NULL,
-    `username` varchar(50) NOT NULL,
-    `password` varchar(100) NOT NULL,
-    `display_order` int NOT NULL DEFAULT '0',
-    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    `created_by` varchar(255) DEFAULT NULL,
-    `updated_by` varchar(255) DEFAULT NULL,
-    `is_active` tinyint(1) NOT NULL DEFAULT '1' CHECK (`is_active` IN (0, 1)),
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uq_users_username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+-- Table: auth_users
+-- Purpose: Store user account information and authentication credentials
+CREATE TABLE IF NOT EXISTS auth_users (
+    id CHAR(36) NOT NULL COMMENT 'Primary Key (UUID)',
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(128) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL COMMENT 'BCrypt or similar strong hash',
+    first_name VARCHAR(50) DEFAULT NULL,
+    last_name VARCHAR(50) DEFAULT NULL,
 
--- create a table to store user roles
-CREATE TABLE IF NOT EXISTS am_roles (
-    `id` char(36) NOT NULL,
-    `code` varchar(30) NOT NULL,
-    `name` varchar(50) NOT NULL,
-    `description` varchar(255) DEFAULT NULL,
-    `display_order` int NOT NULL DEFAULT '0',
-    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    `created_by` varchar(255) DEFAULT NULL,
-    `updated_by` varchar(255) DEFAULT NULL,
-    `is_active` tinyint(1) NOT NULL DEFAULT '1' CHECK (`is_active` IN (0, 1)),
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uq_roles_code` (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    -- Account Status Management
+    account_status ENUM(
+        'active',           -- User can log in
+        'locked',           -- Temporarily locked (e.g., too many failed attempts)
+        'suspended',        -- Administratively disabled
+        'pending_verification' -- Awaiting email/SMS verification
+    ) NOT NULL DEFAULT 'pending_verification',
+    account_locked_until TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp until which the account is locked',
 
--- create a table to store user permissions
-CREATE TABLE IF NOT EXISTS am_user_roles (
-    `user_id` char(36) NOT NULL,
-    `role_id` char(36) NOT NULL,
-    `display_order` int NOT NULL DEFAULT '0',
-    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    `created_by` varchar(255) DEFAULT NULL,
-    `updated_by` varchar(255) DEFAULT NULL,
-    `is_active` tinyint(1) NOT NULL DEFAULT '1' CHECK (`is_active` IN (0, 1)),
-    PRIMARY KEY (`user_id`, `role_id`),
-    KEY `idx_user_roles_user_id` (`user_id`),
-    KEY `idx_user_roles_role_id` (`role_id`),
-    CONSTRAINT `fk_user_roles_user_id` FOREIGN KEY (`user_id`) REFERENCES `am_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_user_roles_role_id` FOREIGN KEY (`role_id`) REFERENCES `am_roles` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    -- Email Verification
+    verification_token VARCHAR(128) DEFAULT NULL COMMENT 'Token for email/SMS verification',
+    verification_token_expires_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Expiry for verification token',
+    verified_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp when email/SMS was verified',
 
--- Insert predefined roles
-INSERT INTO am_roles (id, code, name, description, display_order, created_by, updated_by)
-VALUES 
-    ('5d51b31e-3756-11f0-a6c3-58d00cc8c893', 'ADMIN', 'System Administrator', 'Full system access with all privileges', 1, 'SYSTEM', 'SYSTEM'),
-    ('5d51a824-3756-11f0-a6c3-58d00cc8c893', 'EDITOR', 'Content Editor', 'Create, edit, and publish all content', 2, 'SYSTEM', 'SYSTEM'),
-    ('5d51aacc-3756-11f0-a6c3-58d00cc8c893', 'AUTHOR', 'Content Author', 'Create and edit own content', 3, 'SYSTEM', 'SYSTEM'),
-    ('5d51ac0c-3756-11f0-a6c3-58d00cc8c893', 'MODERATOR', 'Content Moderator', 'Review and moderate user content', 4, 'SYSTEM', 'SYSTEM'),
-    ('5d51b4c2-3756-11f0-a6c3-58d00cc8c893', 'USER', 'Regular User', 'Standard authenticated user privileges', 5, 'SYSTEM', 'SYSTEM'),
-    ('5d51ad2e-3756-11f0-a6c3-58d00cc8c893', 'ANALYST', 'Data Analyst', 'Access to analytics and reporting features', 6, 'SYSTEM', 'SYSTEM'),
-    ('5d51ae5a-3756-11f0-a6c3-58d00cc8c893', 'SUBSCRIBER', 'Premium Subscriber', 'Access to premium/paid content', 7, 'SYSTEM', 'SYSTEM'),
-    ('5d51af72-3756-11f0-a6c3-58d00cc8c893', 'API_USER', 'API Integration User', 'External system integration access', 8, 'SYSTEM', 'SYSTEM'),
-    ('5d51b1c0-3756-11f0-a6c3-58d00cc8c893', 'CONTENT_MANAGER', 'Content Manager', 'Manages content categories and organization', 9, 'SYSTEM', 'SYSTEM'),
-    ('5d51b31k-3756-11f0-a6c3-58d00cc8c893', 'SUPPORT_AGENT', 'Support Agent', 'Customer/user support capabilities', 10, 'SYSTEM', 'SYSTEM');
+    -- Multi-Factor Authentication (MFA)
+    mfa_enabled BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Is Multi-Factor Authentication enabled?',
+    mfa_secret VARCHAR(255) DEFAULT NULL COMMENT 'Secret key for TOTP-based MFA',
+    mfa_last_used_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp of last successful MFA',
 
--- Insert admin user 'admin' with BCrypt hashed password (password: 123456)
-INSERT INTO am_users (id, username, password, created_by, updated_by)
-VALUES ('a1b2c3d4-e5f6-11g0-h8i9-j0k1l2m3n4o5', 'admin', '$2a$10$Gi8uPjjsxdJWuzel/Ywiku3jjtgl.XeZE7LgW6a78sH7xJE/HileS', 'SYSTEM', 'SYSTEM');
+    -- Login Tracking & Security
+    last_login_at TIMESTAMP NULL DEFAULT NULL,
+    last_login_ip VARCHAR(45) DEFAULT NULL COMMENT 'Last known IP address (IPv4/IPv6)',
+    password_changed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp of last password change',
+    failed_login_attempts SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Counter for consecutive failed login attempts',
+    last_failed_login_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp of the last failed login attempt',
 
--- Assign ADMIN role to user 'admin'
-INSERT INTO am_user_roles (user_id, role_id, created_by, updated_by)
-VALUES ('a1b2c3d4-e5f6-11g0-h8i9-j0k1l2m3n4o5', '5d51b31e-3756-11f0-a6c3-58d00cc8c893', 'SYSTEM', 'SYSTEM');
+    -- Audit Trail
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by CHAR(36) DEFAULT NULL COMMENT 'UUID of the user who created this record',
+    updated_by CHAR(36) DEFAULT NULL COMMENT 'UUID of the user who last updated this record',
+
+    -- Soft Delete
+    is_active BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'Logical deletion flag',
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_auth_users_username (username),
+    UNIQUE KEY uk_auth_users_email (email),
+    UNIQUE KEY uk_auth_users_verification_token (verification_token),
+    KEY idx_auth_users_account_status (account_status),
+    KEY idx_auth_users_last_login (last_login_at),
+    KEY idx_roles_active (is_active),
+    KEY idx_auth_users_created_by (created_by),
+    KEY idx_auth_users_updated_by (updated_by),
+
+    CONSTRAINT fk_auth_users_created_by FOREIGN KEY (created_by) REFERENCES auth_users (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_auth_users_updated_by FOREIGN KEY (updated_by) REFERENCES auth_users (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT chk_auth_users_username_length CHECK (LENGTH(username) >= 3),
+    CONSTRAINT chk_users_email_fmt CHECK (email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Stores user accounts and authentication details.';
+
+-- Table: auth_roles
+-- Purpose: Define system roles with hierarchical structure support
+CREATE TABLE IF NOT EXISTS auth_roles (
+    id CHAR(36) NOT NULL COMMENT 'Primary Key (UUID)',
+    code VARCHAR(50) NOT NULL COMMENT 'Unique role code (e.g., ADMIN, EDITOR)',
+    name VARCHAR(100) NOT NULL COMMENT 'Human-readable role name',
+    description TEXT DEFAULT NULL,
+    parent_role_id CHAR(36) DEFAULT NULL COMMENT 'For hierarchical roles (parent role)',
+    level INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Hierarchy level (0 = top level)',
+    is_system_role BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'TRUE if role is essential and cannot be deleted',
+    sort_order INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Order for display or processing purposes',
+
+    -- Audit Trail
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by CHAR(36) DEFAULT NULL,
+    updated_by CHAR(36) DEFAULT NULL,
+
+    -- Soft Delete / Activation
+    is_active BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'TRUE if the role can be assigned',
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_auth_roles_code (code),
+    KEY idx_auth_roles_parent_id (parent_role_id),
+    KEY idx_auth_roles_level (level),
+    KEY idx_auth_roles_is_active (is_active),
+    KEY idx_auth_roles_created_by (created_by),
+    KEY idx_auth_roles_updated_by (updated_by),
+
+    CONSTRAINT fk_auth_roles_parent FOREIGN KEY (parent_role_id) REFERENCES auth_roles (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_auth_roles_created_by FOREIGN KEY (created_by) REFERENCES auth_users (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_auth_roles_updated_by FOREIGN KEY (updated_by) REFERENCES auth_users (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT chk_auth_roles_code_format CHECK (code REGEXP '^[A-Z][A-Z0-9_]*$')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='System roles with optional parent → child hierarchy';
+
+-- Table: auth_user_roles
+-- Purpose: Associate users with roles (many-to-many relationship)
+CREATE TABLE IF NOT EXISTS auth_user_roles (
+    user_id CHAR(36) NOT NULL,
+    role_id CHAR(36) NOT NULL,
+    granted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When the role was granted',
+    expires_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Optional: When the role grant expires',
+
+    -- Audit Trail
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by CHAR(36) DEFAULT NULL,
+    updated_by CHAR(36) DEFAULT NULL,
+
+    -- Soft Delete / Activation
+    is_active BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'TRUE if this specific role assignment is active',
+
+    PRIMARY KEY (user_id, role_id),
+    KEY idx_auth_user_roles_user (user_id),
+    KEY idx_auth_user_roles_role (role_id),
+    KEY idx_auth_user_roles_active_expiry (is_active, expires_at), -- For finding current, valid roles
+    KEY idx_auth_user_roles_created_by (created_by),
+    KEY idx_auth_user_roles_updated_by (updated_by),
+
+    CONSTRAINT fk_auth_user_roles_user FOREIGN KEY (user_id) REFERENCES auth_users (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_auth_user_roles_role FOREIGN KEY (role_id) REFERENCES auth_roles (id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_auth_user_roles_created_by FOREIGN KEY (created_by) REFERENCES auth_users (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_auth_user_roles_updated_by FOREIGN KEY (updated_by) REFERENCES auth_users (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT chk_auth_user_roles_expiry CHECK (expires_at IS NULL OR expires_at > granted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Links users to their assigned roles (M-M).';
+
+USE gjpb;
+
+-- Insert predefined roles with hierarchical structure
+INSERT INTO auth_roles (id, code, name, description, parent_role_id, level, is_system_role, sort_order, created_by, updated_by) VALUES 
+-- Level 0 (Top-level roles)
+('550e8400-e29b-41d4-a716-446655440001', 'SUPER_ADMIN', 'Super Administrator', 'Root-level access with all system privileges including user management and system configuration', NULL, 0, TRUE, 1, NULL, NULL),
+('550e8400-e29b-41d4-a716-446655440002', 'ADMIN', 'System Administrator', 'Full administrative access to content, users, and most system features', NULL, 0, TRUE, 2, NULL, NULL),
+-- Level 1 (Sub-administrative roles)
+('550e8400-e29b-41d4-a716-446655440003', 'CONTENT_MANAGER', 'Content Manager', 'Manages all content categories, publication workflows, and content organization', '550e8400-e29b-41d4-a716-446655440002', 1, TRUE, 3, NULL, NULL),
+('550e8400-e29b-41d4-a716-446655440004', 'USER_MANAGER', 'User Manager', 'Manages user accounts, roles, and permissions (except super admin functions)', '550e8400-e29b-41d4-a716-446655440002', 1, TRUE, 4, NULL, NULL),
+-- Level 1 (Content creation and editing roles)
+('550e8400-e29b-41d4-a716-446655440005', 'EDITOR', 'Senior Editor', 'Creates, edits, publishes, and manages all content with advanced editorial privileges', '550e8400-e29b-41d4-a716-446655440003', 2, FALSE, 5, NULL, NULL),
+('550e8400-e29b-41d4-a716-446655440006', 'AUTHOR', 'Content Author', 'Creates and edits own content, can publish with approval workflow', '550e8400-e29b-41d4-a716-446655440005', 3, FALSE, 6, NULL, NULL),
+-- Level 1 (Moderation and support roles)
+('550e8400-e29b-41d4-a716-446655440007', 'MODERATOR', 'Content Moderator', 'Reviews, moderates, and manages user-generated content and comments', '550e8400-e29b-41d4-a716-446655440003', 2, FALSE, 7, NULL, NULL),
+('550e8400-e29b-41d4-a716-446655440008', 'SUPPORT_AGENT', 'Customer Support Agent', 'Handles user inquiries, provides technical support, and manages customer relations', '550e8400-e29b-41d4-a716-446655440004', 2, FALSE, 8, NULL, NULL),
+-- Level 0 (Special access roles)
+('550e8400-e29b-41d4-a716-446655440009', 'API_CLIENT', 'API Integration Client', 'External system integration access with programmatic API privileges', NULL, 0, FALSE, 9, NULL, NULL),
+-- Level 0 (Basic user role)
+('550e8400-e29b-41d4-a716-446655440010', 'USER', 'Regular User', 'Standard authenticated user with basic reading, commenting, and profile management privileges', NULL, 0, TRUE, 10, NULL, NULL);
+
+-- Insert super admin user: gjpb, password: 123456
+INSERT INTO auth_users (id,  username, email, password_hash, first_name, last_name, account_status, verified_at, password_changed_at, created_by,updated_by) 
+VALUES ('f47ac10b-58cc-4372-a567-0e02b2c3d479', 'gjpb', 'gjpb@gmail.com', '$2a$10$PAvGvs85PZwxlV.u4c8q.u96smuyMlpcPFAXNKTlidf3F65gOfdbi',  'Jianping', 'Gan', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL);
+
+-- Assign SUPER_ADMIN role to gjpb
+INSERT INTO auth_user_roles (user_id, role_id, granted_at, created_by, updated_by) 
+VALUES ('f47ac10b-58cc-4372-a567-0e02b2c3d479', '550e8400-e29b-41d4-a716-446655440001', CURRENT_TIMESTAMP, NULL, NULL);
+
