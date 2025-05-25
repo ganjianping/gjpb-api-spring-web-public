@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional // Ensures test data is rolled back after each test
-public class SignupIntegrationTest {
+class SignupIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -72,8 +72,6 @@ public class SignupIntegrationTest {
                 .username("integrationuser")
                 .password("Integration1!")
                 .email("integration@example.com")
-                .firstName("Integration")
-                .lastName("Test")
                 .build();
 
         mockMvc.perform(post("/v1/auth/signup")

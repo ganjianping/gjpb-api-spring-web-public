@@ -1,5 +1,5 @@
 -- Drop existing databases if they exist
-DROP DATABASE IF EXISTS gjpb;
+--DROP DATABASE IF EXISTS gjpb;
 
 -- Create new database
 CREATE DATABASE gjpb CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
@@ -8,14 +8,17 @@ CREATE DATABASE gjpb CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 USE gjpb;
 
 -- Table: auth_users
--- Purpose: Store user account information and authentication credentials
+-- Purpose: Store user accounts with authentication credentials, status, and security features
 CREATE TABLE IF NOT EXISTS auth_users (
     id CHAR(36) NOT NULL COMMENT 'Primary Key (UUID)',
-    username VARCHAR(50) NOT NULL,
-    email VARCHAR(128) NOT NULL,
-    password_hash VARCHAR(255) NOT NULL COMMENT 'BCrypt or similar strong hash',
-    first_name VARCHAR(50) DEFAULT NULL,
-    last_name VARCHAR(50) DEFAULT NULL,
+    nickname VARCHAR(30) DEFAULT NULL,
+
+    -- Login credentials
+    username       VARCHAR(30)   NULL COMMENT 'Chosen username; must be ≥3 chars',
+    email          VARCHAR(128)  NULL COMMENT 'Email address; validated by regex',
+    mobile_country_code VARCHAR(5)  NULL COMMENT 'Country code, e.g. +65',
+    mobile_number  VARCHAR(15)   NULL COMMENT 'Subscriber number, digits only',
+    password_hash VARCHAR(128) NOT NULL COMMENT 'BCrypt or similar strong hash',
 
     -- Account Status Management
     account_status ENUM(
@@ -25,16 +28,6 @@ CREATE TABLE IF NOT EXISTS auth_users (
         'pending_verification' -- Awaiting email/SMS verification
     ) NOT NULL DEFAULT 'pending_verification',
     account_locked_until TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp until which the account is locked',
-
-    -- Email Verification
-    verification_token VARCHAR(128) DEFAULT NULL COMMENT 'Token for email/SMS verification',
-    verification_token_expires_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Expiry for verification token',
-    verified_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp when email/SMS was verified',
-
-    -- Multi-Factor Authentication (MFA)
-    mfa_enabled BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Is Multi-Factor Authentication enabled?',
-    mfa_secret VARCHAR(255) DEFAULT NULL COMMENT 'Secret key for TOTP-based MFA',
-    mfa_last_used_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp of last successful MFA',
 
     -- Login Tracking & Security
     last_login_at TIMESTAMP NULL DEFAULT NULL,
@@ -55,18 +48,40 @@ CREATE TABLE IF NOT EXISTS auth_users (
     PRIMARY KEY (id),
     UNIQUE KEY uk_auth_users_username (username),
     UNIQUE KEY uk_auth_users_email (email),
-    UNIQUE KEY uk_auth_users_verification_token (verification_token),
+    UNIQUE KEY uk_auth_users_phone (mobile_country_code, mobile_number),
+
     KEY idx_auth_users_account_status (account_status),
     KEY idx_auth_users_last_login (last_login_at),
-    KEY idx_roles_active (is_active),
     KEY idx_auth_users_created_by (created_by),
     KEY idx_auth_users_updated_by (updated_by),
+    KEY idx_roles_active (is_active),
 
     CONSTRAINT fk_auth_users_created_by FOREIGN KEY (created_by) REFERENCES auth_users (id) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT fk_auth_users_updated_by FOREIGN KEY (updated_by) REFERENCES auth_users (id) ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT chk_auth_users_username_length CHECK (LENGTH(username) >= 3),
-    CONSTRAINT chk_users_email_fmt CHECK (email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Stores user accounts and authentication details.';
+
+    CONSTRAINT chk_auth_users_username_fmt CHECK (
+        username IS NULL OR username REGEXP '^[A-Za-z0-9._-]{3,30}$'
+    ),
+    CONSTRAINT chk_users_email_fmt CHECK (
+        email IS NULL OR email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'
+    ),
+    CONSTRAINT chk_auth_users_mobile_country_code_fmt CHECK (
+        mobile_country_code IS NULL OR mobile_country_code REGEXP '^[1-9][0-9]{0,3}$'
+    ),
+    CONSTRAINT chk_auth_users_mobile_number_fmt CHECK (
+        mobile_number IS NULL OR mobile_number REGEXP '^[0-9]{4,15}$'
+    ),
+    CONSTRAINT chk_contact_required CHECK (
+        (username IS NOT NULL AND username REGEXP '^[A-Za-z0-9._-]{3,30}$')
+        OR (email IS NOT NULL AND email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+        OR (
+            mobile_country_code IS NOT NULL
+            AND mobile_number IS NOT NULL
+            AND mobile_country_code REGEXP '^[1-9][0-9]{0,3}$'
+            AND mobile_number REGEXP '^[0-9]{4,15}$'
+        )
+    )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User accounts with authentication credentials, status, and security features';
 
 -- Table: auth_roles
 -- Purpose: Define system roles with hierarchical structure support
@@ -136,6 +151,10 @@ CREATE TABLE IF NOT EXISTS auth_user_roles (
 
 USE gjpb;
 
+-- Insert super admin user: gjpb, password: 123456
+INSERT INTO auth_users (id, nickname, username, email, mobile_country_code, mobile_number, password_hash, account_status, password_changed_at, created_by,updated_by)
+VALUES ('f47ac10b-58cc-4372-a567-0e02b2c3d479', 'gan', 'gjpb', 'gjpb@gmail.com', '65', '89765432', '$2a$10$PAvGvs85PZwxlV.u4c8q.u96smuyMlpcPFAXNKTlidf3F65gOfdbi', 'active', CURRENT_TIMESTAMP, NULL, NULL);
+
 -- Insert predefined roles with hierarchical structure
 INSERT INTO auth_roles (id, code, name, description, parent_role_id, level, is_system_role, sort_order, created_by, updated_by) VALUES 
 -- Level 0 (Top-level roles)
@@ -154,10 +173,6 @@ INSERT INTO auth_roles (id, code, name, description, parent_role_id, level, is_s
 ('550e8400-e29b-41d4-a716-446655440009', 'API_CLIENT', 'API Integration Client', 'External system integration access with programmatic API privileges', NULL, 0, FALSE, 9, NULL, NULL),
 -- Level 0 (Basic user role)
 ('550e8400-e29b-41d4-a716-446655440010', 'USER', 'Regular User', 'Standard authenticated user with basic reading, commenting, and profile management privileges', NULL, 0, TRUE, 10, NULL, NULL);
-
--- Insert super admin user: gjpb, password: 123456
-INSERT INTO auth_users (id,  username, email, password_hash, first_name, last_name, account_status, verified_at, password_changed_at, created_by,updated_by) 
-VALUES ('f47ac10b-58cc-4372-a567-0e02b2c3d479', 'gjpb', 'gjpb@gmail.com', '$2a$10$PAvGvs85PZwxlV.u4c8q.u96smuyMlpcPFAXNKTlidf3F65gOfdbi',  'Jianping', 'Gan', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL);
 
 -- Assign SUPER_ADMIN role to gjpb
 INSERT INTO auth_user_roles (user_id, role_id, granted_at, created_by, updated_by) 

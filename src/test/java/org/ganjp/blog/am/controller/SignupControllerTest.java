@@ -21,7 +21,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -56,8 +55,6 @@ class SignupControllerTest {
                 .username("newuser")
                 .password("Password1!")
                 .email("newuser@example.com")
-                .firstName("New")
-                .lastName("User")
                 .build();
         
         SignupResponse signupResponse = SignupResponse.builder()

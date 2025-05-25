@@ -110,7 +110,6 @@ public class AuthServiceIntegrationTest {
                 .id("1")
                 .username(TEST_USERNAME)
                 .password(TEST_PASSWORD) // In a real app, this would be encoded
-                .displayOrder(1)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .accountStatus(AccountStatus.active)

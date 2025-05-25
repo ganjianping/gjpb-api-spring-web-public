@@ -17,9 +17,9 @@ public class SignupResponse {
     private String id;
     private String username;
     private String email;
-    private String firstName;
-    private String lastName;
+    private String mobileCountryCode;
+    private String mobileNumber;
+    private String nickname;
     private AccountStatus accountStatus;
-    private Boolean active; // Backward compatibility
-    private String message;
+    private Boolean active;
 }

@@ -17,19 +17,16 @@ public interface UserRepository extends JpaRepository<User, String> {
     
     Optional<User> findByEmail(String email);
     
-    Optional<User> findByVerificationToken(String token);
-    
     boolean existsByUsername(String username);
     
     boolean existsByEmail(String email);
+
+    boolean existsByMobileCountryCodeAndMobileNumber(String mobileCountryCode, String mobileNumber);
     
     List<User> findByAccountStatus(AccountStatus accountStatus);
     
     @Query("SELECT u FROM User u WHERE u.accountLockedUntil IS NOT NULL AND u.accountLockedUntil <= :now")
     List<User> findUsersWithExpiredLocks(@Param("now") LocalDateTime now);
-    
-    @Query("SELECT u FROM User u WHERE u.verificationTokenExpiresAt IS NOT NULL AND u.verificationTokenExpiresAt <= :now AND u.verifiedAt IS NULL")
-    List<User> findUsersWithExpiredVerificationTokens(@Param("now") LocalDateTime now);
     
     @Query("SELECT u FROM User u WHERE u.passwordChangedAt IS NOT NULL AND u.passwordChangedAt <= :now")
     List<User> findUsersWithOldPasswords(@Param("now") LocalDateTime now);

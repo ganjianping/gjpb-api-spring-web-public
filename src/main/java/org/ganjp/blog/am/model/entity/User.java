@@ -27,20 +27,24 @@ public class User implements UserDetails {
     @Column(columnDefinition = "CHAR(36)")
     private String id;
     
-    @Column(length = 50, unique = true, nullable = false)
+    @Column(name = "nickname", length = 30)
+    private String nickname;
+    
+    // Login credentials
+    @Column(length = 30, unique = true)
     private String username;
     
-    @Column(length = 128, unique = true, nullable = false)
+    @Column(length = 128, unique = true)
     private String email;
+
+    @Column(name = "mobile_country_code", length = 5)
+    private String mobileCountryCode;
+
+    @Column(name = "mobile_number", length = 15)
+    private String mobileNumber;
     
-    @Column(name = "password_hash")
+    @Column(name = "password_hash", nullable = false)
     private String password;
-    
-    @Column(name = "first_name", length = 50)
-    private String firstName;
-    
-    @Column(name = "last_name", length = 50)
-    private String lastName;
     
     // Account status management
     @Enumerated(EnumType.STRING)
@@ -50,28 +54,7 @@ public class User implements UserDetails {
     
     @Column(name = "account_locked_until")
     private LocalDateTime accountLockedUntil;
-    
-    // Email / SMS Verification
-    @Column(name = "verification_token", length = 128)
-    private String verificationToken;
-    
-    @Column(name = "verification_token_expires_at")
-    private LocalDateTime verificationTokenExpiresAt;
-    
-    @Column(name = "verified_at")
-    private LocalDateTime verifiedAt;
-    
-    // Multi-factor authentication
-    @Column(name = "mfa_enabled", nullable = false)
-    @Builder.Default
-    private boolean mfaEnabled = false;
-    
-    @Column(name = "mfa_secret", length = 255)
-    private String mfaSecret;
-    
-    @Column(name = "mfa_last_used_at")
-    private LocalDateTime mfaLastUsedAt;
-    
+
     // Login tracking
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
@@ -106,12 +89,8 @@ public class User implements UserDetails {
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private boolean active = true;
-    
-    // For UI display purposes (non-persistent)
-    @Transient
-    @Builder.Default
-    private Integer displayOrder = 0;
 
+    @Transient // Need to mark as transient since UserRole is not serializable
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @Builder.Default
     private List<UserRole> userRoles = new ArrayList<>();
@@ -149,7 +128,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return accountStatus == AccountStatus.active && verifiedAt != null && active;
+        return accountStatus == AccountStatus.active && active;
     }
     
     /**
@@ -176,19 +155,62 @@ public class User implements UserDetails {
      * Builder methods for compatibility with tests
      */
     public static class UserBuilder {
-        public UserBuilder emailVerificationToken(String token) {
-            this.verificationToken = token;
-            return this;
-        }
-        
-        public UserBuilder emailVerificationExpiresAt(LocalDateTime expiresAt) {
-            this.verificationTokenExpiresAt = expiresAt;
-            return this;
-        }
-        
         public UserBuilder passwordLastChangedAt(LocalDateTime changedAt) {
             this.passwordChangedAt = changedAt;
             return this;
         }
+    }
+    
+    /**
+     * Validates if at least one contact method is provided and valid.
+     * This implements the chk_contact_required database constraint in Java code.
+     * 
+     * @return true if at least one valid contact method is provided
+     */
+    @jakarta.validation.constraints.AssertTrue(message = "At least one contact method (username, email, or mobile) must be provided")
+    public boolean isLoginIdentityValid() {
+        boolean isUsernameValid = username != null && username.matches("^[A-Za-z0-9._-]{3,30}$");
+        boolean isEmailValid = email != null && email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+        boolean isMobileValid = mobileCountryCode != null && mobileNumber != null
+                && mobileCountryCode.matches("^[1-9]\\d{0,3}$")
+                && mobileNumber.matches("^\\d{4,15}$");
+
+        return isUsernameValid || isEmailValid || isMobileValid;
+    }
+    
+    /**
+     * Validates username format according to database constraint
+     * 
+     * @return true if username is null or matches the regex pattern
+     */
+    public boolean isUsernameValid() {
+        return username == null || username.matches("^[A-Za-z0-9._-]{3,30}$");
+    }
+    
+    /**
+     * Validates email format according to database constraint
+     * 
+     * @return true if email is null or matches the regex pattern
+     */
+    public boolean isEmailValid() {
+        return email == null || email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+    }
+    
+    /**
+     * Validates mobile country code format according to database constraint
+     * 
+     * @return true if mobile country code is null or matches the regex pattern
+     */
+    public boolean isMobileCountryCodeValid() {
+        return mobileCountryCode == null || mobileCountryCode.matches("^[1-9]\\d{0,3}$");
+    }
+    
+    /**
+     * Validates mobile number format according to database constraint
+     * 
+     * @return true if mobile number is null or matches the regex pattern
+     */
+    public boolean isMobileNumberValid() {
+        return mobileNumber == null || mobileNumber.matches("^\\d{4,15}$");
     }
 }

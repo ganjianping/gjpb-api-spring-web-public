@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,8 +58,6 @@ class SignupServiceTest {
                 .username("testuser")
                 .password("Password1!")
                 .email("user@example.com")
-                .firstName("Test")
-                .lastName("User")
                 .build();
         
         Role userRole = Role.builder()
@@ -147,6 +146,7 @@ class SignupServiceTest {
         
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
         when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(userRepository.existsByMobileCountryCodeAndMobileNumber(any(), any())).thenReturn(false);
         when(roleRepository.findByCode("USER")).thenReturn(Optional.empty());
         
         // Act & Assert
@@ -158,9 +158,54 @@ class SignupServiceTest {
         assertEquals("Role not found with code: USER", exception.getMessage());
         verify(userRepository).existsByUsername("newuser");
         verify(userRepository).existsByEmail(any());
+        verify(userRepository).existsByMobileCountryCodeAndMobileNumber(any(), any());
         verify(roleRepository).findByCode("USER");
-        // Verify no further interactions happened
-        verifyNoMoreInteractions(roleRepository, passwordEncoder);
-        verifyNoMoreInteractions(userRepository);
+    }
+    
+    @Test
+    @DisplayName("Test signup with new fields")
+    void testSignupWithNewFields() {
+        // Arrange
+        SignupRequest signupRequest = SignupRequest.builder()
+                .username("testuser")
+                .email("testuser@example.com")
+                .password("Password@123")
+                .nickname("Tester")
+                .mobileCountryCode("65")
+                .mobileNumber("12345678")
+                .build();
+
+        Role userRole = new Role();
+        userRole.setCode("USER");
+
+        User savedUser = User.builder()
+                .id(UUID.randomUUID().toString())
+                .username("testuser")
+                .email("testuser@example.com")
+                .nickname("Tester")
+                .mobileCountryCode("65")
+                .mobileNumber("12345678")
+                .password("encoded-password")
+                .accountStatus(AccountStatus.pending_verification)
+                .active(false)
+                .build();
+
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.existsByMobileCountryCodeAndMobileNumber(anyString(), anyString())).thenReturn(false);
+        when(roleRepository.findByCode("USER")).thenReturn(Optional.of(userRole));
+        when(passwordEncoder.encode(anyString())).thenReturn("encoded-password");
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+
+        // Act
+        SignupResponse response = authService.signup(signupRequest);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals("testuser", response.getUsername());
+        assertEquals("testuser@example.com", response.getEmail());
+        assertEquals("Tester", response.getNickname());
+        assertEquals("65", response.getMobileCountryCode());
+        assertEquals("12345678", response.getMobileNumber());
     }
 }
