@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,13 +35,9 @@ public interface UserRepository extends JpaRepository<User, String> {
     void updateLoginSuccess(@Param("userId") String userId, @Param("now") LocalDateTime now, @Param("ip") String ip);
     
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE User u SET u.failedLoginAttempts = u.failedLoginAttempts + 1, u.lastFailedLoginAt = :now WHERE " +
-           "(:username IS NOT NULL AND u.username = :username) OR " +
-           "(:email IS NOT NULL AND u.email = :email) OR " +
-           "(:mobileCountryCode IS NOT NULL AND :mobileNumber IS NOT NULL AND u.mobileCountryCode = :mobileCountryCode AND u.mobileNumber = :mobileNumber)")
-    int updateLoginFailure(@Param("username") String username, @Param("email") String email, 
-                           @Param("mobileCountryCode") String mobileCountryCode, @Param("mobileNumber") String mobileNumber, 
-                           @Param("now") LocalDateTime now);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "UPDATE auth_users SET failed_login_attempts = COALESCE(failed_login_attempts, 0) + 1, last_failed_login_at = :now WHERE id = :userId", nativeQuery = true)
+    int updateLoginFailureByIdNative(@Param("userId") String userId, @Param("now") LocalDateTime now);
     
     @Query("SELECT u FROM User u WHERE u.accountLockedUntil IS NOT NULL AND u.accountLockedUntil <= :now")
     List<User> findUsersWithExpiredLocks(@Param("now") LocalDateTime now);

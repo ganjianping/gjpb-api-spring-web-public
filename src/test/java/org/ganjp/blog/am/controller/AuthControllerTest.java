@@ -52,7 +52,10 @@ class AuthControllerTest {
     @Test
     @DisplayName("Login with valid credentials should return JWT token")
     void loginWithValidCredentialsShouldReturnJwtToken() throws Exception {
-        LoginRequest loginRequest = new LoginRequest("admin", "correctPassword");
+        LoginRequest loginRequest = LoginRequest.builder()
+                .username("admin")
+                .password("correctPassword")
+                .build();
         String jwtToken = "valid.jwt.token";
         LoginResponse loginResponse = LoginResponse.builder().token(jwtToken).build();
         
@@ -73,7 +76,10 @@ class AuthControllerTest {
     @DisplayName("Login with invalid credentials should return 401 Unauthorized")
     void loginWithInvalidCredentialsShouldReturnUnauthorized() throws Exception {
         // Arrange
-        LoginRequest loginRequest = new LoginRequest("admin", "wrongPassword");
+        LoginRequest loginRequest = LoginRequest.builder()
+                .username("admin")
+                .password("wrongPassword")
+                .build();
         
         when(authService.login(any(LoginRequest.class))).thenThrow(new BadCredentialsException("Bad credentials"));
         

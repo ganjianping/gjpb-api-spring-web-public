@@ -28,14 +28,14 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest) {
         try {
             LoginResponse loginResponse = authService.login(loginRequest);
             ApiResponse<LoginResponse> response = ApiResponse.<LoginResponse>success(loginResponse, "User login successful");
             return ResponseEntity.ok(response);
         } catch (BadCredentialsException e) {
             Map<String, String> errors = new HashMap<>();
-            errors.put("error", "Bad credentials");
+            errors.put("error", e.getMessage()); // Use the original exception message
             ApiResponse<LoginResponse> response = ApiResponse.<LoginResponse>error(401, "Unauthorized", errors);
             return ResponseEntity.status(401)
                     .body(response);
@@ -89,3 +89,4 @@ public class AuthController {
         }
     }
 }
+

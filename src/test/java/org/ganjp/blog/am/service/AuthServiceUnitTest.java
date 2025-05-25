@@ -60,7 +60,10 @@ public class AuthServiceUnitTest {
     @DisplayName("Login with valid admin credentials should succeed")
     void loginWithValidAdminCredentialsShouldSucceed() {
         // Arrange
-        LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
+        LoginRequest loginRequest = LoginRequest.builder()
+                .username(USERNAME)
+                .password(PASSWORD)
+                .build();
         
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
@@ -79,7 +82,10 @@ public class AuthServiceUnitTest {
     @DisplayName("Login with invalid credentials should throw BadCredentialsException")
     void loginWithInvalidCredentialsShouldThrowBadCredentialsException() {
         // Arrange
-        LoginRequest loginRequest = new LoginRequest(USERNAME, "wrongPassword");
+        LoginRequest loginRequest = LoginRequest.builder()
+                .username(USERNAME)
+                .password("wrongPassword")
+                .build();
         
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new BadCredentialsException("Bad credentials"));
@@ -96,7 +102,10 @@ public class AuthServiceUnitTest {
     @DisplayName("Login with non-existent user should throw BadCredentialsException")
     void loginWithNonExistentUserShouldThrowBadCredentialsException() {
         // Arrange
-        LoginRequest loginRequest = new LoginRequest("nonExistentUser", "anyPassword");
+        LoginRequest loginRequest = LoginRequest.builder()
+                .username("nonExistentUser")
+                .password("anyPassword")
+                .build();
         
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new BadCredentialsException("Bad credentials"));

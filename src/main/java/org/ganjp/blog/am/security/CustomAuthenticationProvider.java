@@ -1,10 +1,14 @@
 package org.ganjp.blog.am.security;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.am.model.dto.request.LoginRequest;
 import org.ganjp.blog.am.model.entity.User;
 import org.ganjp.blog.am.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,18 +16,29 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Transactional
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     @Transactional
@@ -37,11 +52,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         // Find the user based on provided credentials
         Optional<User> userOptional = findUser(credential, loginRequest);
         
-        // If user not found, update failed login metrics and throw exception
+        // If user not found, just throw exception (no need to update login metrics as user doesn't exist)
         if (userOptional.isEmpty()) {
-            // Record login failure for unknown user
-            updateLoginFailureForUnknownUser(loginRequest, credential);
-            throw new BadCredentialsException("Invalid username or password");
+            throw new BadCredentialsException("Invalid username");
         }
         
         User user = userOptional.get();
@@ -50,7 +63,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             // Record login failure for known user with wrong password
             updateLoginFailureForKnownUser(user);
-            throw new BadCredentialsException("Invalid username or password");
+            throw new BadCredentialsException("Invalid password");
         }
         
         // Check account status
@@ -101,64 +114,86 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             return userOptional;
         }
     }
-    
-    private void updateLoginFailureForUnknownUser(LoginRequest loginRequest, String credential) {
-        String username = null;
-        String email = null;
-        String mobileCountryCode = null;
-        String mobileNumber = null;
-        
-        // Extract identifiers from login request or credential
-        if (loginRequest != null) {
-            if (loginRequest.getEmail() != null && !loginRequest.getEmail().isEmpty()) {
-                email = loginRequest.getEmail();
-            } else if (loginRequest.getMobileNumber() != null && !loginRequest.getMobileNumber().isEmpty()
-                    && loginRequest.getMobileCountryCode() != null && !loginRequest.getMobileCountryCode().isEmpty()) {
-                mobileCountryCode = loginRequest.getMobileCountryCode();
-                mobileNumber = loginRequest.getMobileNumber();
-            } else {
-                username = loginRequest.getUsername();
-            }
-        } else {
-            username = credential;
-            // If it looks like an email, treat it as one as well
-            if (username != null && username.contains("@")) {
-                email = username;
-            }
-        }
-        
-        // Update failed login metrics 
-        try {
-            LocalDateTime now = LocalDateTime.now();
-            int rowsUpdated = userRepository.updateLoginFailure(username, email, mobileCountryCode, mobileNumber, now);
-            log.info("Updated failed login metrics for user not found: username={}, email={}, mobile={}, rowsUpdated={}, timestamp={}", 
-                     username, email, mobileNumber != null ? (mobileCountryCode + mobileNumber) : null, rowsUpdated, now);
-            
-            if (rowsUpdated == 0) {
-                log.warn("No rows were updated when attempting to record login failure. This may indicate a problem with the query or that no matching users were found.");
-            }
-        } catch (Exception e) {
-            log.error("Failed to update login failure metrics", e);
-        }
-    }
-    
+
+    /**
+     * Update login failure metrics for a known user with an invalid password.
+     * This method uses multiple approaches to maximize the chance of success.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     private void updateLoginFailureForKnownUser(User user) {
         try {
-            // Update failed login metrics
+            // Update failed login metrics using direct JDBC for maximum reliability
             LocalDateTime now = LocalDateTime.now();
-            int rowsUpdated = userRepository.updateLoginFailure(user.getUsername(), user.getEmail(), 
-                                            user.getMobileCountryCode(), user.getMobileNumber(), now);
-            log.info("Updated failed login metrics for invalid password: user={}, rowsUpdated={}, timestamp={}", 
-                    user.getUsername(), rowsUpdated, now);
             
-            if (rowsUpdated == 0) {
-                log.warn("No rows were updated when attempting to record login failure for known user {}. This may indicate a problem with the query.", user.getUsername());
+            log.info("Attempting to update login failures for user: id={}, username={}", 
+                    user.getId(), user.getUsername());
+                    
+            if (user.getId() == null || user.getId().isEmpty()) {
+                log.error("Cannot update login failures: User ID is null or empty for username: {}", user.getUsername());
+                return;
             }
+
+            updateWithJpaQuery(user.getId(), now);
+            
         } catch (Exception e) {
             log.error("Failed to update login failure metrics", e);
         }
     }
     
+    /**
+     * Update using raw JDBC for maximum reliability
+     */
+    private void updateWithRawJdbc(String userId, LocalDateTime now) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        
+        try {
+            // Get direct connection
+            conn = jdbcTemplate.getDataSource().getConnection();
+            conn.setAutoCommit(false);
+            
+            // Use prepared statement with timestamp
+            String sql = "UPDATE auth_users SET " + 
+                       "failed_login_attempts = COALESCE(failed_login_attempts, 0) + 1, " +
+                       "last_failed_login_at = ? " + 
+                       "WHERE id = ?";
+            
+            ps = conn.prepareStatement(sql);
+            ps.setTimestamp(1, Timestamp.valueOf(now));
+            ps.setString(2, userId);
+            
+            int rows = ps.executeUpdate();
+            conn.commit();
+            
+            log.info("Raw JDBC update result: {} rows affected", rows);
+        } catch (Exception e) {
+            log.error("Raw JDBC update failed", e);
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (Exception ex) {
+                    log.error("Failed to rollback transaction", ex);
+                }
+            }
+        } finally {
+            // Clean up resources
+            if (ps != null) try { ps.close(); } catch (Exception e) { /* ignore */ }
+            if (conn != null) try { conn.close(); } catch (Exception e) { /* ignore */ }
+        }
+    }
+    
+    /**
+     * Update using the repository's native query
+     */
+    private void updateWithJpaQuery(String userId, LocalDateTime now) {
+        try {
+            int rowsUpdated = userRepository.updateLoginFailureByIdNative(userId, now);
+            log.info("JPA native query result: {} rows affected", rowsUpdated);
+        } catch (Exception e) {
+            log.error("JPA native query update failed", e);
+        }
+    }
+
     private void validateAccountStatus(User user) {
         if (!user.isEnabled()) {
             throw new BadCredentialsException("Account is not active");

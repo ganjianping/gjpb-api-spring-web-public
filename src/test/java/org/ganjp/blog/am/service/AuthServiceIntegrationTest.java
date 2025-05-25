@@ -135,7 +135,10 @@ public class AuthServiceIntegrationTest {
     @DisplayName("Authentication with valid credentials should succeed")
     void databaseAuthWithValidCredentialsShouldSucceed() {
         // Arrange
-        LoginRequest loginRequest = new LoginRequest(TEST_USERNAME, TEST_PASSWORD);
+        LoginRequest loginRequest = LoginRequest.builder()
+                .username(TEST_USERNAME)
+                .password(TEST_PASSWORD)
+                .build();
             
         // Act
         LoginResponse response = authService.login(loginRequest);
@@ -150,7 +153,10 @@ public class AuthServiceIntegrationTest {
     @DisplayName("Authentication with invalid password should fail")
     void databaseAuthWithInvalidPasswordShouldFail() {
         // Arrange
-        LoginRequest loginRequest = new LoginRequest(TEST_USERNAME, "wrongPassword");
+        LoginRequest loginRequest = LoginRequest.builder()
+                .username(TEST_USERNAME)
+                .password("wrongPassword")
+                .build();
         
         // Set up specific mock for this test case
         when(authenticationManager.authenticate(
@@ -169,7 +175,10 @@ public class AuthServiceIntegrationTest {
     @DisplayName("Authentication with non-existent user should fail")
     void databaseAuthWithNonExistentUserShouldFail() {
         // Arrange
-        LoginRequest loginRequest = new LoginRequest("nonExistentUser", "anyPassword");
+        LoginRequest loginRequest = LoginRequest.builder()
+                .username("nonExistentUser")
+                .password("anyPassword")
+                .build();
         
         // Set up specific mock for this test case
         when(authenticationManager.authenticate(
