@@ -19,6 +19,7 @@ import org.ganjp.blog.common.exception.ResourceNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,7 +29,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -85,9 +88,6 @@ public class AuthService {
         // Get the authenticated user
         User user = (User) authentication.getPrincipal();
         
-        // Generate JWT token
-        String jwt = jwtUtils.generateToken(user);
-        
         // Get client IP address for login tracking
         String clientIp = getClientIp();
         
@@ -98,7 +98,27 @@ public class AuthService {
         user.setFailedLoginAttempts(0); // Reset failed attempts on successful login
         userRepository.save(user);
         
-        // Return response with user details
+        // Explicitly load user roles from the repository
+        List<UserRole> activeUserRoles = userRoleRepository.findActiveUserRoles(user, LocalDateTime.now());
+        
+        // Extract role codes from explicitly loaded roles
+        List<String> roleCodes = activeUserRoles.stream()
+                .map(userRole -> userRole.getRole().getCode())
+                .toList();
+        
+        // Create authorities from the active roles
+        List<SimpleGrantedAuthority> authorities = activeUserRoles.stream()
+                .map(userRole -> new SimpleGrantedAuthority("ROLE_" + userRole.getRole().getCode()))
+                .collect(Collectors.toList());
+        
+        // Generate JWT token with explicit authorities
+        String jwt = jwtUtils.generateTokenWithAuthorities(user, authorities);
+                
+        // Log the found roles for debugging
+        log.debug("Loaded {} active roles for user {}: {}", 
+                roleCodes.size(), user.getUsername(), roleCodes);
+                
+        // Return response with user details and role codes
         return LoginResponse.builder()
                 .token(jwt)
                 .username(user.getUsername())
@@ -111,6 +131,7 @@ public class AuthService {
                 .lastLoginIp(user.getLastLoginIp())
                 .lastFailedLoginAt(user.getLastFailedLoginAt())
                 .failedLoginAttempts(user.getFailedLoginAttempts())
+                .roleCodes(roleCodes)
                 .build();
     }
     

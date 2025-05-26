@@ -39,6 +39,15 @@ public class JwtUtils {
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
+    
+    public String generateTokenWithAuthorities(UserDetails userDetails, Collection<SimpleGrantedAuthority> authorities) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        List<String> authoritiesStrings = authorities.stream()
+                .map(SimpleGrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+        extraClaims.put("authorities", authoritiesStrings);
+        return buildToken(extraClaims, userDetails, jwtExpiration);
+    }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return buildToken(extraClaims, userDetails, jwtExpiration);
@@ -49,13 +58,8 @@ public class JwtUtils {
         UserDetails userDetails,
         long expiration
     ) {
-        // Get user authorities and convert to simple strings
-        List<String> authorities = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-        
         // Add authorities to claims
-        extraClaims.put("authorities", authorities);
+        extraClaims.put("authorities", extraClaims.get("authorities") != null ? extraClaims.get("authorities") : Collections.emptyList());
         
         return Jwts
                 .builder()
@@ -89,6 +93,7 @@ public class JwtUtils {
                 .getBody();
     }
 
+    @SuppressWarnings("unchecked")
     public List<GrantedAuthority> extractAuthorities(String token) {
         Claims claims = extractAllClaims(token);
         List<String> authorities = claims.get("authorities", List.class);

@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.ganjp.blog.am.model.enums.AccountStatus;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -24,4 +26,6 @@ public class LoginResponse {
     private String lastLoginIp;
     private LocalDateTime lastFailedLoginAt;
     private int failedLoginAttempts;
+    @Builder.Default
+    private List<String> roleCodes = new ArrayList<>();
 }
