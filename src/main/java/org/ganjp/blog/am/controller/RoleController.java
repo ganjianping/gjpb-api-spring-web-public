@@ -1,9 +1,11 @@
 package org.ganjp.blog.am.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.ganjp.blog.am.model.dto.request.RoleRequest;
 import org.ganjp.blog.am.model.dto.request.RoleUpdateRequest;
+import org.ganjp.blog.am.security.JwtUtils;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.ganjp.blog.am.model.dto.response.RoleResponse;
 import org.ganjp.blog.am.service.RoleService;
@@ -22,6 +24,7 @@ import java.util.List;
 public class RoleController {
 
     private final RoleService roleService;
+    private final JwtUtils jwtUtils;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<RoleResponse>>> getAllRoles() {
@@ -51,8 +54,9 @@ public class RoleController {
     @PostMapping
     public ResponseEntity<ApiResponse<RoleResponse>> createRole(
             @Valid @RequestBody RoleRequest roleRequest,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        RoleResponse createdRole = roleService.createRole(roleRequest, userDetails.getUsername());
+            HttpServletRequest request) {
+        String userId = jwtUtils.extractUserIdFromToken(request);
+        RoleResponse createdRole = roleService.createRole(roleRequest, userId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(createdRole, "Role created successfully"));
     }
