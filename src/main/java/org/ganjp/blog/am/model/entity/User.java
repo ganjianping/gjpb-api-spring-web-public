@@ -31,7 +31,8 @@ public class User implements UserDetails {
     private String nickname;
     
     // Login credentials
-    @Column(length = 30, unique = true)
+    @Column(length = 30, unique = true, nullable = false)
+    @jakarta.validation.constraints.NotNull(message = "Username is required")
     private String username;
     
     @Column(length = 128, unique = true)
@@ -162,29 +163,31 @@ public class User implements UserDetails {
     }
     
     /**
-     * Validates if at least one contact method is provided and valid.
+     * Validates if username is valid and checks optional contact methods.
      * This implements the chk_contact_required database constraint in Java code.
      * 
-     * @return true if at least one valid contact method is provided
+     * @return true if username is valid and optional contact methods are valid when provided
      */
-    @jakarta.validation.constraints.AssertTrue(message = "At least one contact method (username, email, or mobile) must be provided")
+    @jakarta.validation.constraints.AssertTrue(message = "Username must be provided and valid")
     public boolean isLoginIdentityValid() {
         boolean isUsernameValid = username != null && username.matches("^[A-Za-z0-9._-]{3,30}$");
-        boolean isEmailValid = email != null && email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-        boolean isMobileValid = mobileCountryCode != null && mobileNumber != null
+        boolean isEmailValid = email == null || email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+        boolean isMobileValid = (mobileCountryCode == null && mobileNumber == null) || 
+                (mobileCountryCode != null && mobileNumber != null
                 && mobileCountryCode.matches("^[1-9]\\d{0,3}$")
-                && mobileNumber.matches("^\\d{4,15}$");
+                && mobileNumber.matches("^\\d{4,15}$"));
 
-        return isUsernameValid || isEmailValid || isMobileValid;
+        return isUsernameValid && isEmailValid && isMobileValid;
     }
     
     /**
      * Validates username format according to database constraint
      * 
-     * @return true if username is null or matches the regex pattern
+     * @return true if username matches the regex pattern
      */
     public boolean isUsernameValid() {
-        return username == null || username.matches("^[A-Za-z0-9._-]{3,30}$");
+        // Username is now required, so it must exist and match the pattern
+        return username != null && username.matches("^[A-Za-z0-9._-]{3,30}$");
     }
     
     /**

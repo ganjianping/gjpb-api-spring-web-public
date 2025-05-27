@@ -20,12 +20,6 @@ import java.time.LocalDateTime;
 @Table(name = "auth_user_roles")
 @IdClass(UserRoleId.class)
 public class UserRole {
-    /**
-     * Display order property for UI sorting (not stored in database)
-     */
-    @Transient
-    @Builder.Default
-    private Integer displayOrder = 0;
     
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
@@ -36,9 +30,7 @@ public class UserRole {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", columnDefinition = "CHAR(36)")
     private Role role;
-    
 
-    
     // Role assignment tracking
     @Column(name = "granted_at", nullable = false)
     private LocalDateTime grantedAt;
@@ -48,9 +40,7 @@ public class UserRole {
     
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
-    
 
-    
     // Audit fields
     @Column(name = "created_at")
     private LocalDateTime createdAt;

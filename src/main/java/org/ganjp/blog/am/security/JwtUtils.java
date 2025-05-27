@@ -40,12 +40,13 @@ public class JwtUtils {
         return generateToken(new HashMap<>(), userDetails);
     }
     
-    public String generateTokenWithAuthorities(UserDetails userDetails, Collection<SimpleGrantedAuthority> authorities) {
+    public String generateTokenWithAuthorities(UserDetails userDetails, Collection<SimpleGrantedAuthority> authorities, String userId) {
         Map<String, Object> extraClaims = new HashMap<>();
         List<String> authoritiesStrings = authorities.stream()
                 .map(SimpleGrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
         extraClaims.put("authorities", authoritiesStrings);
+        extraClaims.put("userId", userId);
         return buildToken(extraClaims, userDetails, jwtExpiration);
     }
 
@@ -60,6 +61,7 @@ public class JwtUtils {
     ) {
         // Add authorities to claims
         extraClaims.put("authorities", extraClaims.get("authorities") != null ? extraClaims.get("authorities") : Collections.emptyList());
+        extraClaims.put("id", extraClaims.get("id")); // Assuming username is used as ID
         
         return Jwts
                 .builder()
@@ -105,6 +107,11 @@ public class JwtUtils {
         return authorities.stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
+    }
+
+    public String extractUserId(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("userId", String.class);
     }
 
     private Key getSignInKey() {

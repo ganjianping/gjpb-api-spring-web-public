@@ -27,7 +27,19 @@ public class RoleUpdateRequest {
     @Size(max = 255, message = "Description must be at most 255 characters")
     private String description;
 
-    private Integer displayOrder;
+    private Integer sortOrder;
+    
+    /**
+     * ID of the parent role in the role hierarchy, if any.
+     * Can be null for top-level roles.
+     */
+    private String parentRoleId;
+    
+    /**
+     * Hierarchical level of this role (0 is top level).
+     * This will be calculated automatically if parentRoleId is provided.
+     */
+    private Integer level;
     
     private Boolean active;
 }

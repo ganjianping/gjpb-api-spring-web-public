@@ -60,8 +60,7 @@ public class AuthService {
         if (!loginRequest.isValidLoginMethod()) {
             throw new BadCredentialsException("Please provide exactly one login method: username, email, or mobile number");
         }
-        
-        // Determine the principal for authentication
+
         String principal;
         if (loginRequest.getEmail() != null && !loginRequest.getEmail().isEmpty()) {
             principal = loginRequest.getEmail();
@@ -112,7 +111,7 @@ public class AuthService {
                 .collect(Collectors.toList());
         
         // Generate JWT token with explicit authorities
-        String jwt = jwtUtils.generateTokenWithAuthorities(user, authorities);
+        String jwt = jwtUtils.generateTokenWithAuthorities(user, authorities, user.getId());
                 
         // Log the found roles for debugging
         log.debug("Loaded {} active roles for user {}: {}", 
@@ -165,7 +164,7 @@ public class AuthService {
     @Transactional
     public SignupResponse signup(SignupRequest signupRequest) {
         // Check if username already exists
-        if (signupRequest.getUsername() != null && userRepository.existsByUsername(signupRequest.getUsername())) {
+        if (userRepository.existsByUsername(signupRequest.getUsername())) {
             throw new IllegalArgumentException("Username is already taken");
         }
 
@@ -184,6 +183,11 @@ public class AuthService {
         // Get the USER role
         Role userRole = roleRepository.findByCode("USER")
                 .orElseThrow(() -> new ResourceNotFoundException("Role", "code", "USER"));
+
+        // Validate that username is provided (now required field)
+        if (signupRequest.getUsername() == null || signupRequest.getUsername().isEmpty()) {
+            throw new IllegalArgumentException("Username is required and must be provided");
+        }
 
         // Create new user account with all fields explicitly set to avoid missing defaults
         String uuid = UUID.randomUUID().toString();

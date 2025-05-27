@@ -31,7 +31,7 @@ security:
     - "/v3/api-docs/**"     # API documentation
   authorized-endpoints:
     "/v1/roles/**":
-      - "ROLE_ADMIN"
+      - "ROLE_SUPER_ADMIN"
   cors:
     allowed-origins:
       - https://ganjianping.com

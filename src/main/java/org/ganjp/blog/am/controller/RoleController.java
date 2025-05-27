@@ -47,7 +47,7 @@ public class RoleController {
         return ResponseEntity.ok(ApiResponse.success(role, "Role retrieved successfully"));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<RoleResponse>> createRole(
             @Valid @RequestBody RoleRequest roleRequest,
@@ -57,7 +57,7 @@ public class RoleController {
                 .body(ApiResponse.success(createdRole, "Role created successfully"));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<RoleResponse>> updateRole(
             @PathVariable String id,

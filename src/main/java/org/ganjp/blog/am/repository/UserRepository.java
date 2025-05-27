@@ -33,12 +33,18 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Modifying
     @Query("UPDATE User u SET u.lastLoginAt = :now, u.lastLoginIp = :ip WHERE u.id = :userId")
     void updateLoginSuccess(@Param("userId") String userId, @Param("now") LocalDateTime now, @Param("ip") String ip);
+
+    // get username by email or mobile country code + mobile number
+    @Query("SELECT u.username FROM User u WHERE u.email = :email OR (u.mobileCountryCode = :mobileCountryCode AND u.mobileNumber = :mobileNumber)")
+    Optional<String> findUsernameByEmailOrMobile(@Param("email") String email,
+                                                  @Param("mobileCountryCode") String mobileCountryCode,
+                                                  @Param("mobileNumber") String mobileNumber);
     
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "UPDATE auth_users SET failed_login_attempts = COALESCE(failed_login_attempts, 0) + 1, last_failed_login_at = :now WHERE id = :userId", nativeQuery = true)
     int updateLoginFailureByIdNative(@Param("userId") String userId, @Param("now") LocalDateTime now);
-    
+
     @Query("SELECT u FROM User u WHERE u.accountLockedUntil IS NOT NULL AND u.accountLockedUntil <= :now")
     List<User> findUsersWithExpiredLocks(@Param("now") LocalDateTime now);
     

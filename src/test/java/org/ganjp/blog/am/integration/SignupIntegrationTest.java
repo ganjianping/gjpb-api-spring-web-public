@@ -54,12 +54,10 @@ class SignupIntegrationTest {
             userRole.setCode("USER");
             userRole.setName("Regular User");
             userRole.setDescription("Standard user role with basic permissions");
-            userRole.setDisplayOrder(100);
+            userRole.setSortOrder(100);
             userRole.setActive(true);
             userRole.setCreatedAt(LocalDateTime.now());
             userRole.setUpdatedAt(LocalDateTime.now());
-            userRole.setCreatedBy("SYSTEM");
-            userRole.setUpdatedBy("SYSTEM");
             
             roleRepository.save(userRole);
         }

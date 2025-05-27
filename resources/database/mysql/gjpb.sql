@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS auth_users (
     nickname VARCHAR(30) DEFAULT NULL,
 
     -- Login credentials
-    username       VARCHAR(30)   NULL COMMENT 'Chosen username; must be ≥3 chars',
+    username       VARCHAR(30)   NOT NULL COMMENT 'Chosen username; must be ≥3 chars',
     email          VARCHAR(128)  NULL COMMENT 'Email address; validated by regex',
     mobile_country_code VARCHAR(5)  NULL COMMENT 'Country code, e.g. +65',
     mobile_number  VARCHAR(15)   NULL COMMENT 'Subscriber number, digits only',
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS auth_users (
     CONSTRAINT fk_auth_users_updated_by FOREIGN KEY (updated_by) REFERENCES auth_users (id) ON DELETE SET NULL ON UPDATE CASCADE,
 
     CONSTRAINT chk_auth_users_username_fmt CHECK (
-        username IS NULL OR username REGEXP '^[A-Za-z0-9._-]{3,30}$'
+        username REGEXP '^[A-Za-z0-9._-]{3,30}$'
     ),
     CONSTRAINT chk_users_email_fmt CHECK (
         email IS NULL OR email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'
@@ -72,13 +72,18 @@ CREATE TABLE IF NOT EXISTS auth_users (
         mobile_number IS NULL OR mobile_number REGEXP '^[0-9]{4,15}$'
     ),
     CONSTRAINT chk_contact_required CHECK (
-        (username IS NOT NULL AND username REGEXP '^[A-Za-z0-9._-]{3,30}$')
-        OR (email IS NOT NULL AND email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
-        OR (
-            mobile_country_code IS NOT NULL
-            AND mobile_number IS NOT NULL
-            AND mobile_country_code REGEXP '^[1-9][0-9]{0,3}$'
-            AND mobile_number REGEXP '^[0-9]{4,15}$'
+        username REGEXP '^[A-Za-z0-9._-]{3,30}$'
+        AND (
+            email IS NULL OR email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+        )
+        AND (
+            mobile_country_code IS NULL
+            OR (
+                mobile_country_code IS NOT NULL
+                AND mobile_number IS NOT NULL
+                AND mobile_country_code REGEXP '^[1-9][0-9]{0,3}$'
+                AND mobile_number REGEXP '^[0-9]{4,15}$'
+            )
         )
     )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User accounts with authentication credentials, status, and security features';
