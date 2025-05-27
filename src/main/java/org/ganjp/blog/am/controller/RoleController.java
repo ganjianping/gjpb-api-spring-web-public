@@ -12,8 +12,6 @@ import org.ganjp.blog.am.service.RoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +23,20 @@ public class RoleController {
 
     private final RoleService roleService;
     private final JwtUtils jwtUtils;
+    
+    /**
+     * Extract user ID from JWT token in the Authorization header
+     * @param request HttpServletRequest containing the Authorization header
+     * @return User ID extracted from token
+     */
+    private String extractUserIdFromToken(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7); // Remove "Bearer " prefix
+            return jwtUtils.extractUserId(token);
+        }
+        return null;
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<RoleResponse>>> getAllRoles() {
@@ -66,8 +78,9 @@ public class RoleController {
     public ResponseEntity<ApiResponse<RoleResponse>> updateRole(
             @PathVariable String id,
             @Valid @RequestBody RoleRequest roleRequest,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        RoleResponse updatedRole = roleService.updateRole(id, roleRequest, userDetails.getUsername());
+            HttpServletRequest request) {
+        String userId = extractUserIdFromToken(request);
+        RoleResponse updatedRole = roleService.updateRole(id, roleRequest, userId);
         return ResponseEntity.ok(ApiResponse.success(updatedRole, "Role updated successfully"));
     }
     
@@ -75,16 +88,18 @@ public class RoleController {
      * Partially updates a role with only the fields provided in the request.
      * This allows for updating individual fields without needing to send the entire role object.
      */
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<RoleResponse>> updateRolePartially(
             @PathVariable String id,
             @Valid @RequestBody RoleUpdateRequest updateRequest,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        RoleResponse updatedRole = roleService.updateRolePartially(id, updateRequest, userDetails.getUsername());
+            HttpServletRequest request) {
+        String userId = extractUserIdFromToken(request);
+        RoleResponse updatedRole = roleService.updateRolePartially(id, updateRequest, userId);
         return ResponseEntity.ok(ApiResponse.success(updatedRole, "Role updated successfully"));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteRole(@PathVariable String id) {
         roleService.deleteRole(id);
@@ -94,8 +109,9 @@ public class RoleController {
     @PatchMapping("/{id}/toggle-status")
     public ResponseEntity<ApiResponse<RoleResponse>> toggleRoleStatus(
             @PathVariable String id,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        RoleResponse updatedRole = roleService.toggleRoleStatus(id, userDetails.getUsername());
+            HttpServletRequest request) {
+        String userId = extractUserIdFromToken(request);
+        RoleResponse updatedRole = roleService.toggleRoleStatus(id, userId);
         return ResponseEntity.ok(ApiResponse.success(updatedRole, "Role status toggled successfully"));
     }
 }

@@ -84,7 +84,7 @@ public class RoleService {
     }
 
     @Transactional
-    public RoleResponse updateRole(String id, RoleRequest roleRequest, String username) {
+    public RoleResponse updateRole(String id, RoleRequest roleRequest, String userId) {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", "id", id));
 
@@ -126,7 +126,7 @@ public class RoleService {
         }
         
         role.setUpdatedAt(LocalDateTime.now());
-        role.setUpdatedBy(username);
+        role.setUpdatedBy(userId);
 
         Role updatedRole = roleRepository.save(role);
         return mapToRoleResponse(updatedRole);
