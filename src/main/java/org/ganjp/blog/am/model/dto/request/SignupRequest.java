@@ -47,7 +47,7 @@ public class SignupRequest {
     private String mobileNumber;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters")
+    @Size(min = 6, max = 20, message = "Password must be between 6 and 20 characters")
     @Pattern(
         regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{6,}$",
         message = "Password must contain at least one digit, one lowercase letter, one uppercase letter, one special character, and no whitespace"

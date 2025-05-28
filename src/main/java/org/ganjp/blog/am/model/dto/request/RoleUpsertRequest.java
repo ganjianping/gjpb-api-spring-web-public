@@ -1,5 +1,6 @@
 package org.ganjp.blog.am.model.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -8,19 +9,21 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO for partial updates to Role entity.
- * Unlike RoleRequest, all fields are nullable to allow partial updates.
+ * DTO for creating new roles or fully updating existing roles.
+ * "Upsert" refers to the combined operation of insert (create) or update.
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RolePatchRequest {
+public class RoleUpsertRequest {
 
+    @NotBlank(message = "Role code is required")
     @Size(min = 3, max = 30, message = "Role code must be between 3 and 30 characters")
     @Pattern(regexp = "^[A-Z0-9_]+$", message = "Role code must contain only uppercase letters, numbers, and underscores")
     private String code;
 
+    @NotBlank(message = "Role name is required")
     @Size(min = 3, max = 50, message = "Role name must be between 3 and 50 characters")
     private String name;
     

@@ -3,8 +3,8 @@ package org.ganjp.blog.am.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.ganjp.blog.am.model.dto.request.RoleRequest;
-import org.ganjp.blog.am.model.dto.request.RoleUpdateRequest;
+import org.ganjp.blog.am.model.dto.request.RoleUpsertRequest;
+import org.ganjp.blog.am.model.dto.request.RolePatchRequest;
 import org.ganjp.blog.am.security.JwtUtils;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.ganjp.blog.am.model.dto.response.RoleResponse;
@@ -65,7 +65,7 @@ public class RoleController {
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<RoleResponse>> createRole(
-            @Valid @RequestBody RoleRequest roleRequest,
+            @Valid @RequestBody RoleUpsertRequest roleRequest,
             HttpServletRequest request) {
         String userId = jwtUtils.extractUserIdFromToken(request);
         RoleResponse createdRole = roleService.createRole(roleRequest, userId);
@@ -77,10 +77,10 @@ public class RoleController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<RoleResponse>> updateRole(
             @PathVariable String id,
-            @Valid @RequestBody RoleRequest roleRequest,
+            @Valid @RequestBody RoleUpsertRequest roleRequest,
             HttpServletRequest request) {
         String userId = extractUserIdFromToken(request);
-        RoleResponse updatedRole = roleService.updateRole(id, roleRequest, userId);
+        RoleResponse updatedRole = roleService.updateRoleFully(id, roleRequest, userId);
         return ResponseEntity.ok(ApiResponse.success(updatedRole, "Role updated successfully"));
     }
     
@@ -92,10 +92,10 @@ public class RoleController {
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<RoleResponse>> updateRolePartially(
             @PathVariable String id,
-            @Valid @RequestBody RoleUpdateRequest updateRequest,
+            @Valid @RequestBody RolePatchRequest partiallyUpdateRequest,
             HttpServletRequest request) {
         String userId = extractUserIdFromToken(request);
-        RoleResponse updatedRole = roleService.updateRolePartially(id, updateRequest, userId);
+        RoleResponse updatedRole = roleService.updateRolePartially(id, partiallyUpdateRequest, userId);
         return ResponseEntity.ok(ApiResponse.success(updatedRole, "Role updated successfully"));
     }
 

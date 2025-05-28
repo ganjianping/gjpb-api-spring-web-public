@@ -82,7 +82,7 @@ class CustomAuthenticationProviderTest {
         when(passwordEncoder.matches("wrongpassword", ENCODED_PASSWORD)).thenReturn(false);
         
         // Using lenient stubbing to avoid strict argument matching errors
-        lenient().when(userRepository.updateLoginFailureById(
+        lenient().when(userRepository.updateLoginFailureByIdNative(
                 eq(testUser.getId()), any(LocalDateTime.class))).thenReturn(1);
 
         // Act & Assert
@@ -93,9 +93,9 @@ class CustomAuthenticationProviderTest {
         // Verify exception message
         assertEquals("Invalid password", exception.getMessage());
 
-        // Verify that updateLoginFailureById was called with correct parameters
+        // Verify that updateLoginFailureByIdNative was called with correct parameters
         ArgumentCaptor<LocalDateTime> timeCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
-        verify(userRepository, times(1)).updateLoginFailureById(
+        verify(userRepository, times(1)).updateLoginFailureByIdNative(
                 eq(testUser.getId()),
                 timeCaptor.capture()
         );
@@ -122,8 +122,8 @@ class CustomAuthenticationProviderTest {
         // Verify exception message
         assertEquals("Invalid username", exception.getMessage());
         
-        // Verify that updateLoginFailureById was NOT called since user doesn't exist
-        verify(userRepository, never()).updateLoginFailureById(
+        // Verify that updateLoginFailureByIdNative was NOT called since user doesn't exist
+        verify(userRepository, never()).updateLoginFailureByIdNative(
                 any(), any()
         );
     }
@@ -142,7 +142,7 @@ class CustomAuthenticationProviderTest {
         
         when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches("wrongpassword", ENCODED_PASSWORD)).thenReturn(false);
-        when(userRepository.updateLoginFailureById(eq(testUser.getId()), any(LocalDateTime.class))).thenReturn(1);
+        when(userRepository.updateLoginFailureByIdNative(eq(testUser.getId()), any(LocalDateTime.class))).thenReturn(1);
 
         // Act & Assert
         Exception exception = assertThrows(BadCredentialsException.class, () -> {
@@ -152,9 +152,9 @@ class CustomAuthenticationProviderTest {
         // Verify exception message
         assertEquals("Invalid password", exception.getMessage());
 
-        // Verify that updateLoginFailureById was called with correct parameters
+        // Verify that updateLoginFailureByIdNative was called with correct parameters
         ArgumentCaptor<LocalDateTime> timeCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
-        verify(userRepository, times(1)).updateLoginFailureById(
+        verify(userRepository, times(1)).updateLoginFailureByIdNative(
                 eq(testUser.getId()),
                 timeCaptor.capture()
         );
