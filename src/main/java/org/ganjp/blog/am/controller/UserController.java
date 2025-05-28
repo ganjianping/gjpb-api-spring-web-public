@@ -4,8 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.ganjp.blog.am.model.dto.request.PasswordChangeRequest;
-import org.ganjp.blog.am.model.dto.request.UserCreateRequest;
-import org.ganjp.blog.am.model.dto.request.UserUpdateRequest;
+import org.ganjp.blog.am.model.dto.request.UserUpsertRequest;
+import org.ganjp.blog.am.model.dto.request.UserPatchRequest;
 import org.ganjp.blog.am.model.dto.response.UserResponse;
 import org.ganjp.blog.am.model.enums.AccountStatus;
 import org.ganjp.blog.am.security.JwtUtils;
@@ -91,18 +91,18 @@ public class UserController {
     /**
      * Create a new user
      * 
-     * @param userCreateRequest User creation request
+     * @param userUpsertRequest User creation/update request
      * @param request HTTP request for extracting the current user
      * @return Created user details
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
-            @Valid @RequestBody UserCreateRequest userCreateRequest,
+            @Valid @RequestBody UserUpsertRequest userUpsertRequest,
             HttpServletRequest request) {
         
         String userId = jwtUtils.extractUserIdFromToken(request);
-        UserResponse createdUser = userService.createUser(userCreateRequest, userId);
+        UserResponse createdUser = userService.createUser(userUpsertRequest, userId);
         
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -110,22 +110,53 @@ public class UserController {
     }
 
     /**
-     * Update an existing user
-     * 
+     * Replace an existing user (complete update with PUT)
+     *
+     * This endpoint follows RESTful convention for PUT operations:
+     * - Requires all fields to be provided (complete representation)
+     * - Replaces the entire resource with the new representation
+     * - Should be idempotent (same result regardless of how many times called)
+     *
      * @param id User ID
-     * @param userUpdateRequest User update request
+     * @param userUpsertRequest User data for complete replacement
      * @param request HTTP request for extracting the current user
      * @return Updated user details
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> updateUser(
+    public ResponseEntity<ApiResponse<UserResponse>> replaceUser(
             @PathVariable String id,
-            @Valid @RequestBody UserUpdateRequest userUpdateRequest,
+            @Valid @RequestBody UserUpsertRequest userUpsertRequest,
+            HttpServletRequest request) {
+
+        String userId = jwtUtils.extractUserIdFromToken(request);
+        UserResponse updatedUser = userService.updateUserFully(id, userUpsertRequest, userId);
+
+        return ResponseEntity.ok(ApiResponse.success(updatedUser, "User replaced successfully"));
+    }
+
+    /**
+     * Update an existing user (partial update with PATCH)
+     * 
+     * This endpoint follows RESTful convention for PATCH operations:
+     * - Allows partial updates (only the fields provided will be updated)
+     * - Preserves existing data for fields not included in the request
+     * - Used for making partial modifications to a resource
+     * 
+     * @param id User ID
+     * @param userPatchRequest User patch request for partial updates
+     * @param request HTTP request for extracting the current user
+     * @return Updated user details
+     */
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUserPartially(
+            @PathVariable String id,
+            @Valid @RequestBody UserPatchRequest userPatchRequest,
             HttpServletRequest request) {
         
         String userId = jwtUtils.extractUserIdFromToken(request);
-        UserResponse updatedUser = userService.updateUser(id, userUpdateRequest, userId);
+        UserResponse updatedUser = userService.updateUserPartially(id, userPatchRequest, userId);
         
         return ResponseEntity.ok(ApiResponse.success(updatedUser, "User updated successfully"));
     }
