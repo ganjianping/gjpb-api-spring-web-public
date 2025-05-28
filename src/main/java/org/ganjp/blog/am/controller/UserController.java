@@ -7,7 +7,6 @@ import org.ganjp.blog.am.model.dto.request.PasswordChangeRequest;
 import org.ganjp.blog.am.model.dto.request.UserUpsertRequest;
 import org.ganjp.blog.am.model.dto.request.UserPatchRequest;
 import org.ganjp.blog.am.model.dto.response.UserResponse;
-import org.ganjp.blog.am.model.enums.AccountStatus;
 import org.ganjp.blog.am.security.JwtUtils;
 import org.ganjp.blog.am.service.UserService;
 import org.ganjp.blog.common.model.ApiResponse;
@@ -29,13 +28,14 @@ public class UserController {
     private final JwtUtils jwtUtils;
 
     /**
-     * Get all users with pagination
+     * Get all users with pagination and optional filtering
      * 
      * @param page Page number (0-based)
      * @param size Page size
      * @param sort Sort field
      * @param direction Sort direction (asc or desc)
      * @param username Optional username for filtering
+     * @param roleCode Optional role code for filtering users by assigned role
      * @return Paginated list of users
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
@@ -45,7 +45,8 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "username") String sort,
             @RequestParam(defaultValue = "asc") String direction,
-            @RequestParam(required = false) String username) {
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String roleCode) {
         
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? 
             Sort.Direction.DESC : Sort.Direction.ASC;
@@ -53,9 +54,21 @@ public class UserController {
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         Page<UserResponse> users;
         
-        if (username != null && !username.trim().isEmpty()) {
+        // Determine which filtering method to use based on provided parameters
+        boolean hasUsername = username != null && !username.trim().isEmpty();
+        boolean hasRoleCode = roleCode != null && !roleCode.trim().isEmpty();
+        
+        if (hasUsername && hasRoleCode) {
+            // Filter by both username and role code
+            users = userService.findUsersByRoleCodeAndUsernameContaining(roleCode, username, pageable);
+        } else if (hasRoleCode) {
+            // Filter by role code only
+            users = userService.findUsersByRoleCode(roleCode, pageable);
+        } else if (hasUsername) {
+            // Filter by username only
             users = userService.findUsersByUsernameContaining(username, pageable);
         } else {
+            // No filtering, get all users
             users = userService.getAllUsers(pageable);
         }
         
@@ -216,7 +229,7 @@ public class UserController {
 
     /**
      * Toggle a user's active status
-     * 
+     *
      * @param id User ID
      * @param request HTTP request for extracting the current user
      * @return Updated user details
@@ -226,31 +239,10 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> toggleUserActiveStatus(
             @PathVariable String id,
             HttpServletRequest request) {
-        
+
         String userId = jwtUtils.extractUserIdFromToken(request);
         UserResponse updatedUser = userService.toggleUserActiveStatus(id, userId);
-        
-        return ResponseEntity.ok(ApiResponse.success(updatedUser, "User status toggled successfully"));
-    }
 
-    /**
-     * Update a user's account status
-     * 
-     * @param id User ID
-     * @param status New account status
-     * @param request HTTP request for extracting the current user
-     * @return Updated user details
-     */
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<UserResponse>> updateAccountStatus(
-            @PathVariable String id,
-            @RequestBody AccountStatus status,
-            HttpServletRequest request) {
-        
-        String userId = jwtUtils.extractUserIdFromToken(request);
-        UserResponse updatedUser = userService.setAccountStatus(id, status, userId);
-        
-        return ResponseEntity.ok(ApiResponse.success(updatedUser, "Account status updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(updatedUser, "User status toggled successfully"));
     }
 }

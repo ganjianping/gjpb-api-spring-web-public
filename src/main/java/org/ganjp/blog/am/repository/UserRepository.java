@@ -54,4 +54,36 @@ public interface UserRepository extends JpaRepository<User, String> {
     
     @Query("SELECT u FROM User u WHERE u.passwordChangedAt IS NOT NULL AND u.passwordChangedAt <= :now")
     List<User> findUsersWithOldPasswords(@Param("now") LocalDateTime now);
+    
+    /**
+     * Find users who have a specific role assigned
+     * @param roleCode The role code to search for
+     * @param pageable Pagination information
+     * @return Page of users with the specified role
+     */
+    @Query("SELECT DISTINCT u FROM User u " +
+           "JOIN UserRole ur ON u.id = ur.user.id " +
+           "JOIN Role r ON ur.role.id = r.id " +
+           "WHERE r.code = :roleCode " +
+           "AND ur.active = true " +
+           "AND (ur.expiresAt IS NULL OR ur.expiresAt > CURRENT_TIMESTAMP)")
+    Page<User> findUsersByRoleCode(@Param("roleCode") String roleCode, Pageable pageable);
+    
+    /**
+     * Find users who have a specific role assigned and username contains the search term
+     * @param roleCode The role code to search for
+     * @param username Username substring to search for
+     * @param pageable Pagination information
+     * @return Page of users with the specified role and matching username
+     */
+    @Query("SELECT DISTINCT u FROM User u " +
+           "JOIN UserRole ur ON u.id = ur.user.id " +
+           "JOIN Role r ON ur.role.id = r.id " +
+           "WHERE r.code = :roleCode " +
+           "AND ur.active = true " +
+           "AND (ur.expiresAt IS NULL OR ur.expiresAt > CURRENT_TIMESTAMP) " +
+           "AND LOWER(u.username) LIKE LOWER(CONCAT('%', :username, '%'))")
+    Page<User> findUsersByRoleCodeAndUsernameContaining(@Param("roleCode") String roleCode, 
+                                                        @Param("username") String username, 
+                                                        Pageable pageable);
 }

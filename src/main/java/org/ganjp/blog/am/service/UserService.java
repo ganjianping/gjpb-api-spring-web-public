@@ -57,6 +57,31 @@ public class UserService {
         return userRepository.findByUsernameContainingIgnoreCase(username, pageable)
                 .map(this::mapToUserResponse);
     }
+    
+    /**
+     * Find users by role code
+     *
+     * @param roleCode role code to search for
+     * @param pageable pagination information
+     * @return Page of UserResponse objects
+     */
+    public Page<UserResponse> findUsersByRoleCode(String roleCode, Pageable pageable) {
+        return userRepository.findUsersByRoleCode(roleCode, pageable)
+                .map(this::mapToUserResponse);
+    }
+    
+    /**
+     * Find users by role code and username containing the provided string
+     *
+     * @param roleCode role code to search for
+     * @param username username substring to search for
+     * @param pageable pagination information
+     * @return Page of UserResponse objects
+     */
+    public Page<UserResponse> findUsersByRoleCodeAndUsernameContaining(String roleCode, String username, Pageable pageable) {
+        return userRepository.findUsersByRoleCodeAndUsernameContaining(roleCode, username, pageable)
+                .map(this::mapToUserResponse);
+    }
 
     /**
      * Get a user by ID
@@ -412,28 +437,6 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
         user.setActive(!user.isActive());
-        user.setUpdatedAt(LocalDateTime.now());
-        user.setUpdatedBy(currentUserId);
-
-        User updatedUser = userRepository.save(user);
-        return mapToUserResponse(updatedUser);
-    }
-
-    /**
-     * Set a user's account status
-     *
-     * @param id user ID
-     * @param status new account status
-     * @param currentUserId ID of the user performing the operation
-     * @return UserResponse
-     * @throws ResourceNotFoundException if user not found
-     */
-    @Transactional
-    public UserResponse setAccountStatus(String id, org.ganjp.blog.am.model.enums.AccountStatus status, String currentUserId) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-
-        user.setAccountStatus(status);
         user.setUpdatedAt(LocalDateTime.now());
         user.setUpdatedBy(currentUserId);
 

@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class PasswordChangeRequest {
     
     @NotBlank(message = "Password is required")
-    @Size(min = 8, max = 128, message = "Password must be between 8 and 128 characters")
+    @Size(min = 6, max = 20, message = "Password must be between 6 and 20 characters")
     @Pattern(
         regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$",
         message = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character"
