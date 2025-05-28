@@ -2,6 +2,8 @@ package org.ganjp.blog.am.repository;
 
 import org.ganjp.blog.am.model.entity.User;
 import org.ganjp.blog.am.model.enums.AccountStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +19,8 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByUsername(String username);
+    
+    Page<User> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
     
     Optional<User> findByEmail(String email);
     

@@ -16,6 +16,14 @@ import java.util.Optional;
 @Repository
 public interface UserRoleRepository extends JpaRepository<UserRole, UserRoleId> {
     
+    /**
+     * Find all user roles for a specific user
+     * @param userId The user ID
+     * @return List of UserRole objects for the specified user
+     */
+    @Query("SELECT ur FROM UserRole ur WHERE ur.user.id = :userId")
+    List<UserRole> findByUserId(@Param("userId") String userId);
+    
     List<UserRole> findByUserAndActiveTrue(User user);
     
     List<UserRole> findByRoleAndActiveTrue(Role role);

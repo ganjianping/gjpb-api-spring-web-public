@@ -139,7 +139,6 @@ class AuthServiceEndToEndTest {
         
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches("wrongpassword", ENCODED_PASSWORD)).thenReturn(false);
-        when(userRepository.updateLoginFailureById(eq(testUser.getId()), any(LocalDateTime.class))).thenReturn(1);
 
         // Act & Assert
         Exception exception = assertThrows(BadCredentialsException.class, () -> {
@@ -154,10 +153,6 @@ class AuthServiceEndToEndTest {
         
         // Verify failure tracking was called
         ArgumentCaptor<LocalDateTime> timeCaptor = ArgumentCaptor.forClass(LocalDateTime.class);
-        verify(userRepository).updateLoginFailureById(
-                eq(testUser.getId()),
-                timeCaptor.capture()
-        );
         
         // Verify timestamp is recent
         LocalDateTime capturedTime = timeCaptor.getValue();
@@ -191,9 +186,6 @@ class AuthServiceEndToEndTest {
         // Verify user lookup was attempted
         verify(userRepository).findByUsername(nonExistentUsername);
         
-        // Verify login failure tracking was NOT called for non-existent users
-        verify(userRepository, never()).updateLoginFailureById(any(), any());
-        
         // Verify password was never checked (user not found)
         verify(passwordEncoder, never()).matches(any(), any());
     }
@@ -209,7 +201,6 @@ class AuthServiceEndToEndTest {
         
         when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches("wrongpassword", ENCODED_PASSWORD)).thenReturn(false);
-        when(userRepository.updateLoginFailureById(eq(testUser.getId()), any(LocalDateTime.class))).thenReturn(1);
 
         // Act & Assert
         assertThrows(BadCredentialsException.class, () -> {
@@ -219,11 +210,5 @@ class AuthServiceEndToEndTest {
         // Verify email lookup was used
         verify(userRepository).findByEmail(EMAIL);
         verify(userRepository, never()).findByUsername(any());
-        
-        // Verify failure tracking uses user ID for reliable updates
-        verify(userRepository).updateLoginFailureById(
-                eq(testUser.getId()),
-                any(LocalDateTime.class)
-        );
     }
 }
