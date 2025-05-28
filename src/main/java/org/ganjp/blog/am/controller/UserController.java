@@ -7,6 +7,7 @@ import org.ganjp.blog.am.model.dto.request.PasswordChangeRequest;
 import org.ganjp.blog.am.model.dto.request.UserUpsertRequest;
 import org.ganjp.blog.am.model.dto.request.UserPatchRequest;
 import org.ganjp.blog.am.model.dto.response.UserResponse;
+import org.ganjp.blog.am.model.enums.AccountStatus;
 import org.ganjp.blog.am.security.JwtUtils;
 import org.ganjp.blog.am.service.UserService;
 import org.ganjp.blog.common.model.ApiResponse;
@@ -35,6 +36,12 @@ public class UserController {
      * @param sort Sort field
      * @param direction Sort direction (asc or desc)
      * @param username Optional username for filtering
+     * @param nickname Optional nickname for filtering
+     * @param email Optional email for filtering
+     * @param mobileCountryCode Optional mobile country code for filtering
+     * @param mobileNumber Optional mobile number for filtering
+     * @param accountStatus Optional account status for filtering
+     * @param active Optional active status for filtering
      * @param roleCode Optional role code for filtering users by assigned role
      * @return Paginated list of users
      */
@@ -46,6 +53,12 @@ public class UserController {
             @RequestParam(defaultValue = "username") String sort,
             @RequestParam(defaultValue = "asc") String direction,
             @RequestParam(required = false) String username,
+            @RequestParam(required = false) String nickname,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String mobileCountryCode,
+            @RequestParam(required = false) String mobileNumber,
+            @RequestParam(required = false) AccountStatus accountStatus,
+            @RequestParam(required = false) Boolean active,
             @RequestParam(required = false) String roleCode) {
         
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? 
@@ -54,19 +67,29 @@ public class UserController {
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         Page<UserResponse> users;
         
-        // Determine which filtering method to use based on provided parameters
-        boolean hasUsername = username != null && !username.trim().isEmpty();
-        boolean hasRoleCode = roleCode != null && !roleCode.trim().isEmpty();
+        // Check if any search criteria are provided
+        boolean hasSearchCriteria = (username != null && !username.trim().isEmpty()) ||
+                                   (nickname != null && !nickname.trim().isEmpty()) ||
+                                   (email != null && !email.trim().isEmpty()) ||
+                                   (mobileCountryCode != null && !mobileCountryCode.trim().isEmpty()) ||
+                                   (mobileNumber != null && !mobileNumber.trim().isEmpty()) ||
+                                   (accountStatus != null) ||
+                                   (active != null) ||
+                                   (roleCode != null && !roleCode.trim().isEmpty());
         
-        if (hasUsername && hasRoleCode) {
-            // Filter by both username and role code
-            users = userService.findUsersByRoleCodeAndUsernameContaining(roleCode, username, pageable);
-        } else if (hasRoleCode) {
-            // Filter by role code only
-            users = userService.findUsersByRoleCode(roleCode, pageable);
-        } else if (hasUsername) {
-            // Filter by username only
-            users = userService.findUsersByUsernameContaining(username, pageable);
+        if (hasSearchCriteria) {
+            // Use comprehensive search with all criteria
+            users = userService.findUsersWithCriteria(
+                username != null && !username.trim().isEmpty() ? username : null,
+                nickname != null && !nickname.trim().isEmpty() ? nickname : null,
+                email != null && !email.trim().isEmpty() ? email : null,
+                mobileCountryCode != null && !mobileCountryCode.trim().isEmpty() ? mobileCountryCode : null,
+                mobileNumber != null && !mobileNumber.trim().isEmpty() ? mobileNumber : null,
+                accountStatus,
+                active,
+                roleCode != null && !roleCode.trim().isEmpty() ? roleCode : null,
+                pageable
+            );
         } else {
             // No filtering, get all users
             users = userService.getAllUsers(pageable);

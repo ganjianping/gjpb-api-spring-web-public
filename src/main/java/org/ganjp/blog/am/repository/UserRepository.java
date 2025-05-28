@@ -86,4 +86,84 @@ public interface UserRepository extends JpaRepository<User, String> {
     Page<User> findUsersByRoleCodeAndUsernameContaining(@Param("roleCode") String roleCode, 
                                                         @Param("username") String username, 
                                                         Pageable pageable);
+
+    /**
+     * Find users by nickname containing the search term
+     * @param nickname Nickname substring to search for
+     * @param pageable Pagination information
+     * @return Page of users with matching nickname
+     */
+    Page<User> findByNicknameContainingIgnoreCase(String nickname, Pageable pageable);
+
+    /**
+     * Find users by email containing the search term
+     * @param email Email substring to search for
+     * @param pageable Pagination information
+     * @return Page of users with matching email
+     */
+    Page<User> findByEmailContainingIgnoreCase(String email, Pageable pageable);
+
+    /**
+     * Find users by mobile country code and mobile number
+     * @param mobileCountryCode Mobile country code to search for
+     * @param mobileNumber Mobile number substring to search for
+     * @param pageable Pagination information
+     * @return Page of users with matching mobile information
+     */
+    @Query("SELECT u FROM User u WHERE " +
+           "(:mobileCountryCode IS NULL OR u.mobileCountryCode = :mobileCountryCode) " +
+           "AND (:mobileNumber IS NULL OR LOWER(u.mobileNumber) LIKE LOWER(CONCAT('%', :mobileNumber, '%')))")
+    Page<User> findByMobileInfo(@Param("mobileCountryCode") String mobileCountryCode,
+                                @Param("mobileNumber") String mobileNumber,
+                                Pageable pageable);
+
+    /**
+     * Find users by account status
+     * @param accountStatus Account status to search for
+     * @param pageable Pagination information
+     * @return Page of users with matching account status
+     */
+    Page<User> findByAccountStatus(AccountStatus accountStatus, Pageable pageable);
+
+    /**
+     * Find users by active status
+     * @param active Active status to search for
+     * @param pageable Pagination information
+     * @return Page of users with matching active status
+     */
+    Page<User> findByActive(Boolean active, Pageable pageable);
+
+    /**
+     * Advanced search with multiple criteria
+     * @param username Username substring (optional)
+     * @param nickname Nickname substring (optional)
+     * @param email Email substring (optional)
+     * @param mobileCountryCode Mobile country code (optional)
+     * @param mobileNumber Mobile number substring (optional)
+     * @param accountStatus Account status (optional)
+     * @param active Active status (optional)
+     * @param roleCode Role code (optional)
+     * @param pageable Pagination information
+     * @return Page of users matching the criteria
+     */
+    @Query("SELECT DISTINCT u FROM User u " +
+           "LEFT JOIN UserRole ur ON u.id = ur.user.id " +
+           "LEFT JOIN Role r ON ur.role.id = r.id " +
+           "WHERE (:username IS NULL OR LOWER(u.username) LIKE LOWER(CONCAT('%', :username, '%'))) " +
+           "AND (:nickname IS NULL OR LOWER(u.nickname) LIKE LOWER(CONCAT('%', :nickname, '%'))) " +
+           "AND (:email IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%'))) " +
+           "AND (:mobileCountryCode IS NULL OR u.mobileCountryCode = :mobileCountryCode) " +
+           "AND (:mobileNumber IS NULL OR LOWER(u.mobileNumber) LIKE LOWER(CONCAT('%', :mobileNumber, '%'))) " +
+           "AND (:accountStatus IS NULL OR u.accountStatus = :accountStatus) " +
+           "AND (:active IS NULL OR u.active = :active) " +
+           "AND (:roleCode IS NULL OR (r.code = :roleCode AND ur.active = true AND (ur.expiresAt IS NULL OR ur.expiresAt > CURRENT_TIMESTAMP)))")
+    Page<User> findUsersWithCriteria(@Param("username") String username,
+                                     @Param("nickname") String nickname,
+                                     @Param("email") String email,
+                                     @Param("mobileCountryCode") String mobileCountryCode,
+                                     @Param("mobileNumber") String mobileNumber,
+                                     @Param("accountStatus") AccountStatus accountStatus,
+                                     @Param("active") Boolean active,
+                                     @Param("roleCode") String roleCode,
+                                     Pageable pageable);
 }

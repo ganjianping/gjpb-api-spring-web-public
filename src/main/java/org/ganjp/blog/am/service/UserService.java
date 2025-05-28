@@ -82,6 +82,90 @@ public class UserService {
         return userRepository.findUsersByRoleCodeAndUsernameContaining(roleCode, username, pageable)
                 .map(this::mapToUserResponse);
     }
+    
+    /**
+     * Find users by nickname containing the provided string
+     *
+     * @param nickname nickname substring to search for
+     * @param pageable pagination information
+     * @return Page of UserResponse objects
+     */
+    public Page<UserResponse> findUsersByNicknameContaining(String nickname, Pageable pageable) {
+        return userRepository.findByNicknameContainingIgnoreCase(nickname, pageable)
+                .map(this::mapToUserResponse);
+    }
+    
+    /**
+     * Find users by email containing the provided string
+     *
+     * @param email email substring to search for
+     * @param pageable pagination information
+     * @return Page of UserResponse objects
+     */
+    public Page<UserResponse> findUsersByEmailContaining(String email, Pageable pageable) {
+        return userRepository.findByEmailContainingIgnoreCase(email, pageable)
+                .map(this::mapToUserResponse);
+    }
+    
+    /**
+     * Find users by mobile information
+     *
+     * @param mobileCountryCode mobile country code to search for
+     * @param mobileNumber mobile number substring to search for
+     * @param pageable pagination information
+     * @return Page of UserResponse objects
+     */
+    public Page<UserResponse> findUsersByMobileInfo(String mobileCountryCode, String mobileNumber, Pageable pageable) {
+        return userRepository.findByMobileInfo(mobileCountryCode, mobileNumber, pageable)
+                .map(this::mapToUserResponse);
+    }
+    
+    /**
+     * Find users by account status
+     *
+     * @param accountStatus account status to search for
+     * @param pageable pagination information
+     * @return Page of UserResponse objects
+     */
+    public Page<UserResponse> findUsersByAccountStatus(AccountStatus accountStatus, Pageable pageable) {
+        return userRepository.findByAccountStatus(accountStatus, pageable)
+                .map(this::mapToUserResponse);
+    }
+    
+    /**
+     * Find users by active status
+     *
+     * @param active active status to search for
+     * @param pageable pagination information
+     * @return Page of UserResponse objects
+     */
+    public Page<UserResponse> findUsersByActive(Boolean active, Pageable pageable) {
+        return userRepository.findByActive(active, pageable)
+                .map(this::mapToUserResponse);
+    }
+    
+    /**
+     * Advanced search with multiple criteria
+     *
+     * @param username username substring (optional)
+     * @param nickname nickname substring (optional)
+     * @param email email substring (optional)
+     * @param mobileCountryCode mobile country code (optional)
+     * @param mobileNumber mobile number substring (optional)
+     * @param accountStatus account status (optional)
+     * @param active active status (optional)
+     * @param roleCode role code (optional)
+     * @param pageable pagination information
+     * @return Page of UserResponse objects
+     */
+    public Page<UserResponse> findUsersWithCriteria(String username, String nickname, String email,
+                                                   String mobileCountryCode, String mobileNumber,
+                                                   AccountStatus accountStatus, Boolean active, String roleCode,
+                                                   Pageable pageable) {
+        return userRepository.findUsersWithCriteria(username, nickname, email, mobileCountryCode, 
+                                                  mobileNumber, accountStatus, active, roleCode, pageable)
+                .map(this::mapToUserResponse);
+    }
 
     /**
      * Get a user by ID
