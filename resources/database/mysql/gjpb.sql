@@ -2,7 +2,7 @@
 --DROP DATABASE IF EXISTS gjpb;
 
 -- Create new database
-CREATE DATABASE gjpb CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+--CREATE DATABASE gjpb CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 
 -- Use the new database
 USE gjpb;
@@ -154,6 +154,73 @@ CREATE TABLE IF NOT EXISTS auth_user_roles (
     CONSTRAINT chk_auth_user_roles_expiry CHECK (expires_at IS NULL OR expires_at > granted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Links users to their assigned roles (M-M).';
 
+-- Table: audit_logs
+
+-- Purpose: Track all API operations for security and compliance
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id CHAR(36) NOT NULL COMMENT 'Primary Key (UUID)',
+    user_id CHAR(36) DEFAULT NULL COMMENT 'ID of user who performed the action',
+    username VARCHAR(30) DEFAULT NULL COMMENT 'Username for quick reference',
+
+    -- Request information
+    http_method VARCHAR(10) NOT NULL COMMENT 'HTTP method (POST, PUT, PATCH, DELETE)',
+    endpoint VARCHAR(255) NOT NULL COMMENT 'API endpoint that was called',
+    action ENUM(
+        'LOGIN', 'LOGOUT', 'SIGNUP', 'PASSWORD_CHANGE', 'PASSWORD_RESET',
+        'USER_CREATE', 'USER_UPDATE', 'USER_PATCH', 'USER_DELETE', 'USER_DELETE_PERMANENT',
+        'USER_STATUS_CHANGE', 'USER_ROLE_ASSIGN', 'USER_ROLE_REVOKE',
+        'ROLE_CREATE', 'ROLE_UPDATE', 'ROLE_PATCH', 'ROLE_DELETE', 'ROLE_STATUS_CHANGE','OTHER'
+    ) NOT NULL COMMENT 'Type of action performed',
+
+    -- Resource information
+    resource_type VARCHAR(20) DEFAULT NULL COMMENT 'Type of resource (User, Role, etc.)',
+    resource_id VARCHAR(36) DEFAULT NULL COMMENT 'ID of the affected resource',
+
+    -- Request/Response data (limited size)
+    request_data TEXT DEFAULT NULL COMMENT 'Sanitized request payload',
+    response_data TEXT DEFAULT NULL COMMENT 'Sanitized response data',
+
+    -- Operation result
+    result ENUM(
+        'SUCCESS', 'FAILURE', 'ERROR', 'DENIED', 'VALIDATION_ERROR',
+        'AUTHENTICATION_FAILED', 'TIMEOUT', 'CANCELLED'
+    ) NOT NULL COMMENT 'Result of the operation',
+    status_code INT DEFAULT NULL COMMENT 'HTTP status code',
+    error_message TEXT DEFAULT NULL COMMENT 'Error details if operation failed',
+
+    -- Client information
+    ip_address VARCHAR(45) DEFAULT NULL COMMENT 'Client IP address (IPv4/IPv6)',
+    user_agent TEXT DEFAULT NULL COMMENT 'Client user agent string',
+    session_id VARCHAR(100) DEFAULT NULL COMMENT 'Session identifier',
+
+    -- Performance tracking
+    duration_ms BIGINT DEFAULT NULL COMMENT 'Operation duration in milliseconds',
+
+    -- Additional metadata
+    metadata JSON DEFAULT NULL COMMENT 'Additional context in JSON format',
+
+    -- Timestamp
+    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When the action occurred',
+
+    PRIMARY KEY (id),
+
+    -- Indexes for common queries
+    KEY idx_audit_user_id (user_id),
+    KEY idx_audit_timestamp (timestamp),
+    KEY idx_audit_action (action),
+    KEY idx_audit_result (result),
+    KEY idx_audit_endpoint (endpoint),
+    KEY idx_audit_user_timestamp (user_id, timestamp),
+    KEY idx_audit_action_timestamp (action, timestamp),
+    KEY idx_audit_resource (resource_type, resource_id),
+    KEY idx_audit_ip_address (ip_address),
+    KEY idx_audit_status_code (status_code),
+
+    -- Foreign key constraints
+    CONSTRAINT fk_audit_logs_user FOREIGN KEY (user_id) REFERENCES auth_users (id) ON DELETE SET NULL ON UPDATE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Audit trail for all API operations excluding GET requests';
 USE gjpb;
 
 -- Insert super admin user: gjpb, password: 123456

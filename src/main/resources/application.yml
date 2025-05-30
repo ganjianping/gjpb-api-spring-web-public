@@ -8,6 +8,11 @@ spring:
     name: GJPB
   profiles:
     active: dev # Change to 'prod' for production environment
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+    date-format: "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
   jpa:
     properties:
       hibernate:
@@ -38,3 +43,28 @@ security:
       - https://www.ganjianping.com
       - http://localhost:8081
       - http://127.0.0.1:8081
+
+# Audit logging configuration
+audit:
+  enabled: true
+  log-request-data: true
+  log-response-data: true
+  max-data-length: 10000
+  log-successful-operations: true
+  log-failed-operations: true
+  retention-days: 300
+  async-processing: true
+  audit-authentication-events: true
+  max-failed-attempts-per-minute: 10
+  include-sensitive-data: false
+  exclude-patterns:
+    - "/actuator/.*"
+    - "/swagger-.*"
+    - "/v3/api-docs.*"
+    - "/favicon.ico"
+  thread-pool:
+    core-pool-size: 2
+    max-pool-size: 5
+    queue-capacity: 100
+    keep-alive-seconds: 60
+    thread-name-prefix: "audit-"
