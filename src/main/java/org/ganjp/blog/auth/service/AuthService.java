@@ -15,6 +15,7 @@ import org.ganjp.blog.auth.repository.RoleRepository;
 import org.ganjp.blog.auth.repository.UserRepository;
 import org.ganjp.blog.auth.repository.UserRoleRepository;
 import org.ganjp.blog.auth.security.JwtUtils;
+import org.ganjp.blog.auth.security.TokenBlacklistService;
 import org.ganjp.blog.common.exception.ResourceNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -44,6 +45,7 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenBlacklistService tokenBlacklistService;
 
     /**
      * Authenticate a user and generate JWT token
@@ -234,5 +236,42 @@ public class AuthService {
                 .accountStatus(savedUser.getAccountStatus())
                 .active(savedUser.isActive())
                 .build();
+    }
+    
+    /**
+     * Logout the current user by blacklisting their JWT token
+     * This method extracts the JWT token from the request and adds it to the blacklist
+     */
+    @Transactional
+    public void logout(HttpServletRequest request) {
+        try {
+            // Extract JWT token from Authorization header
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7); // Remove "Bearer " prefix
+                
+                // Extract token information for blacklisting
+                String tokenId = jwtUtils.extractTokenId(token);
+                long expirationTime = jwtUtils.extractExpirationTimestamp(token);
+                
+                if (tokenId != null && tokenBlacklistService != null) {
+                    // Add token to blacklist
+                    tokenBlacklistService.blacklistToken(tokenId, expirationTime);
+                    log.debug("Token blacklisted successfully for user logout: {}", tokenId);
+                } else {
+                    log.warn("Could not blacklist token: tokenId={}, blacklistService={}", 
+                            tokenId, tokenBlacklistService != null ? "available" : "null");
+                }
+            } else {
+                log.debug("No Bearer token found in Authorization header for logout");
+            }
+        } catch (Exception e) {
+            log.warn("Failed to blacklist token during logout: {}", e.getMessage());
+            // Continue with logout even if blacklisting fails
+        }
+        
+        // Clear the security context to invalidate the current authentication
+        SecurityContextHolder.clearContext();
+        log.debug("User logged out successfully, security context cleared");
     }
 }

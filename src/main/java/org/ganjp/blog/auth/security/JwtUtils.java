@@ -64,10 +64,14 @@ public class JwtUtils {
         extraClaims.put("authorities", extraClaims.get("authorities") != null ? extraClaims.get("authorities") : Collections.emptyList());
         extraClaims.put("id", extraClaims.get("id")); // Assuming username is used as ID
         
+        // Generate unique token ID for blacklisting support
+        String tokenId = UUID.randomUUID().toString();
+        
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
+                .setId(tokenId) // jti claim for token identification
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
@@ -127,6 +131,28 @@ public class JwtUtils {
             return extractUserId(token);
         }
         return null;
+    }
+
+    /**
+     * Extract token ID (jti claim) for blacklisting support
+     */
+    public String extractTokenId(String token) {
+        return extractClaim(token, Claims::getId);
+    }
+
+    /**
+     * Extract token expiration time as timestamp
+     */
+    public long extractExpirationTimestamp(String token) {
+        Date expiration = extractExpiration(token);
+        return expiration != null ? expiration.getTime() : 0;
+    }
+
+    /**
+     * Extract token issued time
+     */
+    public Date extractIssuedAt(String token) {
+        return extractClaim(token, Claims::getIssuedAt);
     }
 
     private Key getSignInKey() {

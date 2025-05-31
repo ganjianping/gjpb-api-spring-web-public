@@ -8,6 +8,7 @@ import org.ganjp.blog.auth.repository.UserRepository;
 import org.ganjp.blog.auth.repository.UserRoleRepository;
 import org.ganjp.blog.auth.security.CustomAuthenticationProvider;
 import org.ganjp.blog.auth.security.JwtUtils;
+import org.ganjp.blog.auth.security.TokenBlacklistService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,9 @@ class AuthServiceEndToEndTest {
     @Mock
     private JwtUtils jwtUtils;
     
+    @Mock
+    private TokenBlacklistService tokenBlacklistService;
+    
     private AuthService authService;
     private CustomAuthenticationProvider authenticationProvider;
     private AuthenticationManager authenticationManager;
@@ -76,7 +80,8 @@ class AuthServiceEndToEndTest {
             userRepository,
             roleRepository,
             userRoleRepository,
-            passwordEncoder
+            passwordEncoder,
+            tokenBlacklistService
         );
         
         testUser = User.builder()

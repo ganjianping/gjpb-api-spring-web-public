@@ -74,12 +74,31 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
             errorMessage = "Login failed with status: " + response.getStatus();
         }
 
+        // Extract request data before async call to avoid recycled request object
+        String httpMethod = request.getMethod();
+        String requestURI = request.getRequestURI();
+        String clientIpAddress = getClientIpAddress(request);
+        String userAgent = request.getHeader("User-Agent");
+        String sessionId = null;
+        try {
+            sessionId = request.getSession(false) != null ? request.getSession(false).getId() : null;
+        } catch (IllegalStateException e) {
+            // Session cannot be accessed after response is committed
+            sessionId = "session-unavailable";
+        }
+        Long startTimeMs = (Long) request.getAttribute("auditStartTime");
+
         auditService.logAuthenticationEventWithData(
                 AuditAction.LOGIN,
                 username,
                 result,
                 errorMessage,
-                request,
+                httpMethod,
+                requestURI,
+                clientIpAddress,
+                userAgent,
+                sessionId,
+                startTimeMs,
                 requestData,
                 responseData,
                 resourceId
@@ -104,12 +123,31 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
             errorMessage = "Logout failed with status: " + response.getStatus();
         }
 
+        // Extract request data before async call to avoid recycled request object
+        String httpMethod = request.getMethod();
+        String requestURI = request.getRequestURI();
+        String clientIpAddress = getClientIpAddress(request);
+        String userAgent = request.getHeader("User-Agent");
+        String sessionId = null;
+        try {
+            sessionId = request.getSession(false) != null ? request.getSession(false).getId() : null;
+        } catch (IllegalStateException e) {
+            // Session cannot be accessed after response is committed
+            sessionId = "session-unavailable";
+        }
+        Long startTimeMs = (Long) request.getAttribute("auditStartTime");
+
         auditService.logAuthenticationEventWithData(
                 AuditAction.LOGOUT,
                 username,
                 result,
                 errorMessage,
-                request,
+                httpMethod,
+                requestURI,
+                clientIpAddress,
+                userAgent,
+                sessionId,
+                startTimeMs,
                 requestData,
                 responseData,
                 resourceId
@@ -140,12 +178,31 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
             errorMessage = "Signup failed with status: " + response.getStatus();
         }
 
+        // Extract request data before async call to avoid recycled request object
+        String httpMethod = request.getMethod();
+        String requestURI = request.getRequestURI();
+        String clientIpAddress = getClientIpAddress(request);
+        String userAgent = request.getHeader("User-Agent");
+        String sessionId = null;
+        try {
+            sessionId = request.getSession(false) != null ? request.getSession(false).getId() : null;
+        } catch (IllegalStateException e) {
+            // Session cannot be accessed after response is committed
+            sessionId = "session-unavailable";
+        }
+        Long startTimeMs = (Long) request.getAttribute("auditStartTime");
+
         auditService.logAuthenticationEventWithData(
                 AuditAction.SIGNUP,
                 username,
                 result,
                 errorMessage,
-                request,
+                httpMethod,
+                requestURI,
+                clientIpAddress,
+                userAgent,
+                sessionId,
+                startTimeMs,
                 requestData,
                 responseData,
                 resourceId
@@ -208,5 +265,36 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
     private String extractResourceId(HttpServletRequest request) {
         Object resourceId = request.getAttribute("loginResourceId");
         return resourceId instanceof String ? (String) resourceId : null;
+    }
+
+    /**
+     * Get client IP address from request (same logic as AuditService)
+     */
+    private String getClientIpAddress(HttpServletRequest request) {
+        String[] headerNames = {
+            "X-Forwarded-For",
+            "X-Real-IP",
+            "Proxy-Client-IP",
+            "WL-Proxy-Client-IP",
+            "HTTP_X_FORWARDED_FOR",
+            "HTTP_X_FORWARDED",
+            "HTTP_X_CLUSTER_CLIENT_IP",
+            "HTTP_CLIENT_IP",
+            "HTTP_FORWARDED_FOR",
+            "HTTP_FORWARDED",
+            "HTTP_VIA",
+            "REMOTE_ADDR"
+        };
+
+        for (String header : headerNames) {
+            String ip = request.getHeader(header);
+            if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+                // Handle comma-separated IPs (take the first one)
+                return ip.split(",")[0].trim();
+            }
+        }
+
+        // Fallback to remote address
+        return request.getRemoteAddr();
     }
 }

@@ -8,6 +8,7 @@ import org.ganjp.blog.auth.repository.RoleRepository;
 import org.ganjp.blog.auth.repository.UserRepository;
 import org.ganjp.blog.auth.repository.UserRoleRepository;
 import org.ganjp.blog.auth.security.JwtUtils;
+import org.ganjp.blog.auth.security.TokenBlacklistService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -97,10 +98,16 @@ public class AuthServiceIntegrationTest {
         }
         
         @Bean
+        public TokenBlacklistService tokenBlacklistService() {
+            return Mockito.mock(TokenBlacklistService.class);
+        }
+        
+        @Bean
         public AuthService authService(AuthenticationManager authenticationManager, JwtUtils jwtUtils, 
                                       UserRepository userRepository, RoleRepository roleRepository, 
-                                      UserRoleRepository userRoleRepository, PasswordEncoder passwordEncoder) {
-            return new AuthService(authenticationManager, jwtUtils, userRepository, roleRepository, userRoleRepository, passwordEncoder);
+                                      UserRoleRepository userRoleRepository, PasswordEncoder passwordEncoder,
+                                      TokenBlacklistService tokenBlacklistService) {
+            return new AuthService(authenticationManager, jwtUtils, userRepository, roleRepository, userRoleRepository, passwordEncoder, tokenBlacklistService);
         }
     }
     

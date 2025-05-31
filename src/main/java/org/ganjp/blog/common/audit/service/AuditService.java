@@ -225,7 +225,12 @@ public class AuditService {
             String username,
             AuditResult result,
             String errorMessage,
-            HttpServletRequest request,
+            String httpMethod,
+            String requestURI,
+            String clientIpAddress,
+            String userAgent,
+            String sessionId,
+            Long startTimeMs,
             Object requestData,
             Object responseData,
             String resourceId) {
@@ -237,10 +242,8 @@ public class AuditService {
 
         // Calculate duration from request start time if available
         Long durationMs = null;
-        Object startTimeObj = request.getAttribute("auditStartTime");
-        if (startTimeObj instanceof Long) {
-            long startTime = (Long) startTimeObj;
-            durationMs = System.currentTimeMillis() - startTime;
+        if (startTimeMs != null) {
+            durationMs = System.currentTimeMillis() - startTimeMs;
         }
 
         Map<String, Object> metadata = new HashMap<>();
@@ -252,8 +255,8 @@ public class AuditService {
         logAuditEvent(
                 userId,
                 username,
-                request.getMethod(),
-                request.getRequestURI(),
+                httpMethod,
+                requestURI,
                 action,
                 "Authentication",
                 resourceId,
@@ -262,9 +265,9 @@ public class AuditService {
                 result,
                 result == AuditResult.SUCCESS ? 200 : 401,
                 errorMessage,
-                getClientIpAddress(request),
-                request.getHeader("User-Agent"),
-                request.getSession().getId(),
+                clientIpAddress,
+                userAgent,
+                sessionId,
                 durationMs,
                 metadata
         );

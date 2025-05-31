@@ -3,6 +3,7 @@ package org.ganjp.blog.auth.config;
 import org.ganjp.blog.auth.repository.UserRepository;
 import org.ganjp.blog.auth.security.JwtAuthenticationFilter;
 import org.ganjp.blog.auth.security.JwtUtils;
+import org.ganjp.blog.auth.security.TokenBlacklistService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,8 +51,10 @@ public class SecurityConfig {
 
     // Explicitly register JwtAuthenticationFilter as a bean
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService) {
-        return new JwtAuthenticationFilter(jwtUtils, userDetailsService);
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtils jwtUtils, 
+                                                          UserDetailsService userDetailsService,
+                                                          TokenBlacklistService tokenBlacklistService) {
+        return new JwtAuthenticationFilter(jwtUtils, userDetailsService, tokenBlacklistService);
     }
 
     @Bean

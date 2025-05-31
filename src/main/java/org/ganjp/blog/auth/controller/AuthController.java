@@ -132,6 +132,24 @@ public class AuthController {
     }
 
     /**
+     * Logout the current user and invalidate their JWT token
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
+        try {
+            authService.logout(request);
+            
+            ApiResponse<Void> response = ApiResponse.<Void>success(null, "User logout successful");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            ApiResponse<Void> response = ApiResponse.<Void>error(500, "Internal Server Error", errors);
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    /**
      * Helper method to extract username from login request
      */
     private String extractUsernameFromLoginRequest(LoginRequest loginRequest) {

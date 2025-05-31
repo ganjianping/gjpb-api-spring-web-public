@@ -26,15 +26,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
+    private final TokenBlacklistService tokenBlacklistService;
     
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
 
-    // Modified constructor to accept UserDetailsService directly to avoid circular dependency
+    // Modified constructor to accept dependencies directly to avoid circular dependency
     public JwtAuthenticationFilter(JwtUtils jwtUtils, 
-                                 @Autowired(required = false) UserDetailsService userDetailsService) {
+                                 @Autowired(required = false) UserDetailsService userDetailsService,
+                                 @Autowired(required = false) TokenBlacklistService tokenBlacklistService) {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @Override
@@ -64,6 +67,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         try {
             username = jwtUtils.extractUsername(jwt);
+            
+            // Check if token is blacklisted (logged out)
+            if (tokenBlacklistService != null) {
+                String tokenId = jwtUtils.extractTokenId(jwt);
+                if (tokenBlacklistService.isTokenBlacklisted(tokenId)) {
+                    logger.debug("Token is blacklisted (logged out): " + tokenId);
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+            }
             
             // Authenticate user if token has username and no authentication exists yet 
             // and userDetailsService is not null
