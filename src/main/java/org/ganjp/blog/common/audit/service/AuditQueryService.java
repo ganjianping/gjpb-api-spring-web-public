@@ -217,4 +217,32 @@ public class AuditQueryService {
         // For large datasets, this should be paginated or streamed
         return auditLogRepository.findByTimestampBetween(startTime, endTime, Pageable.unpaged()).getContent();
     }
+
+    /**
+     * Find audit logs by user ID
+     */
+    public Page<AuditLog> findAuditLogsByUserId(String userId, Pageable pageable) {
+        return auditLogRepository.findByUserIdOrderByTimestampDesc(userId, pageable);
+    }
+
+    /**
+     * Find all audit logs
+     */
+    public Page<AuditLog> findAllAuditLogs(Pageable pageable) {
+        return auditLogRepository.findAllByOrderByTimestampDesc(pageable);
+    }
+
+    /**
+     * Find audit logs by action
+     */
+    public Page<AuditLog> findAuditLogsByAction(AuditAction action, Pageable pageable) {
+        return auditLogRepository.findByActionOrderByTimestampDesc(action, pageable);
+    }
+
+    /**
+     * Find audit logs by result
+     */
+    public Page<AuditLog> findAuditLogsByResult(AuditResult result, Pageable pageable) {
+        return auditLogRepository.findByResultOrderByTimestampDesc(result, pageable);
+    }
 }

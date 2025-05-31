@@ -6,6 +6,7 @@ import org.ganjp.blog.common.audit.model.enums.AuditResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -124,6 +125,7 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, String> {
     /**
      * Delete audit logs older than specified date (for cleanup)
      */
+    @Modifying
     @Query("DELETE FROM AuditLog a WHERE a.timestamp < :cutoffDate")
     void deleteOldAuditLogs(@Param("cutoffDate") LocalDateTime cutoffDate);
 
@@ -138,4 +140,9 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, String> {
      */
     @Query("SELECT a.action, a.result, COUNT(a) FROM AuditLog a WHERE a.timestamp >= :since GROUP BY a.action, a.result")
     List<Object[]> getAuditStatistics(@Param("since") LocalDateTime since);
+    
+    /**
+     * Find all audit logs ordered by timestamp in descending order
+     */
+    Page<AuditLog> findAllByOrderByTimestampDesc(Pageable pageable);
 }

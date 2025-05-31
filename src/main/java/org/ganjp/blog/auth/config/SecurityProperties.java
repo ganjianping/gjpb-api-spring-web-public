@@ -37,5 +37,6 @@ public class SecurityProperties {
     public static class Jwt {
         private String secretKey;
         private long expiration;
+        private long refreshExpiration = 2592000000L; // 30 days in milliseconds (default)
     }
 }

@@ -22,10 +22,12 @@ public class JwtUtils {
 
     private final String secretKey;
     private final long jwtExpiration;
+    private final long refreshExpiration;
 
     public JwtUtils(SecurityProperties securityProperties) {
         this.secretKey = securityProperties.getJwt().getSecretKey();
         this.jwtExpiration = securityProperties.getJwt().getExpiration();
+        this.refreshExpiration = securityProperties.getJwt().getRefreshExpiration();
     }
 
     public String extractUsername(String token) {
@@ -49,6 +51,72 @@ public class JwtUtils {
         extraClaims.put("authorities", authoritiesStrings);
         extraClaims.put("userId", userId);
         return buildToken(extraClaims, userDetails, jwtExpiration);
+    }
+
+    /**
+     * Generate both access and refresh tokens for a user
+     * @param userDetails User details
+     * @param authorities User authorities
+     * @param userId User ID
+     * @return Map containing "accessToken" and "refreshToken"
+     */
+    public Map<String, String> generateDualTokens(UserDetails userDetails, Collection<SimpleGrantedAuthority> authorities, String userId) {
+        // Generate access token
+        String accessToken = generateTokenWithAuthorities(userDetails, authorities, userId);
+        
+        // Generate refresh token (minimal claims, longer expiration)
+        Map<String, Object> refreshClaims = new HashMap<>();
+        refreshClaims.put("userId", userId);
+        refreshClaims.put("type", "refresh");
+        String refreshToken = buildToken(refreshClaims, userDetails, refreshExpiration);
+        
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", accessToken);
+        tokens.put("refreshToken", refreshToken);
+        return tokens;
+    }
+
+    /**
+     * Generate a new access token for refresh operation
+     * @param userDetails User details
+     * @param authorities User authorities  
+     * @param userId User ID
+     * @return New access token
+     */
+    public String generateAccessTokenForRefresh(UserDetails userDetails, Collection<SimpleGrantedAuthority> authorities, String userId) {
+        return generateTokenWithAuthorities(userDetails, authorities, userId);
+    }
+
+    /**
+     * Generate a new refresh token
+     * @param userDetails User details
+     * @param userId User ID
+     * @return New refresh token
+     */
+    public String generateRefreshToken(UserDetails userDetails, String userId) {
+        Map<String, Object> refreshClaims = new HashMap<>();
+        refreshClaims.put("userId", userId);
+        refreshClaims.put("type", "refresh");
+        return buildToken(refreshClaims, userDetails, refreshExpiration);
+    }
+
+    /**
+     * Validate if token is a refresh token
+     * @param token JWT token
+     * @return true if token is a refresh token
+     */
+    public boolean isRefreshToken(String token) {
+        Claims claims = extractAllClaims(token);
+        String tokenType = claims.get("type", String.class);
+        return "refresh".equals(tokenType);
+    }
+
+    /**
+     * Get refresh token expiration time
+     * @return Refresh token expiration in milliseconds
+     */
+    public long getRefreshExpiration() {
+        return refreshExpiration;
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {

@@ -27,6 +27,7 @@ security:
   jwt:
     secret-key: ${JWT_SECRET_KEY}
     expiration: ${JWT_EXPIRATION:43200000} # 12 hours in milliseconds for production environment
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000} # 30 days in milliseconds (default)
   public-endpoints:
     - "/"                   # Root endpoint
     - "/v1/auth/**"         # Authentication endpoints

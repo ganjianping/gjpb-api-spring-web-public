@@ -38,6 +38,6 @@ public interface UserRoleRepository extends JpaRepository<UserRole, UserRoleId> 
     @Query("SELECT ur FROM UserRole ur WHERE ur.expiresAt IS NOT NULL AND ur.expiresAt <= :now AND ur.active = true")
     List<UserRole> findExpiredUserRoles(@Param("now") LocalDateTime now);
     
-    @Query("SELECT COUNT(ur) FROM UserRole ur WHERE ur.role = :role AND ur.active = true")
+    @Query("SELECT COUNT(ur) FROM UserRole ur WHERE ur.role = :role AND ur.active = true AND (ur.expiresAt IS NULL OR ur.expiresAt > CURRENT_TIMESTAMP)")
     long countActiveUsersWithRole(@Param("role") Role role);
 }

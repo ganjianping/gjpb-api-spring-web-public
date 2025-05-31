@@ -250,3 +250,44 @@ INSERT INTO auth_roles (id, code, name, description, parent_role_id, level, is_s
 INSERT INTO auth_user_roles (user_id, role_id, granted_at, created_by, updated_by) 
 VALUES ('f47ac10b-58cc-4372-a567-0e02b2c3d479', '550e8400-e29b-41d4-a716-446655440001', CURRENT_TIMESTAMP, NULL, NULL);
 
+-- Table: auth_refresh_tokens
+-- Purpose: Store refresh tokens for JWT token rotation with secure hash storage
+CREATE TABLE IF NOT EXISTS auth_refresh_tokens (
+    id CHAR(36) NOT NULL COMMENT 'Primary Key (UUID)',
+    user_id CHAR(36) NOT NULL COMMENT 'Foreign key to auth_users.id',
+    token_hash VARCHAR(255) NOT NULL COMMENT 'SHA-256 hash of the refresh token for secure storage',
+    expires_at TIMESTAMP NOT NULL COMMENT 'Expiration timestamp of the refresh token',
+    is_revoked BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Whether this token has been manually revoked',
+    revoked_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp when the token was revoked',
+    last_used_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Timestamp when this token was last used for refresh',
+    
+    -- Audit Trail
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by CHAR(36) DEFAULT NULL COMMENT 'UUID of the user who created this record',
+    updated_by CHAR(36) DEFAULT NULL COMMENT 'UUID of the user who last updated this record',
+
+    PRIMARY KEY (id),
+    INDEX idx_refresh_tokens_user_id (user_id),
+    INDEX idx_refresh_tokens_hash (token_hash),
+    INDEX idx_refresh_tokens_expires_at (expires_at),
+    INDEX idx_refresh_tokens_user_valid (user_id, expires_at, is_revoked),
+    
+    CONSTRAINT fk_refresh_tokens_user_id 
+        FOREIGN KEY (user_id) 
+        REFERENCES auth_users(id) 
+        ON DELETE CASCADE ON UPDATE CASCADE
+) 
+ENGINE=InnoDB 
+DEFAULT CHARSET=utf8mb4 
+COLLATE=utf8mb4_unicode_ci 
+COMMENT='Refresh tokens for JWT authentication with token rotation support';
+
+-- Create index for efficient cleanup of expired tokens
+CREATE INDEX idx_refresh_tokens_cleanup ON auth_refresh_tokens (expires_at, is_revoked);
+
+-- Add comment explaining the security approach
+-- Note: The actual refresh token value is never stored in the database.
+-- Only a SHA-256 hash is stored for verification purposes.
+-- This ensures that even if the database is compromised, the actual tokens remain secure.
+

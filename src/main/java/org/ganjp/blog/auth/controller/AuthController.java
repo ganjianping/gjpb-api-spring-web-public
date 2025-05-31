@@ -5,10 +5,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.ganjp.blog.auth.model.dto.request.LoginRequest;
+import org.ganjp.blog.auth.model.dto.request.LogoutRequest;
+import org.ganjp.blog.auth.model.dto.request.RefreshTokenRequest;
 import org.ganjp.blog.auth.model.dto.request.SignupRequest;
 import org.ganjp.blog.common.model.ApiResponse;
+import org.ganjp.blog.auth.model.dto.response.AuthTokenResponse;
 import org.ganjp.blog.auth.model.dto.response.LoginResponse;
 import org.ganjp.blog.auth.model.dto.response.SignupResponse;
+import org.ganjp.blog.auth.model.dto.response.TokenRefreshResponse;
 import org.ganjp.blog.auth.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -150,6 +154,107 @@ public class AuthController {
     }
 
     /**
+     * Enhanced login endpoint that returns both access and refresh tokens
+     * This is the new recommended authentication method with token rotation support
+     */
+    @PostMapping("/login/dual-tokens")
+    public ResponseEntity<ApiResponse<AuthTokenResponse>> loginWithDualTokens(
+            @Valid @RequestBody LoginRequest loginRequest,
+            HttpServletRequest request) {
+        try {
+            // Store request data for audit logging
+            String username = extractUsernameFromLoginRequest(loginRequest);
+            request.setAttribute("loginUsername", username);
+            request.setAttribute("loginRequestData", sanitizeLoginRequest(loginRequest));
+
+            AuthTokenResponse authResponse = authService.loginWithDualTokens(loginRequest);
+            
+            // Store response data and resource ID for audit logging
+            request.setAttribute("loginResponseData", sanitizeAuthTokenResponse(authResponse));
+            request.setAttribute("loginResourceId", authResponse.getUsername());
+            
+            ApiResponse<AuthTokenResponse> response = ApiResponse.<AuthTokenResponse>success(authResponse, "User login successful with dual tokens");
+            return ResponseEntity.ok(response);
+        } catch (BadCredentialsException e) {
+            // Store username even for failed login
+            String username = extractUsernameFromLoginRequest(loginRequest);
+            request.setAttribute("loginUsername", username);
+            request.setAttribute("loginRequestData", sanitizeLoginRequest(loginRequest));
+            
+            Map<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            ApiResponse<AuthTokenResponse> response = ApiResponse.<AuthTokenResponse>error(401, "Unauthorized", errors);
+            return ResponseEntity.status(401).body(response);
+        } catch (Exception e) {
+            // Store username even for failed login
+            String username = extractUsernameFromLoginRequest(loginRequest);
+            request.setAttribute("loginUsername", username);
+            request.setAttribute("loginRequestData", sanitizeLoginRequest(loginRequest));
+            
+            Map<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            ApiResponse<AuthTokenResponse> response = ApiResponse.<AuthTokenResponse>error(500, "Internal Server Error", errors);
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    /**
+     * Refresh access token using a valid refresh token
+     * Implements token rotation - old refresh token is invalidated and new tokens are issued
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenRefreshResponse>> refreshToken(
+            @Valid @RequestBody RefreshTokenRequest refreshRequest,
+            HttpServletRequest request) {
+        try {
+            // Store request data for audit logging (excluding sensitive token data)
+            request.setAttribute("refreshTokenRequest", sanitizeRefreshTokenRequest(refreshRequest));
+
+            TokenRefreshResponse refreshResponse = authService.refreshToken(refreshRequest);
+            
+            // Store response data for audit logging
+            request.setAttribute("refreshTokenResponse", sanitizeTokenRefreshResponse(refreshResponse));
+            
+            ApiResponse<TokenRefreshResponse> response = ApiResponse.<TokenRefreshResponse>success(refreshResponse, "Token refresh successful");
+            return ResponseEntity.ok(response);
+        } catch (BadCredentialsException e) {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            ApiResponse<TokenRefreshResponse> response = ApiResponse.<TokenRefreshResponse>error(401, "Invalid or expired refresh token", errors);
+            return ResponseEntity.status(401).body(response);
+        } catch (Exception e) {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            ApiResponse<TokenRefreshResponse> response = ApiResponse.<TokenRefreshResponse>error(500, "Internal Server Error", errors);
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    /**
+     * Enhanced logout endpoint that revokes both access and refresh tokens
+     * This is the new recommended logout method with complete token invalidation
+     */
+    @PostMapping("/logout/enhanced")
+    public ResponseEntity<ApiResponse<Void>> enhancedLogout(
+            @Valid @RequestBody LogoutRequest logoutRequest,
+            HttpServletRequest request) {
+        try {
+            // Store request data for audit logging (excluding sensitive token data)
+            request.setAttribute("enhancedLogoutRequest", sanitizeLogoutRequest(logoutRequest));
+
+            authService.enhancedLogout(logoutRequest, request);
+            
+            ApiResponse<Void> response = ApiResponse.<Void>success(null, "Enhanced logout successful - all tokens revoked");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("error", e.getMessage());
+            ApiResponse<Void> response = ApiResponse.<Void>error(500, "Internal Server Error", errors);
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    /**
      * Helper method to extract username from login request
      */
     private String extractUsernameFromLoginRequest(LoginRequest loginRequest) {
@@ -224,6 +329,56 @@ public class AuthController {
         sanitized.put("email", signupResponse.getEmail());
         sanitized.put("accountStatus", signupResponse.getAccountStatus());
         sanitized.put("active", signupResponse.getActive());
+        return sanitized;
+    }
+
+    // NEW SANITIZATION METHODS FOR TOKEN ROTATION APIS
+
+    /**
+     * Helper method to sanitize auth token response for audit logging (remove sensitive tokens)
+     */
+    private Object sanitizeAuthTokenResponse(AuthTokenResponse authTokenResponse) {
+        Map<String, Object> sanitized = new HashMap<>();
+        sanitized.put("username", authTokenResponse.getUsername());
+        sanitized.put("email", authTokenResponse.getEmail());
+        sanitized.put("accountStatus", authTokenResponse.getAccountStatus());
+        sanitized.put("lastLoginAt", authTokenResponse.getLastLoginAt());
+        sanitized.put("roleCodes", authTokenResponse.getRoleCodes());
+        sanitized.put("tokenType", authTokenResponse.getTokenType());
+        sanitized.put("expiresIn", authTokenResponse.getExpiresIn());
+        // Deliberately exclude access and refresh tokens for security
+        return sanitized;
+    }
+
+    /**
+     * Helper method to sanitize refresh token request for audit logging (remove sensitive token)
+     */
+    private Object sanitizeRefreshTokenRequest(RefreshTokenRequest refreshRequest) {
+        Map<String, Object> sanitized = new HashMap<>();
+        sanitized.put("tokenPresent", refreshRequest.getRefreshToken() != null && !refreshRequest.getRefreshToken().trim().isEmpty());
+        // Deliberately exclude actual refresh token for security
+        return sanitized;
+    }
+
+    /**
+     * Helper method to sanitize token refresh response for audit logging (remove sensitive tokens)
+     */
+    private Object sanitizeTokenRefreshResponse(TokenRefreshResponse refreshResponse) {
+        Map<String, Object> sanitized = new HashMap<>();
+        sanitized.put("tokenType", refreshResponse.getTokenType());
+        sanitized.put("expiresIn", refreshResponse.getExpiresIn());
+        sanitized.put("tokensGenerated", true);
+        // Deliberately exclude access and refresh tokens for security
+        return sanitized;
+    }
+
+    /**
+     * Helper method to sanitize logout request for audit logging (remove sensitive token)
+     */
+    private Object sanitizeLogoutRequest(LogoutRequest logoutRequest) {
+        Map<String, Object> sanitized = new HashMap<>();
+        sanitized.put("refreshTokenPresent", logoutRequest.getRefreshToken() != null && !logoutRequest.getRefreshToken().trim().isEmpty());
+        // Deliberately exclude actual refresh token for security
         return sanitized;
     }
 }
