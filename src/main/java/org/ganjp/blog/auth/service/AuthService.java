@@ -314,6 +314,7 @@ public class AuthService {
     
     /**
      * Get the client's IP address from the current request
+     * This method handles various proxy headers and converts local addresses to a readable format
      */
     private String getClientIp() {
         try {
@@ -323,14 +324,64 @@ public class AuthService {
             }
             
             HttpServletRequest request = attributes.getRequest();
-            String xForwardedFor = request.getHeader("X-Forwarded-For");
-            if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-                return xForwardedFor.split(",")[0].trim();
+            
+            // Check standard proxy headers first
+            String ip = request.getHeader("X-Forwarded-For");
+            if (isValidIp(ip)) {
+                return ip.split(",")[0].trim(); // Get first IP if multiple are present
             }
-            return request.getRemoteAddr();
+            
+            // Check other common proxy headers
+            ip = request.getHeader("Proxy-Client-IP");
+            if (isValidIp(ip)) return ip;
+            
+            ip = request.getHeader("WL-Proxy-Client-IP");
+            if (isValidIp(ip)) return ip;
+            
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+            if (isValidIp(ip)) return ip;
+            
+            ip = request.getHeader("HTTP_X_FORWARDED");
+            if (isValidIp(ip)) return ip;
+            
+            ip = request.getHeader("HTTP_X_CLUSTER_CLIENT_IP");
+            if (isValidIp(ip)) return ip;
+            
+            ip = request.getHeader("HTTP_CLIENT_IP");
+            if (isValidIp(ip)) return ip;
+            
+            ip = request.getHeader("HTTP_FORWARDED_FOR");
+            if (isValidIp(ip)) return ip;
+            
+            ip = request.getHeader("HTTP_FORWARDED");
+            if (isValidIp(ip)) return ip;
+            
+            ip = request.getHeader("HTTP_VIA");
+            if (isValidIp(ip)) return ip;
+            
+            ip = request.getHeader("REMOTE_ADDR");
+            if (isValidIp(ip)) return ip;
+            
+            // Use the remote address directly from the request as a last resort
+            ip = request.getRemoteAddr();
+            
+            // Handle local addresses
+            if (ip.equals("0:0:0:0:0:0:0:1") || ip.equals("::1")) {
+                return "127.0.0.1"; // Convert IPv6 loopback to IPv4 loopback for readability
+            }
+            
+            return ip;
         } catch (Exception e) {
+            log.warn("Failed to determine client IP address", e);
             return "unknown";
         }
+    }
+    
+    /**
+     * Check if an IP address string is valid and not empty or "unknown"
+     */
+    private boolean isValidIp(String ip) {
+        return ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip);
     }
 
     /**
