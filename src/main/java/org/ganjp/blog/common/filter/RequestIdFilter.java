@@ -6,10 +6,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
+import org.ganjp.blog.common.config.LoggingConfig;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -53,13 +52,15 @@ public class RequestIdFilter extends OncePerRequestFilter {
         response.setHeader(REQUEST_ID_HEADER, requestId);
         response.setHeader(SESSION_ID_HEADER, sessionId);
         
-        // Add to MDC for logging
-        MDC.put(REQUEST_ID_ATTRIBUTE, requestId);
-        MDC.put(SESSION_ID_ATTRIBUTE, sessionId);
+        // Extract client IP for MDC context
+        String clientIp = extractClientIp(request);
+        
+        // Add to MDC for logging - using centralized logging config
+        LoggingConfig.setMdcContext(requestId, sessionId, null, null, clientIp);
         
         // Log the request with its ID and session ID
-        log.debug("Processing request with ID: {}, Session ID: {}, URI: {}, Method: {}", 
-                requestId, sessionId, request.getRequestURI(), request.getMethod());
+        log.debug("Processing request with ID: {}, Session ID: {}, URI: {}, Method: {}, Client IP: {}", 
+                requestId, sessionId, request.getRequestURI(), request.getMethod(), clientIp);
         
         try {
             filterChain.doFilter(request, response);
@@ -68,8 +69,40 @@ public class RequestIdFilter extends OncePerRequestFilter {
             log.debug("Completed request with ID: {}, Session ID: {}", requestId, sessionId);
             
             // Remove from MDC
-            MDC.remove(REQUEST_ID_ATTRIBUTE);
-            MDC.remove(SESSION_ID_ATTRIBUTE);
+            LoggingConfig.clearMdcContext();
         }
+    }
+
+    /**
+     * Extract the client IP address from the request
+     * 
+     * @param request The HTTP request
+     * @return The client IP address
+     */
+    private String extractClientIp(HttpServletRequest request) {
+        String[] headerNames = {
+            "X-Forwarded-For",
+            "X-Real-IP",
+            "Proxy-Client-IP",
+            "WL-Proxy-Client-IP",
+            "HTTP_X_FORWARDED_FOR",
+            "HTTP_X_FORWARDED",
+            "HTTP_X_CLUSTER_CLIENT_IP",
+            "HTTP_CLIENT_IP",
+            "HTTP_FORWARDED_FOR",
+            "HTTP_FORWARDED",
+            "HTTP_VIA",
+            "REMOTE_ADDR"
+        };
+
+        for (String header : headerNames) {
+            String ip = request.getHeader(header);
+            if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+                // Handle comma-separated IPs (take the first one)
+                return ip.split(",")[0].trim();
+            }
+        }
+        
+        return request.getRemoteAddr();
     }
 }

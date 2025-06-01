@@ -44,7 +44,7 @@ public class AuditService {
     /**
      * Log an audit event asynchronously
      */
-    @Async
+    @Async("asyncExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logAuditEvent(
             String userId,
@@ -66,8 +66,8 @@ public class AuditService {
             Map<String, Object> metadata) {
 
         try {
-            // Try to get request ID from MDC
-            String requestId = org.slf4j.MDC.get("requestId");
+            // Get request ID from MDC using our centralized config
+            String requestId = org.slf4j.MDC.get(org.ganjp.blog.common.config.LoggingConfig.MDC_REQUEST_ID_KEY);
             
             AuditLog auditLog = AuditLog.builder()
                     .id(UUID.randomUUID().toString())

@@ -25,9 +25,8 @@ public class RequestUtils {
      */
     public static String getCurrentRequestId() {
         try {
-            RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-            if (attributes instanceof ServletRequestAttributes) {
-                HttpServletRequest request = ((ServletRequestAttributes) attributes).getRequest();
+            HttpServletRequest request = getCurrentRequest();
+            if (request != null) {
                 Object requestId = request.getAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE);
                 if (requestId != null) {
                     return requestId.toString();
@@ -48,9 +47,8 @@ public class RequestUtils {
      */
     public static String getCurrentSessionId() {
         try {
-            RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-            if (attributes instanceof ServletRequestAttributes) {
-                HttpServletRequest request = ((ServletRequestAttributes) attributes).getRequest();
+            HttpServletRequest request = getCurrentRequest();
+            if (request != null) {
                 Object sessionId = request.getAttribute(RequestIdFilter.SESSION_ID_ATTRIBUTE);
                 if (sessionId != null) {
                     return sessionId.toString();
@@ -60,5 +58,31 @@ public class RequestUtils {
             // Silently handle any exceptions that might occur
         }
         return RequestIdFilter.NO_SESSION;
+    }
+
+    /**
+     * Gets the current HttpServletRequest from the request context.
+     *
+     * @return The current HttpServletRequest or null if not available
+     */
+    public static HttpServletRequest getCurrentRequest() {
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        if (attributes instanceof ServletRequestAttributes) {
+            return ((ServletRequestAttributes) attributes).getRequest();
+        }
+        return null;
+    }
+    
+    /**
+     * Gets the client IP address for the current request
+     *
+     * @return The client IP address or null if not available
+     */
+    public static String getCurrentClientIp() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request != null) {
+            return LoggingEnhancer.getClientIp(request);
+        }
+        return null;
     }
 }
