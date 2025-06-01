@@ -30,6 +30,7 @@ security:
     refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000} # 30 days in milliseconds (default)
   public-endpoints:
     - "/"                   # Root endpoint
+    - "/v1/register"        # User registration endpoint
     - "/v1/auth/**"         # Authentication endpoints
     - "/v1/public/**"       # Public API endpoints
     - "/actuator/health"    # Health check endpoint

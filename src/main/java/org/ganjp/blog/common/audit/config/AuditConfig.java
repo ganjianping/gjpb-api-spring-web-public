@@ -1,15 +1,14 @@
 package org.ganjp.blog.common.audit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.ganjp.blog.common.audit.interceptor.AuthenticationAuditInterceptor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -25,19 +24,23 @@ import java.util.concurrent.Executor;
 @EnableAsync
 @EnableConfigurationProperties(AuditProperties.class)
 @ConditionalOnProperty(name = "audit.enabled", havingValue = "true", matchIfMissing = true)
-@RequiredArgsConstructor
 public class AuditConfig implements WebMvcConfigurer {
 
     private final AuditProperties auditProperties;
+    private final AuthenticationAuditInterceptor authenticationAuditInterceptor;
     
-    @Autowired
-    @Lazy
-    private AuthenticationAuditInterceptor authenticationAuditInterceptor;
+    public AuditConfig(AuditProperties auditProperties, 
+                      @Lazy AuthenticationAuditInterceptor authenticationAuditInterceptor) {
+        this.auditProperties = auditProperties;
+        this.authenticationAuditInterceptor = authenticationAuditInterceptor;
+    }
 
     /**
      * Configure async executor for audit logging to prevent blocking main threads
+     * Also serves as the primary task executor for all async operations
      */
     @Bean(name = "auditTaskExecutor")
+    @Primary
     public Executor auditTaskExecutor() {
         AuditProperties.ThreadPoolConfig config = auditProperties.getThreadPool();
         

@@ -6,10 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.auth.model.dto.request.LoginRequest;
 import org.ganjp.blog.auth.model.dto.request.LogoutRequest;
 import org.ganjp.blog.auth.model.dto.request.RefreshTokenRequest;
-import org.ganjp.blog.auth.model.dto.request.SignupRequest;
+import org.ganjp.blog.auth.model.dto.request.RegisterRequest;
 import org.ganjp.blog.auth.model.dto.response.AuthTokenResponse;
-import org.ganjp.blog.auth.model.dto.response.LoginResponse;
-import org.ganjp.blog.auth.model.dto.response.SignupResponse;
+import org.ganjp.blog.auth.model.dto.response.RegisterResponse;
 import org.ganjp.blog.auth.model.dto.response.TokenRefreshResponse;
 import org.ganjp.blog.auth.model.entity.RefreshToken;
 import org.ganjp.blog.auth.model.entity.Role;
@@ -53,95 +52,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenService refreshTokenService;
-
-    /**
-     * Authenticate a user and generate JWT token
-     * This enhanced version supports login via:
-     * - Username
-     * - Email 
-     * - Mobile number + country code
-     * 
-     * Uses CustomAuthenticationProvider for consistent authentication and failure tracking.
-     */
-    @Transactional
-    public LoginResponse login(LoginRequest loginRequest) {
-        // Validate login request has only one authentication method
-        if (!loginRequest.isValidLoginMethod()) {
-            throw new BadCredentialsException("Please provide exactly one login method: username, email, or mobile number");
-        }
-
-        String principal;
-        if (loginRequest.getEmail() != null && !loginRequest.getEmail().isEmpty()) {
-            principal = loginRequest.getEmail();
-        } else if (loginRequest.getUsername() != null && !loginRequest.getUsername().isEmpty()) {
-            principal = loginRequest.getUsername();
-        } else {
-            // For mobile login, combine country code and mobile number as principal
-            // Format: "65-1234567890" to ensure uniqueness across countries
-            principal = loginRequest.getMobileCountryCode() + "-" + loginRequest.getMobileNumber();
-        }
-        
-        // Create authentication token with login request details
-        UsernamePasswordAuthenticationToken authToken = 
-            new UsernamePasswordAuthenticationToken(principal, loginRequest.getPassword());
-        authToken.setDetails(loginRequest);
-        
-        // Use AuthenticationManager (which delegates to CustomAuthenticationProvider)
-        // This ensures consistent authentication logic and failure tracking
-        Authentication authentication = authenticationManager.authenticate(authToken);
-        
-        // Set authentication in security context
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        
-        // Get the authenticated user
-        User user = (User) authentication.getPrincipal();
-        
-        // Get client IP address for login tracking
-        String clientIp = getClientIp();
-        
-        // Update last login timestamp and IP
-        LocalDateTime now = LocalDateTime.now();
-        user.setLastLoginAt(now);
-        user.setLastLoginIp(clientIp);
-        user.setFailedLoginAttempts(0); // Reset failed attempts on successful login
-        userRepository.save(user);
-        
-        // Explicitly load user roles from the repository
-        List<UserRole> activeUserRoles = userRoleRepository.findActiveUserRoles(user, LocalDateTime.now());
-        
-        // Extract role codes from explicitly loaded roles
-        List<String> roleCodes = activeUserRoles.stream()
-                .map(userRole -> userRole.getRole().getCode())
-                .toList();
-        
-        // Create authorities from the active roles
-        List<SimpleGrantedAuthority> authorities = activeUserRoles.stream()
-                .map(userRole -> new SimpleGrantedAuthority("ROLE_" + userRole.getRole().getCode()))
-                .collect(Collectors.toList());
-        
-        // Generate JWT token with explicit authorities
-        String jwt = jwtUtils.generateTokenWithAuthorities(user, authorities, user.getId());
-                
-        // Log the found roles for debugging
-        log.debug("Loaded {} active roles for user {}: {}", 
-                roleCodes.size(), user.getUsername(), roleCodes);
-                
-        // Return response with user details and role codes
-        return LoginResponse.builder()
-                .token(jwt)
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .mobileCountryCode(user.getMobileCountryCode())
-                .mobileNumber(user.getMobileNumber())
-                .nickname(user.getNickname())
-                .accountStatus(user.getAccountStatus())
-                .lastLoginAt(user.getLastLoginAt())
-                .lastLoginIp(user.getLastLoginIp())
-                .lastFailedLoginAt(user.getLastFailedLoginAt())
-                .failedLoginAttempts(user.getFailedLoginAttempts())
-                .roleCodes(roleCodes)
-                .build();
-    }
 
     /**
      * Enhanced login method that returns both access and refresh tokens
@@ -316,96 +226,132 @@ public class AuthService {
      * Get the client's IP address from the current request
      * This method handles various proxy headers and converts local addresses to a readable format
      */
+    // Constants for IP handling
+    private static final String UNKNOWN_IP = "unknown";
+    private static final String IPV4_LOCALHOST = "127.0.0.1";
+    private static final String IPV6_LOCALHOST_LONG = "0:0:0:0:0:0:0:1";
+    private static final String IPV6_LOCALHOST_SHORT = "::1";
+    
+    /**
+     * Gets the client's IP address from the request using various header strategies.
+     * This enhanced version:
+     * 1. Properly handles IPv6 addresses including loopback conversion
+     * 2. Checks multiple proxy headers in order of reliability
+     * 3. Performs proper validation of IP addresses
+     * 4. Has improved error handling and logging
+     *
+     * @return The client's IP address or "unknown" if it cannot be determined
+     */
     private String getClientIp() {
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attributes == null) {
-                return "unknown";
+                log.debug("No request attributes available");
+                return UNKNOWN_IP;
             }
             
             HttpServletRequest request = attributes.getRequest();
             
-            // Check standard proxy headers first
-            String ip = request.getHeader("X-Forwarded-For");
-            if (isValidIp(ip)) {
-                return ip.split(",")[0].trim(); // Get first IP if multiple are present
+            // Define headers to check in order of preference
+            final String[] PROXY_HEADERS = {
+                "X-Forwarded-For",
+                "Proxy-Client-IP",
+                "WL-Proxy-Client-IP",
+                "HTTP_X_FORWARDED_FOR",
+                "HTTP_CLIENT_IP",
+                "HTTP_X_FORWARDED",
+                "HTTP_X_CLUSTER_CLIENT_IP",
+                "HTTP_FORWARDED_FOR",
+                "HTTP_FORWARDED",
+                "X-Real-IP",
+                "CF-Connecting-IP", // Cloudflare
+                "True-Client-IP"    // Akamai and Cloudflare
+            };
+            
+            // Check all proxy headers
+            for (String header : PROXY_HEADERS) {
+                String ip = request.getHeader(header);
+                if (isValidIp(ip)) {
+                    // For X-Forwarded-For, get first IP which is the client IP
+                    if (header.equals("X-Forwarded-For") && ip.contains(",")) {
+                        ip = ip.split(",")[0].trim();
+                    }
+                    log.debug("Client IP found using header {}: {}", header, ip);
+                    return normalizeIp(ip);
+                }
             }
             
-            // Check other common proxy headers
-            ip = request.getHeader("Proxy-Client-IP");
-            if (isValidIp(ip)) return ip;
+            // Use the remote address as a last resort
+            String ip = request.getRemoteAddr();
+            log.debug("Using remote address as client IP: {}", ip);
+            return normalizeIp(ip);
             
-            ip = request.getHeader("WL-Proxy-Client-IP");
-            if (isValidIp(ip)) return ip;
-            
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-            if (isValidIp(ip)) return ip;
-            
-            ip = request.getHeader("HTTP_X_FORWARDED");
-            if (isValidIp(ip)) return ip;
-            
-            ip = request.getHeader("HTTP_X_CLUSTER_CLIENT_IP");
-            if (isValidIp(ip)) return ip;
-            
-            ip = request.getHeader("HTTP_CLIENT_IP");
-            if (isValidIp(ip)) return ip;
-            
-            ip = request.getHeader("HTTP_FORWARDED_FOR");
-            if (isValidIp(ip)) return ip;
-            
-            ip = request.getHeader("HTTP_FORWARDED");
-            if (isValidIp(ip)) return ip;
-            
-            ip = request.getHeader("HTTP_VIA");
-            if (isValidIp(ip)) return ip;
-            
-            ip = request.getHeader("REMOTE_ADDR");
-            if (isValidIp(ip)) return ip;
-            
-            // Use the remote address directly from the request as a last resort
-            ip = request.getRemoteAddr();
-            
-            // Handle local addresses
-            if (ip.equals("0:0:0:0:0:0:0:1") || ip.equals("::1")) {
-                return "127.0.0.1"; // Convert IPv6 loopback to IPv4 loopback for readability
-            }
-            
-            return ip;
         } catch (Exception e) {
             log.warn("Failed to determine client IP address", e);
-            return "unknown";
+            return UNKNOWN_IP;
         }
+    }
+    
+    /**
+     * Normalize IP address format (handle IPv6 loopback addresses)
+     */
+    private String normalizeIp(String ip) {
+        if (ip == null) {
+            return UNKNOWN_IP;
+        }
+        
+        // Handle IPv6 loopback addresses
+        if (IPV6_LOCALHOST_LONG.equals(ip) || IPV6_LOCALHOST_SHORT.equals(ip)) {
+            return IPV4_LOCALHOST;
+        }
+        
+        return ip;
     }
     
     /**
      * Check if an IP address string is valid and not empty or "unknown"
      */
     private boolean isValidIp(String ip) {
-        return ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip);
+        if (ip == null || ip.isEmpty() || ip.length() > 45) {
+            return false;
+        }
+        
+        String[] excludedValues = {UNKNOWN_IP, "undefined", "null", "localhost", IPV4_LOCALHOST, IPV6_LOCALHOST_LONG, IPV6_LOCALHOST_SHORT};
+        for (String excluded : excludedValues) {
+            if (excluded.equalsIgnoreCase(ip)) {
+                // We'll still return local addresses from normalizeIp, but we don't want them from headers
+                if (excluded.equals(IPV4_LOCALHOST) || excluded.equals(IPV6_LOCALHOST_LONG) || excluded.equals(IPV6_LOCALHOST_SHORT)) {
+                    log.debug("Found local address in header: {}", ip);
+                }
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     /**
      * Register a new user with ROLE_USER role
      *
-     * @param signupRequest The signup request data
+     * @param registerRequest The registration request data
      * @return The created user data
      */
     @Transactional
-    public SignupResponse signup(SignupRequest signupRequest) {
+    public RegisterResponse register(RegisterRequest registerRequest) {
         // Check if username already exists
-        if (userRepository.existsByUsername(signupRequest.getUsername())) {
+        if (registerRequest.getUsername() != null && userRepository.existsByUsername(registerRequest.getUsername())) {
             throw new IllegalArgumentException("Username is already taken");
         }
 
         // Check if email already exists
-        if (signupRequest.getEmail() != null && userRepository.existsByEmail(signupRequest.getEmail())) {
+        if (registerRequest.getEmail() != null && userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new IllegalArgumentException("Email is already registered");
         }
 
         // Check if mobile number already exists
-        if (signupRequest.getMobileCountryCode() != null && signupRequest.getMobileNumber() != null &&
+        if (registerRequest.getMobileCountryCode() != null && registerRequest.getMobileNumber() != null &&
             userRepository.existsByMobileCountryCodeAndMobileNumber(
-                signupRequest.getMobileCountryCode(), signupRequest.getMobileNumber())) {
+                registerRequest.getMobileCountryCode(), registerRequest.getMobileNumber())) {
             throw new IllegalArgumentException("Mobile number is already registered");
         }
 
@@ -414,20 +360,26 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("Role", "code", "USER"));
 
         // Validate that username is provided (now required field)
-        if (signupRequest.getUsername() == null || signupRequest.getUsername().isEmpty()) {
-            throw new IllegalArgumentException("Username is required and must be provided");
+        if (registerRequest.getUsername() == null || registerRequest.getUsername().isEmpty()) {
+            if (registerRequest.getEmail() != null && !registerRequest.getEmail().isEmpty()) {
+                registerRequest.setUsername(registerRequest.getEmail().split("@")[0]); // Use email prefix as username if not provided
+            } else if (registerRequest.getMobileCountryCode() != null && registerRequest.getMobileNumber() != null) {
+                registerRequest.setUsername(registerRequest.getMobileCountryCode() + registerRequest.getMobileNumber()); // Use mobile as username
+            } else {
+                throw new IllegalArgumentException("Username is required and must be provided");
+            }
         }
 
         // Create new user account with all fields explicitly set to avoid missing defaults
         String uuid = UUID.randomUUID().toString();
         User user = User.builder()
                 .id(uuid)
-                .username(signupRequest.getUsername())
-                .email(signupRequest.getEmail())
-                .mobileCountryCode(signupRequest.getMobileCountryCode())
-                .mobileNumber(signupRequest.getMobileNumber())
-                .password(passwordEncoder.encode(signupRequest.getPassword()))
-                .nickname(signupRequest.getNickname())
+                .username(registerRequest.getUsername())
+                .email(registerRequest.getEmail())
+                .mobileCountryCode(registerRequest.getMobileCountryCode())
+                .mobileNumber(registerRequest.getMobileNumber())
+                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .nickname(registerRequest.getNickname())
                 .accountStatus(AccountStatus.pending_verification)
                 .passwordChangedAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
@@ -453,7 +405,7 @@ public class AuthService {
 
         userRoleRepository.save(userRoleEntity);
 
-        return SignupResponse.builder()
+        return RegisterResponse.builder()
                 .id(savedUser.getId())
                 .username(savedUser.getUsername())
                 .email(savedUser.getEmail())
@@ -465,40 +417,5 @@ public class AuthService {
                 .build();
     }
     
-    /**
-     * Logout the current user by blacklisting their JWT token
-     * This method extracts the JWT token from the request and adds it to the blacklist
-     */
-    @Transactional
-    public void logout(HttpServletRequest request) {
-        try {
-            // Extract JWT token from Authorization header
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7); // Remove "Bearer " prefix
-                
-                // Extract token information for blacklisting
-                String tokenId = jwtUtils.extractTokenId(token);
-                long expirationTime = jwtUtils.extractExpirationTimestamp(token);
-                
-                if (tokenId != null && tokenBlacklistService != null) {
-                    // Add token to blacklist
-                    tokenBlacklistService.blacklistToken(tokenId, expirationTime);
-                    log.debug("Token blacklisted successfully for user logout: {}", tokenId);
-                } else {
-                    log.warn("Could not blacklist token: tokenId={}, blacklistService={}", 
-                            tokenId, tokenBlacklistService != null ? "available" : "null");
-                }
-            } else {
-                log.debug("No Bearer token found in Authorization header for logout");
-            }
-        } catch (Exception e) {
-            log.warn("Failed to blacklist token during logout: {}", e.getMessage());
-            // Continue with logout even if blacklisting fails
-        }
-        
-        // Clear the security context to invalidate the current authentication
-        SecurityContextHolder.clearContext();
-        log.debug("User logged out successfully, security context cleared");
-    }
+    // Legacy logout method has been removed in favor of enhancedLogout
 }
