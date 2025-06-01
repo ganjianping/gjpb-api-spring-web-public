@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.MDC;
 
 /**
  * Service for managing audit logs.
@@ -65,6 +66,9 @@ public class AuditService {
             Map<String, Object> metadata) {
 
         try {
+            // Try to get request ID from MDC
+            String requestId = org.slf4j.MDC.get("requestId");
+            
             AuditLog auditLog = AuditLog.builder()
                     .id(UUID.randomUUID().toString())
                     .userId(userId)
@@ -82,6 +86,7 @@ public class AuditService {
                     .ipAddress(ipAddress)
                     .userAgent(truncateString(userAgent, 500))
                     .sessionId(sessionId)
+                    .requestId(requestId)
                     .durationMs(durationMs)
                     .metadata(serializeMetadata(metadata))
                     .timestamp(LocalDateTime.now())
@@ -154,6 +159,16 @@ public class AuditService {
         String resourceType = extractResourceTypeFromEndpoint(endpoint);
         String resourceId = extractResourceIdFromEndpoint(endpoint);
 
+        // Get request ID if available
+        String requestId = (String) request.getAttribute(org.ganjp.blog.common.filter.RequestIdFilter.REQUEST_ID_ATTRIBUTE);
+        
+        // Create metadata with request ID if not available in request attributes
+        Map<String, Object> metadata = null;
+        if (requestId == null) {
+            metadata = new HashMap<>();
+            metadata.put("generatedRequestId", org.ganjp.blog.common.util.RequestUtils.getCurrentRequestId());
+        }
+        
         logAuditEvent(
                 userId,
                 username,
@@ -169,9 +184,9 @@ public class AuditService {
                 null,
                 getClientIpAddress(request),
                 request.getHeader("User-Agent"),
-                request.getSession().getId(),
+                request.getSession() != null ? request.getSession().getId() : null,
                 durationMs,
-                null
+                metadata
         );
     }
 

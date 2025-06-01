@@ -130,6 +130,12 @@ public class AuditLog {
     private String sessionId;
 
     /**
+     * Unique request ID for tracing across systems
+     */
+    @Column(name = "request_id", length = 36)
+    private String requestId;
+
+    /**
      * Duration of the operation in milliseconds
      */
     @Column(name = "duration_ms")
