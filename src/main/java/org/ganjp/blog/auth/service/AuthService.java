@@ -35,7 +35,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -189,7 +188,7 @@ public class AuthService {
      * Enhanced logout method that revokes both access and refresh tokens
      */
     @Transactional
-    public void enhancedLogout(LogoutRequest logoutRequest, HttpServletRequest request) {
+    public void revokeTokens(LogoutRequest logoutRequest, HttpServletRequest request) {
         try {
             // Extract and blacklist access token
             String authHeader = request.getHeader("Authorization");

@@ -141,9 +141,9 @@ public class TokenController {
             HttpServletRequest request) {
         try {
             // Store request data for audit logging (excluding sensitive token data)
-            request.setAttribute("enhancedLogoutRequest", sanitizeLogoutRequest(logoutRequest));
+            request.setAttribute("LogoutRequest", sanitizeLogoutRequest(logoutRequest));
 
-            authService.enhancedLogout(logoutRequest, request);
+            authService.revokeTokens(logoutRequest, request);
             
             ApiResponse<Void> response = ApiResponse.<Void>success(null, "Logout successful - all tokens revoked");
             return ResponseEntity.ok()
