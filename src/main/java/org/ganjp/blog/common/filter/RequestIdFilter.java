@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.core.Ordered;
@@ -27,6 +28,9 @@ public class RequestIdFilter extends OncePerRequestFilter {
 
     public static final String REQUEST_ID_ATTRIBUTE = "requestId";
     public static final String REQUEST_ID_HEADER = "X-Request-ID";
+    public static final String SESSION_ID_ATTRIBUTE = "sessionId";
+    public static final String SESSION_ID_HEADER = "X-Session-ID";
+    public static final String NO_SESSION = "no-session";
 
     @Override
     protected void doFilterInternal(
@@ -40,24 +44,32 @@ public class RequestIdFilter extends OncePerRequestFilter {
         // Store the request ID in the request attributes
         request.setAttribute(REQUEST_ID_ATTRIBUTE, requestId);
         
-        // Also add the request ID as a response header
+        // Get session ID only if already exists (don't create a new session)
+        HttpSession session = request.getSession(false);
+        String sessionId = session != null ? session.getId() : NO_SESSION;
+        request.setAttribute(SESSION_ID_ATTRIBUTE, sessionId);
+        
+        // Add headers to response
         response.setHeader(REQUEST_ID_HEADER, requestId);
+        response.setHeader(SESSION_ID_HEADER, sessionId);
         
-        // Add request ID to MDC for logging
+        // Add to MDC for logging
         MDC.put(REQUEST_ID_ATTRIBUTE, requestId);
+        MDC.put(SESSION_ID_ATTRIBUTE, sessionId);
         
-        // Log the request with its ID
-        log.debug("Processing request with ID: {}, URI: {}, Method: {}", 
-                requestId, request.getRequestURI(), request.getMethod());
+        // Log the request with its ID and session ID
+        log.debug("Processing request with ID: {}, Session ID: {}, URI: {}, Method: {}", 
+                requestId, sessionId, request.getRequestURI(), request.getMethod());
         
         try {
             filterChain.doFilter(request, response);
         } finally {
             // Log completion of request processing
-            log.debug("Completed request with ID: {}", requestId);
+            log.debug("Completed request with ID: {}, Session ID: {}", requestId, sessionId);
             
-            // Remove request ID from MDC
+            // Remove from MDC
             MDC.remove(REQUEST_ID_ATTRIBUTE);
+            MDC.remove(SESSION_ID_ATTRIBUTE);
         }
     }
 }

@@ -184,7 +184,7 @@ public class AuditService {
                 null,
                 getClientIpAddress(request),
                 request.getHeader("User-Agent"),
-                request.getSession() != null ? request.getSession().getId() : null,
+                (String) request.getAttribute(org.ganjp.blog.common.filter.RequestIdFilter.SESSION_ID_ATTRIBUTE),
                 durationMs,
                 metadata
         );

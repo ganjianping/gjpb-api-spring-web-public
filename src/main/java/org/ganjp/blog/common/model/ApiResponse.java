@@ -31,6 +31,7 @@ public class ApiResponse<T> {
     public static class Meta {
         private String serverDateTime;
         private String requestId;
+        private String sessionId;
     }
 
     public static <T> ApiResponse<T> success(T data, String message) {
@@ -45,6 +46,7 @@ public class ApiResponse<T> {
                         .serverDateTime(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                                 .format(java.time.LocalDateTime.now()))
                         .requestId(org.ganjp.blog.common.util.RequestUtils.getCurrentRequestId())
+                        .sessionId(org.ganjp.blog.common.util.RequestUtils.getCurrentSessionId())
                         .build())
                 .build();
     }
@@ -61,6 +63,7 @@ public class ApiResponse<T> {
                         .serverDateTime(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                                 .format(java.time.LocalDateTime.now()))
                         .requestId(org.ganjp.blog.common.util.RequestUtils.getCurrentRequestId())
+                        .sessionId(org.ganjp.blog.common.util.RequestUtils.getCurrentSessionId())
                         .build())
                 .build();
     }
