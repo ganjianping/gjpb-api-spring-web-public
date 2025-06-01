@@ -1,5 +1,7 @@
 package org.ganjp.blog.auth.model.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -17,6 +19,7 @@ import java.util.Set;
  * DTO for creating a new user or fully updating an existing user.
  * "Upsert" refers to the combined operation of insert (create) or update.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @Builder
 @NoArgsConstructor
@@ -66,6 +69,7 @@ public class UserUpsertRequest {
     
     // Ensure either both mobile fields are provided or neither
     @AssertTrue(message = "Both mobile country code and mobile number must be provided or neither")
+    @JsonIgnore
     public boolean isMobileInfoValid() {
         return (mobileCountryCode == null && mobileNumber == null) || 
                (mobileCountryCode != null && mobileNumber != null);
@@ -73,6 +77,7 @@ public class UserUpsertRequest {
     
     // Ensure at least one contact method is provided
     @AssertTrue(message = "At least one contact method (email or mobile) is required")
+    @JsonIgnore
     public boolean isContactMethodProvided() {
         return email != null || (mobileCountryCode != null && mobileNumber != null);
     }

@@ -1,5 +1,7 @@
 package org.ganjp.blog.auth.model.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -16,6 +18,7 @@ import java.util.Set;
  * DTO for partial updates to an existing user (PATCH operation).
  * All fields are optional to support partial updates.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @Builder
 @NoArgsConstructor
@@ -63,6 +66,7 @@ public class UserPatchRequest {
     
     // Ensure either both mobile fields are provided or neither
     @AssertTrue(message = "Both mobile country code and mobile number must be provided or neither")
+    @JsonIgnore
     public boolean isMobileInfoValid() {
         if ((mobileCountryCode != null && mobileNumber == null) || 
             (mobileCountryCode == null && mobileNumber != null)) {

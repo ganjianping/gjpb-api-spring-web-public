@@ -1,5 +1,7 @@
 package org.ganjp.blog.auth.model.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -13,6 +15,7 @@ import lombok.NoArgsConstructor;
 /**
  * DTO for user registration requests.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @Builder
 @NoArgsConstructor
@@ -58,6 +61,7 @@ public class RegisterRequest {
     private String nickname;
 
     @AssertTrue(message = "At least one of username, email, or mobile (country code and number) must be provided and valid")
+    @JsonIgnore
     public boolean isLoginIdentityValid() {
         boolean isUsernameValid = username != null && username.matches("^[A-Za-z0-9._-]{3,30}$");
         boolean isEmailValid = email != null && email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
