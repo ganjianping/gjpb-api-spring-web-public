@@ -36,6 +36,7 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ActiveUserService activeUserService;
 
     /**
      * Get all users with pagination
@@ -651,10 +652,9 @@ public class UserService {
         long pendingVerificationUsers = userRepository.countByAccountStatus(AccountStatus.pending_verification);
         stats.put("pendingVerificationUsers", pendingVerificationUsers);
         
-        // Active sessions - placeholder value
-        // Note: This requires implementation of session management
-        // For now, returning 0 as a placeholder
-        stats.put("activeSessions", 0L);
+        // Active sessions - real count from memory
+        long activeSessions = activeUserService.getActiveUserCount();
+        stats.put("activeSessions", activeSessions);
         
         return stats;
     }

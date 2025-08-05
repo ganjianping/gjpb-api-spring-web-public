@@ -280,7 +280,7 @@ public class UserController {
      * - Number of locked users (account_status = 'locked')
      * - Number of suspended users (account_status = 'suspended') 
      * - Number of pending verification users (account_status = 'pending_verification')
-     * - Number of active sessions (requires session management implementation)
+     * - Number of active sessions (real-time count from memory)
      * 
      * @return Dashboard statistics
      */

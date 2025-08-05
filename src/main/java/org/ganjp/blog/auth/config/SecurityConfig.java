@@ -4,6 +4,7 @@ import org.ganjp.blog.auth.repository.UserRepository;
 import org.ganjp.blog.auth.security.JwtAuthenticationFilter;
 import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.auth.security.TokenBlacklistService;
+import org.ganjp.blog.auth.service.ActiveUserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,8 +54,9 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtils jwtUtils, 
                                                           UserDetailsService userDetailsService,
-                                                          TokenBlacklistService tokenBlacklistService) {
-        return new JwtAuthenticationFilter(jwtUtils, userDetailsService, tokenBlacklistService);
+                                                          TokenBlacklistService tokenBlacklistService,
+                                                          ActiveUserService activeUserService) {
+        return new JwtAuthenticationFilter(jwtUtils, userDetailsService, tokenBlacklistService, activeUserService);
     }
 
     @Bean

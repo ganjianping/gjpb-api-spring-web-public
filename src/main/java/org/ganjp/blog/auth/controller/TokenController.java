@@ -11,6 +11,8 @@ import org.ganjp.blog.auth.model.dto.response.LoginResponse;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.ganjp.blog.auth.model.dto.response.AuthTokenResponse;
 import org.ganjp.blog.auth.model.dto.response.TokenRefreshResponse;
+import org.ganjp.blog.auth.security.JwtUtils;
+import org.ganjp.blog.auth.service.ActiveUserService;
 import org.ganjp.blog.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -47,6 +49,8 @@ import java.util.Map;
 public class TokenController {
 
     private final AuthService authService;
+    private final ActiveUserService activeUserService;
+    private final JwtUtils jwtUtils;
 
     /**
      * Create new access and refresh tokens (authentication)
@@ -143,7 +147,26 @@ public class TokenController {
             // Store request data for audit logging (excluding sensitive token data)
             request.setAttribute("LogoutRequest", sanitizeLogoutRequest(logoutRequest));
 
+            // Extract user ID from the Authorization header before revoking tokens
+            String authHeader = request.getHeader("Authorization");
+            String userId = null;
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                try {
+                    String token = authHeader.substring(7);
+                    userId = jwtUtils.extractUserId(token);
+                } catch (Exception e) {
+                    // Log the error but continue with logout
+                    // User might be logging out with an expired token
+                }
+            }
+
+            // Revoke tokens through auth service
             authService.revokeTokens(logoutRequest, request);
+            
+            // Remove user from active user tracking
+            if (userId != null) {
+                activeUserService.removeActiveUser(userId);
+            }
             
             ApiResponse<Void> response = ApiResponse.<Void>success(null, "Logout successful - all tokens revoked");
             return ResponseEntity.ok()
