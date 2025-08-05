@@ -29,9 +29,9 @@ import java.util.Arrays;
 public class LoggingAspect {
 
     /**
-     * Pointcut for all service methods
+     * Pointcut for all service methods, excluding AuditService to prevent circular dependencies
      */
-    @Pointcut("within(@org.springframework.stereotype.Service *)")
+    @Pointcut("within(@org.springframework.stereotype.Service *) && !within(org.ganjp.blog.common.audit.service.AuditService)")
     public void servicePointcut() {
     }
 

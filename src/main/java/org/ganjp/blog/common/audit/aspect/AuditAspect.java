@@ -54,6 +54,7 @@ public class AuditAspect {
         
         // Skip authentication endpoints as they are handled by AuthenticationAuditInterceptor
         if (isAuthenticationEndpoint(endpoint)) {
+            log.debug("Skipping audit for authentication endpoint: {} {}", httpMethod, endpoint);
             return joinPoint.proceed();
         }
         
@@ -243,7 +244,8 @@ public class AuditAspect {
         return endpoint != null && (
             endpoint.contains("/auth/login") ||
             endpoint.contains("/auth/logout") ||
-            endpoint.contains("/auth/signup")
+            endpoint.contains("/auth/signup") ||
+            endpoint.contains("/auth/tokens")
         );
     }
 }

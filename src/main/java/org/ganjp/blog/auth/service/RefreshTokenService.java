@@ -85,6 +85,7 @@ public class RefreshTokenService {
             
             // Update last used timestamp
             token.setLastUsedAt(now);
+            token.setUpdatedAt(now);
             refreshTokenRepository.save(token);
             
             log.debug("Refresh token validated successfully for user: {}", token.getUserId());

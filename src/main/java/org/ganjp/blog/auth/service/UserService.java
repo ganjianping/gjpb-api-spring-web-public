@@ -21,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -611,5 +613,49 @@ public class UserService {
                 .updatedAt(user.getUpdatedAt())
                 .roles(roleResponses)
                 .build();
+    }
+
+    /**
+     * Get dashboard statistics for admin users
+     * 
+     * This method provides comprehensive user statistics including:
+     * - Total number of users
+     * - Number of active users (active = true)
+     * - Number of locked users (account_status = 'locked')
+     * - Number of suspended users (account_status = 'suspended')
+     * - Number of pending verification users (account_status = 'pending_verification')
+     * - Number of active sessions (placeholder - requires session management)
+     * 
+     * @return Map containing all dashboard statistics
+     */
+    public Map<String, Object> getDashboardStats() {
+        Map<String, Object> stats = new HashMap<>();
+        
+        // Total number of users
+        long totalUsers = userRepository.count();
+        stats.put("totalUsers", totalUsers);
+        
+        // Number of active users (active = true)
+        long activeUsers = userRepository.countByActiveTrue();
+        stats.put("activeUsers", activeUsers);
+        
+        // Number of locked users
+        long lockedUsers = userRepository.countByAccountStatus(AccountStatus.locked);
+        stats.put("lockedUsers", lockedUsers);
+        
+        // Number of suspended users
+        long suspendedUsers = userRepository.countByAccountStatus(AccountStatus.suspended);
+        stats.put("suspendedUsers", suspendedUsers);
+        
+        // Number of pending verification users
+        long pendingVerificationUsers = userRepository.countByAccountStatus(AccountStatus.pending_verification);
+        stats.put("pendingVerificationUsers", pendingVerificationUsers);
+        
+        // Active sessions - placeholder value
+        // Note: This requires implementation of session management
+        // For now, returning 0 as a placeholder
+        stats.put("activeSessions", 0L);
+        
+        return stats;
     }
 }

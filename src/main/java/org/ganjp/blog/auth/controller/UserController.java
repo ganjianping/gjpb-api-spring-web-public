@@ -20,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/v1/users")
 @RequiredArgsConstructor
@@ -267,5 +269,24 @@ public class UserController {
         UserResponse updatedUser = userService.toggleUserActiveStatus(id, userId);
 
         return ResponseEntity.ok(ApiResponse.success(updatedUser, "User status toggled successfully"));
+    }
+
+    /**
+     * Get dashboard statistics
+     * 
+     * This endpoint provides comprehensive user statistics for dashboard display:
+     * - Total number of users
+     * - Number of active users
+     * - Number of locked users (account_status = 'locked')
+     * - Number of suspended users (account_status = 'suspended') 
+     * - Number of pending verification users (account_status = 'pending_verification')
+     * - Number of active sessions (requires session management implementation)
+     * 
+     * @return Dashboard statistics
+     */
+    @GetMapping("/dashboard")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getDashboard() {
+        Map<String, Object> stats = userService.getDashboardStats();
+        return ResponseEntity.ok(ApiResponse.success(stats, "Dashboard statistics retrieved successfully"));
     }
 }

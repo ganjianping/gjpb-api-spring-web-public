@@ -166,4 +166,9 @@ public interface UserRepository extends JpaRepository<User, String> {
                                      @Param("active") Boolean active,
                                      @Param("roleCode") String roleCode,
                                      Pageable pageable);
+    
+    // Dashboard statistics methods
+    long countByActiveTrue();
+    
+    long countByAccountStatus(AccountStatus accountStatus);
 }
