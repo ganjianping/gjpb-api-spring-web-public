@@ -2,8 +2,6 @@ package org.ganjp.blog.common.audit.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.ganjp.blog.common.audit.model.entity.AuditLog;
-import org.ganjp.blog.common.audit.model.enums.AuditAction;
-import org.ganjp.blog.common.audit.model.enums.AuditResult;
 import org.ganjp.blog.common.audit.service.AuditQueryService;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.springframework.data.domain.Page;
@@ -13,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -35,15 +35,29 @@ public class AuditController {
     @GetMapping
     public ResponseEntity<ApiResponse<Page<AuditLog>>> getAuditLogs(
             @RequestParam(required = false) String userId,
-            @RequestParam(required = false) AuditAction action,
-            @RequestParam(required = false) AuditResult result,
-            @RequestParam(required = false) String resourceType,
+            @RequestParam(required = false) String httpMethod,
+            @RequestParam(required = false) String resultPattern,
+            @RequestParam(required = false) String endpointPattern,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             Pageable pageable) {
 
+        // Convert date parameters to datetime if provided
+        LocalDateTime effectiveStartTime = startTime;
+        LocalDateTime effectiveEndTime = endTime;
+        
+        if (startDate != null && effectiveStartTime == null) {
+            effectiveStartTime = startDate.atStartOfDay(); // 00:00:00
+        }
+        
+        if (endDate != null && effectiveEndTime == null) {
+            effectiveEndTime = endDate.atTime(LocalTime.MAX); // 23:59:59.999999999
+        }
+
         Page<AuditLog> auditLogs = auditQueryService.findAuditLogs(
-                userId, action, result, resourceType, startTime, endTime, pageable);
+                userId, httpMethod, resultPattern, endpointPattern, effectiveStartTime, effectiveEndTime, pageable);
 
         return ResponseEntity.ok(ApiResponse.success(auditLogs, "Audit logs retrieved successfully"));
     }
@@ -83,7 +97,10 @@ public class AuditController {
             @PathVariable String resourceId,
             Pageable pageable) {
 
-        Page<AuditLog> auditLogs = auditQueryService.findResourceAuditLogs(resourceType, resourceId, pageable);
+        // Use endpoint pattern to find logs for specific resource
+        String endpointPattern = "/" + resourceType + "/" + resourceId;
+        Page<AuditLog> auditLogs = auditQueryService.findAuditLogs(
+                null, null, null, endpointPattern, null, null, pageable);
         return ResponseEntity.ok(ApiResponse.success(auditLogs, "Resource audit logs retrieved successfully"));
     }
 

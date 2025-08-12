@@ -1,8 +1,6 @@
 package org.ganjp.blog.common.audit.repository;
 
 import org.ganjp.blog.common.audit.model.entity.AuditLog;
-import org.ganjp.blog.common.audit.model.enums.AuditAction;
-import org.ganjp.blog.common.audit.model.enums.AuditResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,7 +14,7 @@ import java.util.List;
 
 /**
  * Repository interface for AuditLog entity.
- * Provides data access methods for audit logs.
+ * Provides data access methods for simplified audit logs.
  */
 @Repository
 public interface AuditLogRepository extends JpaRepository<AuditLog, String> {
@@ -37,29 +35,21 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, String> {
             Pageable pageable);
 
     /**
-     * Find audit logs by action type
+     * Find audit logs by HTTP method
      */
-    Page<AuditLog> findByActionOrderByTimestampDesc(AuditAction action, Pageable pageable);
+    Page<AuditLog> findByHttpMethodOrderByTimestampDesc(String httpMethod, Pageable pageable);
 
     /**
-     * Find audit logs by result
+     * Find audit logs by result message (like pattern)
      */
-    Page<AuditLog> findByResultOrderByTimestampDesc(AuditResult result, Pageable pageable);
+    @Query("SELECT a FROM AuditLog a WHERE a.result LIKE %:resultPattern% ORDER BY a.timestamp DESC")
+    Page<AuditLog> findByResultContaining(@Param("resultPattern") String resultPattern, Pageable pageable);
 
     /**
-     * Find failed operations for a specific user
+     * Find failed operations for a specific user (based on result message patterns)
      */
-    @Query("SELECT a FROM AuditLog a WHERE a.userId = :userId AND a.result IN ('FAILURE', 'ERROR', 'DENIED', 'AUTHENTICATION_FAILED') ORDER BY a.timestamp DESC")
+    @Query("SELECT a FROM AuditLog a WHERE a.userId = :userId AND (a.result LIKE '%failed%' OR a.result LIKE '%error%' OR a.errorMessage IS NOT NULL) ORDER BY a.timestamp DESC")
     Page<AuditLog> findFailedOperationsByUser(@Param("userId") String userId, Pageable pageable);
-
-    /**
-     * Find audit logs by resource type and ID
-     */
-    @Query("SELECT a FROM AuditLog a WHERE a.resourceType = :resourceType AND a.resourceId = :resourceId ORDER BY a.timestamp DESC")
-    Page<AuditLog> findByResourceTypeAndResourceId(
-            @Param("resourceType") String resourceType,
-            @Param("resourceId") String resourceId,
-            Pageable pageable);
 
     /**
      * Find audit logs within a time range
@@ -77,14 +67,15 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, String> {
 
     /**
      * Count failed login attempts for a user within a time period
+     * Updated to work with simplified schema
      */
-    @Query("SELECT COUNT(a) FROM AuditLog a WHERE a.userId = :userId AND a.action = 'LOGIN' AND a.result = 'AUTHENTICATION_FAILED' AND a.timestamp >= :since")
+    @Query("SELECT COUNT(a) FROM AuditLog a WHERE a.userId = :userId AND a.endpoint LIKE '%/auth/login%' AND (a.result LIKE '%failed%' OR a.statusCode = 401) AND a.timestamp >= :since")
     long countFailedLoginAttempts(@Param("userId") String userId, @Param("since") LocalDateTime since);
 
     /**
      * Count failed login attempts from an IP address within a time period
      */
-    @Query("SELECT COUNT(a) FROM AuditLog a WHERE a.ipAddress = :ipAddress AND a.action = 'LOGIN' AND a.result = 'AUTHENTICATION_FAILED' AND a.timestamp >= :since")
+    @Query("SELECT COUNT(a) FROM AuditLog a WHERE a.ipAddress = :ipAddress AND a.endpoint LIKE '%/auth/login%' AND (a.result LIKE '%failed%' OR a.statusCode = 401) AND a.timestamp >= :since")
     long countFailedLoginAttemptsByIp(@Param("ipAddress") String ipAddress, @Param("since") LocalDateTime since);
 
     /**
@@ -94,30 +85,30 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, String> {
     List<AuditLog> findRecentAuditLogs(@Param("since") LocalDateTime since);
 
     /**
-     * Count operations by user and action within a time period
+     * Count operations by user and endpoint pattern within a time period
      */
-    @Query("SELECT COUNT(a) FROM AuditLog a WHERE a.userId = :userId AND a.action = :action AND a.timestamp >= :since")
-    long countOperationsByUserAndAction(
+    @Query("SELECT COUNT(a) FROM AuditLog a WHERE a.userId = :userId AND a.endpoint LIKE :endpointPattern AND a.timestamp >= :since")
+    long countOperationsByUserAndEndpoint(
             @Param("userId") String userId,
-            @Param("action") AuditAction action,
+            @Param("endpointPattern") String endpointPattern,
             @Param("since") LocalDateTime since);
 
     /**
-     * Find audit logs by multiple criteria
+     * Find audit logs by multiple criteria (simplified)
      */
     @Query("SELECT a FROM AuditLog a WHERE " +
            "(:userId IS NULL OR a.userId = :userId) AND " +
-           "(:action IS NULL OR a.action = :action) AND " +
-           "(:result IS NULL OR a.result = :result) AND " +
-           "(:resourceType IS NULL OR a.resourceType = :resourceType) AND " +
+           "(:httpMethod IS NULL OR a.httpMethod = :httpMethod) AND " +
+           "(:resultPattern IS NULL OR a.result LIKE %:resultPattern%) AND " +
+           "(:endpointPattern IS NULL OR a.endpoint LIKE %:endpointPattern%) AND " +
            "(:startTime IS NULL OR a.timestamp >= :startTime) AND " +
            "(:endTime IS NULL OR a.timestamp <= :endTime) " +
            "ORDER BY a.timestamp DESC")
     Page<AuditLog> findByCriteria(
             @Param("userId") String userId,
-            @Param("action") AuditAction action,
-            @Param("result") AuditResult result,
-            @Param("resourceType") String resourceType,
+            @Param("httpMethod") String httpMethod,
+            @Param("resultPattern") String resultPattern,
+            @Param("endpointPattern") String endpointPattern,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime,
             Pageable pageable);
@@ -136,13 +127,29 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, String> {
     long countTotalAuditLogs();
 
     /**
-     * Get audit log statistics for dashboard
+     * Get audit log statistics for dashboard (simplified)
      */
-    @Query("SELECT a.action, a.result, COUNT(a) FROM AuditLog a WHERE a.timestamp >= :since GROUP BY a.action, a.result")
+    @Query("SELECT a.httpMethod, a.result, COUNT(a) FROM AuditLog a WHERE a.timestamp >= :since GROUP BY a.httpMethod, a.result")
     List<Object[]> getAuditStatistics(@Param("since") LocalDateTime since);
     
     /**
      * Find all audit logs ordered by timestamp in descending order
      */
     Page<AuditLog> findAllByOrderByTimestampDesc(Pageable pageable);
+
+    /**
+     * Find audit logs by request ID for correlation
+     */
+    Page<AuditLog> findByRequestIdOrderByTimestampDesc(String requestId, Pageable pageable);
+
+    /**
+     * Find audit logs by status code
+     */
+    Page<AuditLog> findByStatusCodeOrderByTimestampDesc(Integer statusCode, Pageable pageable);
+
+    /**
+     * Count operations by endpoint within a time period
+     */
+    @Query("SELECT COUNT(a) FROM AuditLog a WHERE a.endpoint = :endpoint AND a.timestamp >= :since")
+    long countOperationsByEndpoint(@Param("endpoint") String endpoint, @Param("since") LocalDateTime since);
 }

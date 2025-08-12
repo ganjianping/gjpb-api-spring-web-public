@@ -159,26 +159,10 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     -- Request information
     http_method VARCHAR(10) NOT NULL COMMENT 'HTTP method (POST, PUT, PATCH, DELETE)',
     endpoint VARCHAR(255) NOT NULL COMMENT 'API endpoint that was called',
-    action ENUM(
-        'LOGIN', 'LOGOUT', 'SIGNUP', 'PASSWORD_CHANGE', 'PASSWORD_RESET',
-        'USER_CREATE', 'USER_UPDATE', 'USER_PATCH', 'USER_DELETE', 'USER_DELETE_PERMANENT',
-        'USER_STATUS_CHANGE', 'USER_ROLE_ASSIGN', 'USER_ROLE_REVOKE',
-        'ROLE_CREATE', 'ROLE_UPDATE', 'ROLE_PATCH', 'ROLE_DELETE', 'ROLE_STATUS_CHANGE','OTHER'
-    ) NOT NULL COMMENT 'Type of action performed',
+    request_id CHAR(36) DEFAULT NULL COMMENT 'Request ID from meta.requestId',
 
-    -- Resource information
-    resource_type VARCHAR(20) DEFAULT NULL COMMENT 'Type of resource (User, Role, etc.)',
-    resource_id VARCHAR(36) DEFAULT NULL COMMENT 'ID of the affected resource',
-
-    -- Request/Response data (limited size)
-    request_data TEXT DEFAULT NULL COMMENT 'Sanitized request payload',
-    response_data TEXT DEFAULT NULL COMMENT 'Sanitized response data',
-
-    -- Operation result
-    result ENUM(
-        'SUCCESS', 'FAILURE', 'ERROR', 'DENIED', 'VALIDATION_ERROR',
-        'AUTHENTICATION_FAILED', 'TIMEOUT', 'CANCELLED'
-    ) NOT NULL COMMENT 'Result of the operation',
+    -- Operation result (changed from ENUM to VARCHAR to store status.message)
+    result VARCHAR(100) NOT NULL COMMENT 'Result message from response status.message',
     status_code INT DEFAULT NULL COMMENT 'HTTP status code',
     error_message TEXT DEFAULT NULL COMMENT 'Error details if operation failed',
 
@@ -190,23 +174,18 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     -- Performance tracking
     duration_ms BIGINT DEFAULT NULL COMMENT 'Operation duration in milliseconds',
 
-    -- Additional metadata
-    metadata JSON DEFAULT NULL COMMENT 'Additional context in JSON format',
-
     -- Timestamp
     timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When the action occurred',
 
     PRIMARY KEY (id),
 
-    -- Indexes for common queries
+    -- Updated indexes for common queries
     KEY idx_audit_user_id (user_id),
     KEY idx_audit_timestamp (timestamp),
-    KEY idx_audit_action (action),
     KEY idx_audit_result (result),
     KEY idx_audit_endpoint (endpoint),
+    KEY idx_audit_request_id (request_id),
     KEY idx_audit_user_timestamp (user_id, timestamp),
-    KEY idx_audit_action_timestamp (action, timestamp),
-    KEY idx_audit_resource (resource_type, resource_id),
     KEY idx_audit_ip_address (ip_address),
     KEY idx_audit_status_code (status_code),
 
@@ -214,7 +193,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     CONSTRAINT fk_audit_logs_user FOREIGN KEY (user_id) REFERENCES auth_users (id) ON DELETE SET NULL ON UPDATE CASCADE
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Audit trail for all API operations excluding GET requests';
+COMMENT='Track all API operations for security and compliance';
 USE gjpb;
 
 -- Table: auth_refresh_tokens

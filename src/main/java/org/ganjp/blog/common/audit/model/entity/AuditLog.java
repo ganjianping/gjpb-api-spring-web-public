@@ -5,14 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.common.audit.model.enums.AuditAction;
-import org.ganjp.blog.common.audit.model.enums.AuditResult;
 
 import java.time.LocalDateTime;
 
 /**
  * Entity representing audit logs for API operations.
  * Tracks all non-GET API calls for security and compliance purposes.
+ * Simplified schema focusing on essential tracking information.
  */
 @Data
 @Builder
@@ -22,11 +21,12 @@ import java.time.LocalDateTime;
 @Table(name = "audit_logs", indexes = {
     @Index(name = "idx_audit_user_id", columnList = "user_id"),
     @Index(name = "idx_audit_timestamp", columnList = "timestamp"),
-    @Index(name = "idx_audit_action", columnList = "action"),
     @Index(name = "idx_audit_result", columnList = "result"),
     @Index(name = "idx_audit_endpoint", columnList = "endpoint"),
+    @Index(name = "idx_audit_request_id", columnList = "request_id"),
     @Index(name = "idx_audit_user_timestamp", columnList = "user_id, timestamp"),
-    @Index(name = "idx_audit_action_timestamp", columnList = "action, timestamp")
+    @Index(name = "idx_audit_ip_address", columnList = "ip_address"),
+    @Index(name = "idx_audit_status_code", columnList = "status_code")
 })
 public class AuditLog {
 
@@ -62,42 +62,16 @@ public class AuditLog {
     private String endpoint;
 
     /**
-     * Type of action performed
+     * Request ID from response meta for tracing
      */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "action", nullable = false)
-    private AuditAction action;
+    @Column(name = "request_id", length = 36)
+    private String requestId;
 
     /**
-     * Resource type being operated on (User, Role, etc.)
+     * Result message from response status.message (changed from enum to varchar)
      */
-    @Column(name = "resource_type", length = 20)
-    private String resourceType;
-
-    /**
-     * ID of the resource being operated on
-     */
-    @Column(name = "resource_id", length = 36)
-    private String resourceId;
-
-    /**
-     * Request payload (limited size for security)
-     */
-    @Column(name = "request_data", columnDefinition = "TEXT")
-    private String requestData;
-
-    /**
-     * Response data or summary
-     */
-    @Column(name = "response_data", columnDefinition = "TEXT")
-    private String responseData;
-
-    /**
-     * Result of the operation
-     */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "result", nullable = false)
-    private AuditResult result;
+    @Column(name = "result", length = 100, nullable = false)
+    private String result;
 
     /**
      * HTTP status code of the response
@@ -130,22 +104,10 @@ public class AuditLog {
     private String sessionId;
 
     /**
-     * Unique request ID for tracing across systems
-     */
-    @Column(name = "request_id", length = 36)
-    private String requestId;
-
-    /**
      * Duration of the operation in milliseconds
      */
     @Column(name = "duration_ms")
     private Long durationMs;
-
-    /**
-     * Additional metadata in JSON format
-     */
-    @Column(name = "metadata", columnDefinition = "JSON")
-    private String metadata;
 
     /**
      * Timestamp when the action was performed

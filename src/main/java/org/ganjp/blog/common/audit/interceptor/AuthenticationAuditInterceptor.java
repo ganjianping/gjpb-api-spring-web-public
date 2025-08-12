@@ -4,8 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ganjp.blog.common.audit.model.enums.AuditAction;
-import org.ganjp.blog.common.audit.model.enums.AuditResult;
 import org.ganjp.blog.common.audit.service.AuditService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,6 +45,8 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
                 auditLogoutAttempt(request, response, ex);
             } else if (requestUri.contains("/auth/signup")) {
                 auditSignupAttempt(request, response, ex);
+            } else if (requestUri.contains("/auth/tokens")) {
+                auditTokenAttempt(request, response, ex);
             }
         } catch (Exception e) {
             log.error("Error during authentication audit logging", e);
@@ -54,159 +54,96 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
     }
 
     private void auditLoginAttempt(HttpServletRequest request, HttpServletResponse response, Exception ex) {
-        AuditResult result;
         String errorMessage = null;
         String username = extractUsernameFromRequest(request);
-        Object requestData = extractRequestData(request);
-        Object responseData = extractResponseData(request);
-        String resourceId = extractResourceId(request);
+        String resultMessage;
 
         if (ex != null) {
-            result = AuditResult.ERROR;
             errorMessage = ex.getMessage();
+            resultMessage = "Login failed: " + errorMessage;
         } else if (response.getStatus() == 200) {
-            result = AuditResult.SUCCESS;
+            resultMessage = "Login successful";
         } else if (response.getStatus() == 401) {
-            result = AuditResult.AUTHENTICATION_FAILED;
-            errorMessage = "Invalid credentials";
+            resultMessage = "Login failed: Invalid credentials";
         } else {
-            result = AuditResult.FAILURE;
-            errorMessage = "Login failed with status: " + response.getStatus();
+            resultMessage = "Login failed with status: " + response.getStatus();
         }
 
         // Extract request data before async call to avoid recycled request object
-        String httpMethod = request.getMethod();
-        String requestURI = request.getRequestURI();
-        String clientIpAddress = getClientIpAddress(request);
-        String userAgent = request.getHeader("User-Agent");
-        String sessionId = null;
-        try {
-            sessionId = request.getSession(false) != null ? request.getSession(false).getId() : null;
-        } catch (IllegalStateException e) {
-            // Session cannot be accessed after response is committed
-            sessionId = "session-unavailable";
-        }
         Long startTimeMs = (Long) request.getAttribute("auditStartTime");
+        AuditService.AuthenticationAuditData auditData = createAuditData(
+                request, response, username, resultMessage, startTimeMs);
 
-        auditService.logAuthenticationEventWithData(
-                AuditAction.LOGIN,
-                username,
-                result,
-                errorMessage,
-                httpMethod,
-                requestURI,
-                clientIpAddress,
-                userAgent,
-                sessionId,
-                startTimeMs,
-                requestData,
-                responseData,
-                resourceId
-        );
+        auditService.logAuthenticationEvent(auditData);
     }
 
     private void auditLogoutAttempt(HttpServletRequest request, HttpServletResponse response, Exception ex) {
-        AuditResult result;
-        String errorMessage = null;
         String username = extractUsernameFromSecurity();
-        Object requestData = extractRequestData(request);
-        Object responseData = extractResponseData(request);
-        String resourceId = extractResourceId(request);
+        String resultMessage;
 
         if (ex != null) {
-            result = AuditResult.ERROR;
-            errorMessage = ex.getMessage();
+            resultMessage = "Logout failed: " + ex.getMessage();
         } else if (response.getStatus() == 200) {
-            result = AuditResult.SUCCESS;
+            resultMessage = "Logout successful";
         } else {
-            result = AuditResult.FAILURE;
-            errorMessage = "Logout failed with status: " + response.getStatus();
+            resultMessage = "Logout failed with status: " + response.getStatus();
         }
 
         // Extract request data before async call to avoid recycled request object
-        String httpMethod = request.getMethod();
-        String requestURI = request.getRequestURI();
-        String clientIpAddress = getClientIpAddress(request);
-        String userAgent = request.getHeader("User-Agent");
-        String sessionId = null;
-        try {
-            sessionId = request.getSession(false) != null ? request.getSession(false).getId() : null;
-        } catch (IllegalStateException e) {
-            // Session cannot be accessed after response is committed
-            sessionId = "session-unavailable";
-        }
         Long startTimeMs = (Long) request.getAttribute("auditStartTime");
+        AuditService.AuthenticationAuditData auditData = createAuditData(
+                request, response, username, resultMessage, startTimeMs);
 
-        auditService.logAuthenticationEventWithData(
-                AuditAction.LOGOUT,
-                username,
-                result,
-                errorMessage,
-                httpMethod,
-                requestURI,
-                clientIpAddress,
-                userAgent,
-                sessionId,
-                startTimeMs,
-                requestData,
-                responseData,
-                resourceId
-        );
+        auditService.logAuthenticationEvent(auditData);
     }
 
     private void auditSignupAttempt(HttpServletRequest request, HttpServletResponse response, Exception ex) {
-        AuditResult result;
-        String errorMessage = null;
         String username = extractUsernameFromRequest(request);
-        Object requestData = extractRequestData(request);
-        Object responseData = extractResponseData(request);
-        String resourceId = extractResourceId(request);
+        String resultMessage;
 
         if (ex != null) {
-            result = AuditResult.ERROR;
-            errorMessage = ex.getMessage();
+            resultMessage = "Signup failed: " + ex.getMessage();
         } else if (response.getStatus() == 200 || response.getStatus() == 201) {
-            result = AuditResult.SUCCESS;
+            resultMessage = "Signup successful";
         } else if (response.getStatus() == 400 || response.getStatus() == 422) {
-            result = AuditResult.VALIDATION_ERROR;
-            errorMessage = "Signup validation failed";
+            resultMessage = "Signup failed: Validation error";
         } else if (response.getStatus() == 409) {
-            result = AuditResult.FAILURE;
-            errorMessage = "User already exists";
+            resultMessage = "Signup failed: User already exists";
         } else {
-            result = AuditResult.FAILURE;
-            errorMessage = "Signup failed with status: " + response.getStatus();
+            resultMessage = "Signup failed with status: " + response.getStatus();
         }
 
         // Extract request data before async call to avoid recycled request object
-        String httpMethod = request.getMethod();
-        String requestURI = request.getRequestURI();
-        String clientIpAddress = getClientIpAddress(request);
-        String userAgent = request.getHeader("User-Agent");
-        String sessionId = null;
-        try {
-            sessionId = request.getSession(false) != null ? request.getSession(false).getId() : null;
-        } catch (IllegalStateException e) {
-            // Session cannot be accessed after response is committed
-            sessionId = "session-unavailable";
-        }
         Long startTimeMs = (Long) request.getAttribute("auditStartTime");
+        AuditService.AuthenticationAuditData auditData = createAuditData(
+                request, response, username, resultMessage, startTimeMs);
 
-        auditService.logAuthenticationEventWithData(
-                AuditAction.SIGNUP,
-                username,
-                result,
-                errorMessage,
-                httpMethod,
-                requestURI,
-                clientIpAddress,
-                userAgent,
-                sessionId,
-                startTimeMs,
-                requestData,
-                responseData,
-                resourceId
-        );
+        auditService.logAuthenticationEvent(auditData);
+    }
+
+    private void auditTokenAttempt(HttpServletRequest request, HttpServletResponse response, Exception ex) {
+        String username = extractUsernameFromSecurity();
+        String resultMessage;
+
+        // Determine result based on response status and exception
+        if (ex != null) {
+            resultMessage = "Token operation failed: " + ex.getMessage();
+        } else if (response.getStatus() == 200) {
+            resultMessage = "Token operation successful";
+        } else if (response.getStatus() == 401) {
+            resultMessage = "Token operation failed: Unauthorized";
+        } else if (response.getStatus() == 400) {
+            resultMessage = "Token operation failed: Bad request";
+        } else {
+            resultMessage = "Token operation failed with status: " + response.getStatus();
+        }
+
+        // Extract request data before async call to avoid recycled request object
+        Long startTimeMs = (Long) request.getAttribute("auditStartTime");
+        AuditService.AuthenticationAuditData auditData = createAuditData(
+                request, response, username, resultMessage, startTimeMs);
+
+        auditService.logAuthenticationEvent(auditData);
     }
 
     /**
@@ -246,29 +183,34 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
     }
 
     /**
-     * Extract request data from request attributes (set by controller)
+     * Extract request data and create audit data object
      */
-    private Object extractRequestData(HttpServletRequest request) {
-        return request.getAttribute("loginRequestData");
+    private AuditService.AuthenticationAuditData createAuditData(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            String username,
+            String resultMessage,
+            Long startTimeMs) {
+        
+        Long durationMs = startTimeMs != null ? System.currentTimeMillis() - startTimeMs : null;
+        
+        return AuditService.AuthenticationAuditData.builder()
+                .httpMethod(request.getMethod())
+                .endpoint(request.getRequestURI())
+                .userId(username)
+                .username(username)
+                .resultMessage(resultMessage)
+                .statusCode(response.getStatus())
+                .ipAddress(getClientIpAddress(request))
+                .userAgent(getUserAgent(request))
+                .sessionId(getSessionId(request))
+                .requestId(getRequestId(request))
+                .durationMs(durationMs)
+                .build();
     }
 
     /**
-     * Extract response data from request attributes (set by controller)
-     */
-    private Object extractResponseData(HttpServletRequest request) {
-        return request.getAttribute("loginResponseData");
-    }
-
-    /**
-     * Extract resource ID (user ID) from request attributes
-     */
-    private String extractResourceId(HttpServletRequest request) {
-        Object resourceId = request.getAttribute("loginResourceId");
-        return resourceId instanceof String ? (String) resourceId : null;
-    }
-
-    /**
-     * Get client IP address from request (same logic as AuditService)
+     * Get client IP address from request
      */
     private String getClientIpAddress(HttpServletRequest request) {
         String[] headerNames = {
@@ -289,12 +231,42 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
         for (String header : headerNames) {
             String ip = request.getHeader(header);
             if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-                // Handle comma-separated IPs (take the first one)
-                return ip.split(",")[0].trim();
+                String clientIp = ip.split(",")[0].trim();
+                // Normalize IPv6 localhost to IPv4 for better readability
+                if ("0:0:0:0:0:0:0:1".equals(clientIp) || "::1".equals(clientIp)) {
+                    return "127.0.0.1";
+                }
+                return clientIp;
             }
         }
 
-        // Fallback to remote address
-        return request.getRemoteAddr();
+        String remoteAddr = request.getRemoteAddr();
+        // Normalize IPv6 localhost to IPv4 for better readability
+        if ("0:0:0:0:0:0:0:1".equals(remoteAddr) || "::1".equals(remoteAddr)) {
+            return "127.0.0.1";
+        }
+        return remoteAddr;
+    }
+
+    /**
+     * Get user agent from request
+     */
+    private String getUserAgent(HttpServletRequest request) {
+        return request.getHeader("User-Agent");
+    }
+
+    /**
+     * Get session ID from request
+     */
+    private String getSessionId(HttpServletRequest request) {
+        return request.getSession(false) != null ? request.getSession(false).getId() : "no-session";
+    }
+
+    /**
+     * Get request ID from request attributes
+     */
+    private String getRequestId(HttpServletRequest request) {
+        Object requestId = request.getAttribute("requestId");
+        return requestId != null ? requestId.toString() : "no-req";
     }
 }

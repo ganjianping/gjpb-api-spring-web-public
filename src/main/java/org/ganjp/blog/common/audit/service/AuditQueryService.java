@@ -3,8 +3,6 @@ package org.ganjp.blog.common.audit.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.common.audit.model.entity.AuditLog;
-import org.ganjp.blog.common.audit.model.enums.AuditAction;
-import org.ganjp.blog.common.audit.model.enums.AuditResult;
 import org.ganjp.blog.common.audit.repository.AuditLogRepository;
 import org.ganjp.blog.common.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
@@ -30,19 +28,19 @@ public class AuditQueryService {
     private final AuditLogRepository auditLogRepository;
 
     /**
-     * Find audit logs with multiple criteria
+     * Find audit logs with multiple criteria (simplified)
      */
     public Page<AuditLog> findAuditLogs(
             String userId,
-            AuditAction action,
-            AuditResult result,
-            String resourceType,
+            String httpMethod,
+            String resultPattern,
+            String endpointPattern,
             LocalDateTime startTime,
             LocalDateTime endTime,
             Pageable pageable) {
 
         return auditLogRepository.findByCriteria(
-                userId, action, result, resourceType, startTime, endTime, pageable);
+                userId, httpMethod, resultPattern, endpointPattern, startTime, endTime, pageable);
     }
 
     /**
@@ -64,10 +62,10 @@ public class AuditQueryService {
     }
 
     /**
-     * Find audit logs for a specific resource
+     * Find audit logs for a specific endpoint pattern
      */
-    public Page<AuditLog> findResourceAuditLogs(String resourceType, String resourceId, Pageable pageable) {
-        return auditLogRepository.findByResourceTypeAndResourceId(resourceType, resourceId, pageable);
+    public Page<AuditLog> findAuditLogsByEndpoint(String endpointPattern, Pageable pageable) {
+        return auditLogRepository.findByCriteria(null, null, null, endpointPattern, null, null, pageable);
     }
 
     /**
@@ -121,32 +119,29 @@ public class AuditQueryService {
         long totalLogs = auditLogRepository.countTotalAuditLogs();
         statistics.put("totalLogs", totalLogs);
         
-        // Get statistics by action and result
+        // Get statistics by HTTP method and result
         List<Object[]> rawStats = auditLogRepository.getAuditStatistics(since);
         
-        Map<String, Map<String, Long>> actionResultStats = new HashMap<>();
+        Map<String, Map<String, Long>> methodResultStats = new HashMap<>();
         long totalSuccessful = 0;
         long totalFailed = 0;
         
         for (Object[] row : rawStats) {
-            AuditAction action = (AuditAction) row[0];
-            AuditResult result = (AuditResult) row[1];
+            String httpMethod = (String) row[0];
+            String result = (String) row[1];
             Long count = (Long) row[2];
             
-            String actionKey = action.name();
-            String resultKey = result.name();
+            methodResultStats.computeIfAbsent(httpMethod, k -> new HashMap<>())
+                           .put(result, count);
             
-            actionResultStats.computeIfAbsent(actionKey, k -> new HashMap<>())
-                           .put(resultKey, count);
-            
-            if (result == AuditResult.SUCCESS) {
+            if (result != null && (result.toLowerCase().contains("success") || !result.toLowerCase().contains("fail"))) {
                 totalSuccessful += count;
             } else {
                 totalFailed += count;
             }
         }
         
-        statistics.put("actionResultStats", actionResultStats);
+        statistics.put("methodResultStats", methodResultStats);
         statistics.put("totalSuccessful", totalSuccessful);
         statistics.put("totalFailed", totalFailed);
         statistics.put("periodDays", days);
@@ -161,18 +156,18 @@ public class AuditQueryService {
     }
 
     /**
-     * Get count of operations by user and action within specified hours
+     * Get count of operations by user and endpoint pattern within specified hours
      */
-    public long countOperationsByUserAndAction(String userId, AuditAction action, int hours) {
+    public long countOperationsByUserAndEndpoint(String userId, String endpointPattern, int hours) {
         LocalDateTime since = LocalDateTime.now().minusHours(hours);
-        return auditLogRepository.countOperationsByUserAndAction(userId, action, since);
+        return auditLogRepository.countOperationsByUserAndEndpoint(userId, endpointPattern, since);
     }
 
     /**
-     * Check if a user has exceeded the operation rate limit
+     * Check if a user has exceeded the operation rate limit for an endpoint
      */
-    public boolean hasExceededRateLimit(String userId, AuditAction action, int maxOperations, int hours) {
-        long count = countOperationsByUserAndAction(userId, action, hours);
+    public boolean hasExceededRateLimit(String userId, String endpointPattern, int maxOperations, int hours) {
+        long count = countOperationsByUserAndEndpoint(userId, endpointPattern, hours);
         return count >= maxOperations;
     }
 
@@ -233,16 +228,16 @@ public class AuditQueryService {
     }
 
     /**
-     * Find audit logs by action
+     * Find audit logs by HTTP method
      */
-    public Page<AuditLog> findAuditLogsByAction(AuditAction action, Pageable pageable) {
-        return auditLogRepository.findByActionOrderByTimestampDesc(action, pageable);
+    public Page<AuditLog> findAuditLogsByHttpMethod(String httpMethod, Pageable pageable) {
+        return auditLogRepository.findByHttpMethodOrderByTimestampDesc(httpMethod, pageable);
     }
 
     /**
-     * Find audit logs by result
+     * Find audit logs by result pattern
      */
-    public Page<AuditLog> findAuditLogsByResult(AuditResult result, Pageable pageable) {
-        return auditLogRepository.findByResultOrderByTimestampDesc(result, pageable);
+    public Page<AuditLog> findAuditLogsByResult(String resultPattern, Pageable pageable) {
+        return auditLogRepository.findByResultContaining(resultPattern, pageable);
     }
 }

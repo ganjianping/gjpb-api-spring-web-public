@@ -15,9 +15,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * Aspect for auditing API calls.
- * Automatically logs all non-GET HTTP requests to controllers.
+ * Automatically logs all HTTP requests to controllers.
  * 
- * Note: Authentication endpoints (/auth/login, /auth/logout, /auth/signup) are excluded
+ * Note: Authentication endpoints (/auth/login, /auth/logout, /auth/signup, /auth/tokens) are excluded
  * from this aspect as they are specifically handled by AuthenticationAuditInterceptor
  * to prevent duplicate audit logging.
  */
@@ -30,7 +30,7 @@ public class AuditAspect {
     private final AuditService auditService;
 
     /**
-     * Intercept all controller methods (excluding GET requests)
+     * Intercept all controller methods (all HTTP methods including GET)
      */
     @Around("execution(* org.ganjp.blog.*.controller.*.*(..))")
     public Object auditApiCall(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -44,12 +44,6 @@ public class AuditAspect {
         
         HttpServletRequest request = attributes.getRequest();
         String httpMethod = request.getMethod();
-        
-        // Skip GET requests as they are read-only
-        if ("GET".equalsIgnoreCase(httpMethod)) {
-            return joinPoint.proceed();
-        }
-        
         String endpoint = request.getRequestURI();
         
         // Skip authentication endpoints as they are handled by AuthenticationAuditInterceptor
@@ -58,9 +52,7 @@ public class AuditAspect {
             return joinPoint.proceed();
         }
         
-        Object[] args = joinPoint.getArgs();
         Object result = null;
-        Throwable exception = null;
         
         try {
             // Proceed with the actual method execution
@@ -79,12 +71,14 @@ public class AuditAspect {
                 statusCode = responseEntity.getStatusCode().value();
             }
             
+            // Extract result message from response
+            String resultMessage = extractResultMessage(responseData, statusCode);
+            
             // Log successful operation
             auditService.logSuccess(
                 httpMethod,
                 endpoint,
-                extractRequestData(args),
-                sanitizeResponseData(responseData),
+                resultMessage,
                 statusCode,
                 request,
                 duration
@@ -93,21 +87,22 @@ public class AuditAspect {
             return result;
             
         } catch (Throwable e) {
-            exception = e;
-            
             // Calculate duration
             long duration = System.currentTimeMillis() - startTime;
             
             // Determine status code based on exception type
             Integer statusCode = determineStatusCodeFromException(e);
             
+            // Extract result message from exception
+            String resultMessage = "Error: " + e.getMessage();
+            
             // Log failed operation
             auditService.logFailure(
                 httpMethod,
                 endpoint,
-                extractRequestData(args),
-                e.getMessage(),
+                resultMessage,
                 statusCode,
+                e.getMessage(),
                 request,
                 duration
             );
@@ -117,102 +112,27 @@ public class AuditAspect {
     }
 
     /**
-     * Extract relevant request data from method arguments
+     * Extract result message from response data and status code
      */
-    private Object extractRequestData(Object[] args) {
-        if (args == null || args.length == 0) {
-            return null;
-        }
-        
-        // Look for request DTOs (usually the first non-primitive argument)
-        for (Object arg : args) {
-            if (arg != null && isRequestDto(arg)) {
-                return sanitizeRequestData(arg);
+    private String extractResultMessage(Object responseData, Integer statusCode) {
+        // Extract message from ApiResponse if available
+        if (responseData instanceof ApiResponse) {
+            ApiResponse<?> apiResponse = (ApiResponse<?>) responseData;
+            if (apiResponse.getStatus() != null && apiResponse.getStatus().getMessage() != null) {
+                return apiResponse.getStatus().getMessage();
             }
         }
         
-        return null;
-    }
-
-    /**
-     * Check if an object is likely a request DTO
-     */
-    private boolean isRequestDto(Object obj) {
-        if (obj == null) return false;
-        
-        String className = obj.getClass().getSimpleName();
-        String packageName = obj.getClass().getPackage().getName();
-        
-        // Skip Spring framework objects and primitive types
-        return !packageName.startsWith("org.springframework") &&
-               !packageName.startsWith("jakarta.servlet") &&
-               !obj.getClass().isPrimitive() &&
-               !(obj instanceof String) &&
-               !(obj instanceof Number) &&
-               // Include our DTO classes
-               (className.endsWith("Request") || 
-                className.endsWith("DTO") || 
-                packageName.contains("dto"));
-    }
-
-    /**
-     * Sanitize request data to remove sensitive information
-     */
-    private Object sanitizeRequestData(Object data) {
-        if (data == null) return null;
-        
-        // For security, create a sanitized copy without sensitive fields
-        // This is a simple implementation - you might want to use more sophisticated approaches
-        String dataStr = data.toString();
-        
-        // Remove potential passwords and sensitive data
-        dataStr = dataStr.replaceAll("password[^,}]*", "password=***");
-        dataStr = dataStr.replaceAll("token[^,}]*", "token=***");
-        dataStr = dataStr.replaceAll("secret[^,}]*", "secret=***");
-        
-        return dataStr;
-    }
-
-    /**
-     * Sanitize response data to remove sensitive information
-     */
-    private Object sanitizeResponseData(Object responseData) {
-        if (responseData == null) return null;
-        
-        // If it's an ApiResponse, extract the data
-        if (responseData instanceof ApiResponse) {
-            ApiResponse<?> apiResponse = (ApiResponse<?>) responseData;
-            return createSanitizedResponse(apiResponse);
+        // Default message based on status code
+        if (statusCode >= 200 && statusCode < 300) {
+            return "Success";
+        } else if (statusCode >= 400 && statusCode < 500) {
+            return "Client Error";
+        } else if (statusCode >= 500) {
+            return "Server Error";
         }
         
-        return sanitizeRequestData(responseData);
-    }
-
-    /**
-     * Create a sanitized version of ApiResponse for logging
-     */
-    private Object createSanitizedResponse(ApiResponse<?> apiResponse) {
-        return new Object() {
-            public final boolean success = apiResponse.getStatus() != null && apiResponse.getStatus().getCode() >= 200 && apiResponse.getStatus().getCode() < 300;
-            public final String message = apiResponse.getStatus() != null ? apiResponse.getStatus().getMessage() : null;
-            public final Object data = sanitizeDataForLogging(apiResponse.getData());
-        };
-    }
-
-    /**
-     * Sanitize data for logging purposes
-     */
-    private Object sanitizeDataForLogging(Object data) {
-        if (data == null) return null;
-        
-        // For complex objects, just return basic info
-        String className = data.getClass().getSimpleName();
-        if (data instanceof java.util.Collection) {
-            java.util.Collection<?> collection = (java.util.Collection<?>) data;
-            return className + " with " + collection.size() + " items";
-        }
-        
-        return className + " object";
+        return "Unknown";
     }
 
     /**

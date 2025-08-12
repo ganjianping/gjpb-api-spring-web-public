@@ -1,144 +1,35 @@
 package org.ganjp.blog.common.audit.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
+import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.common.audit.model.entity.AuditLog;
-import org.ganjp.blog.common.audit.model.enums.AuditAction;
-import org.ganjp.blog.common.audit.model.enums.AuditResult;
 import org.ganjp.blog.common.audit.repository.AuditLogRepository;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
-import org.slf4j.MDC;
 
 /**
- * Service for managing audit logs.
- * Handles creation and storage of audit log entries.
+ * Service for creating audit log entries
  */
-@Slf4j
 @Service
 public class AuditService {
 
-    private final AuditLogRepository auditLogRepository;
-    private final ObjectMapper objectMapper;
+    private static final Logger log = LoggerFactory.getLogger(AuditService.class);
 
-    public AuditService(AuditLogRepository auditLogRepository, 
-                       @Qualifier("auditObjectMapper") ObjectMapper objectMapper) {
-        this.auditLogRepository = auditLogRepository;
-        this.objectMapper = objectMapper;
-    }
-
-    private static final int MAX_DATA_LENGTH = 10000; // Limit data size to prevent database issues
-
-    /**
-     * Log an audit event asynchronously
-     */
-    @Async("asyncExecutor")
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void logAuditEvent(
-            String userId,
-            String username,
-            String httpMethod,
-            String endpoint,
-            AuditAction action,
-            String resourceType,
-            String resourceId,
-            Object requestData,
-            Object responseData,
-            AuditResult result,
-            Integer statusCode,
-            String errorMessage,
-            String ipAddress,
-            String userAgent,
-            String sessionId,
-            Long durationMs,
-            Map<String, Object> metadata) {
-
-        try {
-            // Get request ID from MDC using our centralized config
-            String requestId = org.slf4j.MDC.get(org.ganjp.blog.common.config.LoggingConfig.MDC_REQUEST_ID_KEY);
-            
-            AuditLog auditLog = AuditLog.builder()
-                    .id(UUID.randomUUID().toString())
-                    .userId(userId)
-                    .username(username)
-                    .httpMethod(httpMethod)
-                    .endpoint(endpoint)
-                    .action(action)
-                    .resourceType(resourceType)
-                    .resourceId(resourceId)
-                    .requestData(truncateAndSerialize(requestData))
-                    .responseData(truncateAndSerialize(responseData))
-                    .result(result)
-                    .statusCode(statusCode)
-                    .errorMessage(truncateString(errorMessage, 1000))
-                    .ipAddress(ipAddress)
-                    .userAgent(truncateString(userAgent, 500))
-                    .sessionId(sessionId)
-                    .requestId(requestId)
-                    .durationMs(durationMs)
-                    .metadata(serializeMetadata(metadata))
-                    .timestamp(LocalDateTime.now())
-                    .build();
-
-            auditLogRepository.save(auditLog);
-            log.debug("Audit log created: {} - {} - {}", action, endpoint, result);
-
-        } catch (Exception e) {
-            log.error("Failed to create audit log for action: {} on endpoint: {}", action, endpoint, e);
-        }
-    }
-
-    /**
-     * Log an audit event with minimal information
-     */
-    @Async
-    public void logAuditEvent(
-            String httpMethod,
-            String endpoint,
-            AuditResult result,
-            Integer statusCode,
-            HttpServletRequest request) {
-
-        String userId = extractUserIdFromSecurity();
-        String username = extractUsernameFromSecurity();
-        AuditAction action = AuditAction.fromHttpMethodAndEndpoint(httpMethod, endpoint);
-        String resourceType = extractResourceTypeFromEndpoint(endpoint);
-        String ipAddress = getClientIpAddress(request);
-        String userAgent = request.getHeader("User-Agent");
-        String sessionId = request.getSession().getId();
-
-        logAuditEvent(
-                userId,
-                username,
-                httpMethod,
-                endpoint,
-                action,
-                resourceType,
-                null, // resourceId
-                null, // requestData
-                null, // responseData
-                result,
-                statusCode,
-                null, // errorMessage
-                ipAddress,
-                userAgent,
-                sessionId,
-                null, // durationMs
-                null  // metadata
-        );
-    }
+    @Autowired
+    private AuditLogRepository auditLogRepository;
+    
+    @Autowired
+    private JwtUtils jwtUtils;
 
     /**
      * Log a successful operation
@@ -147,47 +38,38 @@ public class AuditService {
     public void logSuccess(
             String httpMethod,
             String endpoint,
-            Object requestData,
-            Object responseData,
+            String resultMessage,
             Integer statusCode,
             HttpServletRequest request,
             Long durationMs) {
 
-        String userId = extractUserIdFromSecurity();
-        String username = extractUsernameFromSecurity();
-        AuditAction action = AuditAction.fromHttpMethodAndEndpoint(httpMethod, endpoint);
-        String resourceType = extractResourceTypeFromEndpoint(endpoint);
-        String resourceId = extractResourceIdFromEndpoint(endpoint);
+        try {
+            String userId = extractUserIdFromSecurity();
+            String username = extractUsernameFromSecurity();
+            String requestId = getRequestId(request);
 
-        // Get request ID if available
-        String requestId = (String) request.getAttribute(org.ganjp.blog.common.filter.RequestIdFilter.REQUEST_ID_ATTRIBUTE);
-        
-        // Create metadata with request ID if not available in request attributes
-        Map<String, Object> metadata = null;
-        if (requestId == null) {
-            metadata = new HashMap<>();
-            metadata.put("generatedRequestId", org.ganjp.blog.common.util.RequestUtils.getCurrentRequestId());
+            AuditLog auditLog = AuditLog.builder()
+                    .id(UUID.randomUUID().toString())
+                    .userId(userId)
+                    .username(username)
+                    .httpMethod(httpMethod)
+                    .endpoint(endpoint)
+                    .result(resultMessage)
+                    .statusCode(statusCode)
+                    .ipAddress(getClientIpAddress(request))
+                    .userAgent(getUserAgent(request))
+                    .sessionId(getSessionId(request))
+                    .requestId(requestId)
+                    .durationMs(durationMs)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+            auditLogRepository.save(auditLog);
+            log.debug("Audit log created: {} - {} - {}", httpMethod, endpoint, resultMessage);
+
+        } catch (Exception e) {
+            log.error("Failed to create audit log", e);
         }
-        
-        logAuditEvent(
-                userId,
-                username,
-                httpMethod,
-                endpoint,
-                action,
-                resourceType,
-                resourceId,
-                requestData,
-                responseData,
-                AuditResult.SUCCESS,
-                statusCode,
-                null,
-                getClientIpAddress(request),
-                request.getHeader("User-Agent"),
-                (String) request.getAttribute(org.ganjp.blog.common.filter.RequestIdFilter.SESSION_ID_ATTRIBUTE),
-                durationMs,
-                metadata
-        );
     }
 
     /**
@@ -197,302 +79,319 @@ public class AuditService {
     public void logFailure(
             String httpMethod,
             String endpoint,
-            Object requestData,
+            String resultMessage,
+            Integer statusCode,
             String errorMessage,
+            HttpServletRequest request,
+            Long durationMs) {
+
+        try {
+            String userId = extractUserIdFromSecurity();
+            String username = extractUsernameFromSecurity();
+            String requestId = getRequestId(request);
+
+            AuditLog auditLog = AuditLog.builder()
+                    .id(UUID.randomUUID().toString())
+                    .userId(userId)
+                    .username(username)
+                    .httpMethod(httpMethod)
+                    .endpoint(endpoint)
+                    .result(resultMessage)
+                    .statusCode(statusCode)
+                    .errorMessage(errorMessage)
+                    .ipAddress(getClientIpAddress(request))
+                    .userAgent(getUserAgent(request))
+                    .sessionId(getSessionId(request))
+                    .requestId(requestId)
+                    .durationMs(durationMs)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+            auditLogRepository.save(auditLog);
+            log.debug("Audit log created: {} - {} - {}", httpMethod, endpoint, resultMessage);
+
+        } catch (Exception e) {
+            log.error("Failed to create audit log", e);
+        }
+    }
+
+    /**
+     * Log authentication events with detailed data
+     */
+    @Async
+    public void logAuthenticationEventWithData(
+            String httpMethod,
+            String endpoint,
+            String userId,
+            String username,
+            String resultMessage,
             Integer statusCode,
             HttpServletRequest request,
             Long durationMs) {
 
-        String userId = extractUserIdFromSecurity();
-        String username = extractUsernameFromSecurity();
-        AuditAction action = AuditAction.fromHttpMethodAndEndpoint(httpMethod, endpoint);
-        String resourceType = extractResourceTypeFromEndpoint(endpoint);
-        String resourceId = extractResourceIdFromEndpoint(endpoint);
-        AuditResult result = AuditResult.fromStatusCode(statusCode);
+        try {
+            String requestId = getRequestId(request);
 
-        logAuditEvent(
-                userId,
-                username,
-                httpMethod,
-                endpoint,
-                action,
-                resourceType,
-                resourceId,
-                requestData,
-                null,
-                result,
-                statusCode,
-                errorMessage,
-                getClientIpAddress(request),
-                request.getHeader("User-Agent"),
-                request.getSession().getId(),
-                durationMs,
-                null
-        );
+            if ("Login successful".equals(resultMessage)) {
+                log.info("User {} successfully logged in from IP: {}", username, getClientIpAddress(request));
+            } else if ("Logout successful".equals(resultMessage)) {
+                log.info("User {} logged out from IP: {}", username, getClientIpAddress(request));
+            }
+
+            AuditLog auditLog = AuditLog.builder()
+                    .id(UUID.randomUUID().toString())
+                    .userId(userId)
+                    .username(username)
+                    .httpMethod(httpMethod)
+                    .endpoint(endpoint)
+                    .result(resultMessage)
+                    .statusCode(statusCode)
+                    .ipAddress(getClientIpAddress(request))
+                    .userAgent(getUserAgent(request))
+                    .sessionId(getSessionId(request))
+                    .requestId(requestId)
+                    .durationMs(durationMs)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+            auditLogRepository.save(auditLog);
+            log.debug("Authentication audit log created: {} - {} - {}", httpMethod, endpoint, resultMessage);
+
+        } catch (Exception e) {
+            log.error("Failed to create authentication audit log", e);
+        }
     }
 
     /**
-     * Log authentication events (login, logout, etc.) with request/response data
+     * Log authentication events with extracted request data (for async processing)
      */
     @Async
-    public void logAuthenticationEventWithData(
-            AuditAction action,
-            String username,
-            AuditResult result,
-            String errorMessage,
-            String httpMethod,
-            String requestURI,
-            String clientIpAddress,
-            String userAgent,
-            String sessionId,
-            Long startTimeMs,
-            Object requestData,
-            Object responseData,
-            String resourceId) {
+    public void logAuthenticationEvent(AuthenticationAuditData auditData) {
+        try {
+            if ("Login successful".equals(auditData.resultMessage)) {
+                log.info("User {} successfully logged in from IP: {}", auditData.username, auditData.ipAddress);
+            } else if ("Logout successful".equals(auditData.resultMessage)) {
+                log.info("User {} logged out from IP: {}", auditData.username, auditData.ipAddress);
+            }
 
-        String userId = null;
-        if (result == AuditResult.SUCCESS && action == AuditAction.LOGIN) {
-            userId = extractUserIdFromSecurity();
+            AuditLog auditLog = AuditLog.builder()
+                    .id(UUID.randomUUID().toString())
+                    .userId(auditData.userId)
+                    .username(auditData.username)
+                    .httpMethod(auditData.httpMethod)
+                    .endpoint(auditData.endpoint)
+                    .result(auditData.resultMessage)
+                    .statusCode(auditData.statusCode)
+                    .ipAddress(auditData.ipAddress)
+                    .userAgent(auditData.userAgent)
+                    .sessionId(auditData.sessionId)
+                    .requestId(auditData.requestId)
+                    .durationMs(auditData.durationMs)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+            auditLogRepository.save(auditLog);
+            log.debug("Authentication audit log created: {} - {} - {}", auditData.httpMethod, auditData.endpoint, auditData.resultMessage);
+
+        } catch (Exception e) {
+            log.error("Failed to create authentication audit log", e);
         }
-
-        // Calculate duration from request start time if available
-        Long durationMs = null;
-        if (startTimeMs != null) {
-            durationMs = System.currentTimeMillis() - startTimeMs;
-        }
-
-        Map<String, Object> metadata = new HashMap<>();
-        metadata.put("authenticationType", action.name());
-        if (errorMessage != null) {
-            metadata.put("failureReason", errorMessage);
-        }
-
-        logAuditEvent(
-                userId,
-                username,
-                httpMethod,
-                requestURI,
-                action,
-                "Authentication",
-                resourceId,
-                requestData,
-                responseData,
-                result,
-                result == AuditResult.SUCCESS ? 200 : 401,
-                errorMessage,
-                clientIpAddress,
-                userAgent,
-                sessionId,
-                durationMs,
-                metadata
-        );
     }
 
     /**
-     * Log authentication events (login, logout, etc.)
+     * Data class for authentication audit information
      */
-    @Async
-    public void logAuthenticationEvent(
-            AuditAction action,
-            String username,
-            AuditResult result,
-            String errorMessage,
-            HttpServletRequest request) {
+    public static class AuthenticationAuditData {
+        public final String httpMethod;
+        public final String endpoint;
+        public final String userId;
+        public final String username;
+        public final String resultMessage;
+        public final Integer statusCode;
+        public final String ipAddress;
+        public final String userAgent;
+        public final String sessionId;
+        public final String requestId;
+        public final Long durationMs;
 
-        String userId = null;
-        if (result == AuditResult.SUCCESS && action == AuditAction.LOGIN) {
-            userId = extractUserIdFromSecurity();
+        private AuthenticationAuditData(Builder builder) {
+            this.httpMethod = builder.httpMethod;
+            this.endpoint = builder.endpoint;
+            this.userId = builder.userId;
+            this.username = builder.username;
+            this.resultMessage = builder.resultMessage;
+            this.statusCode = builder.statusCode;
+            this.ipAddress = builder.ipAddress;
+            this.userAgent = builder.userAgent;
+            this.sessionId = builder.sessionId;
+            this.requestId = builder.requestId;
+            this.durationMs = builder.durationMs;
         }
 
-        // Calculate duration from request start time if available
-        Long durationMs = null;
-        Object startTimeObj = request.getAttribute("auditStartTime");
-        if (startTimeObj instanceof Long) {
-            long startTime = (Long) startTimeObj;
-            durationMs = System.currentTimeMillis() - startTime;
+        public static Builder builder() {
+            return new Builder();
         }
 
-        Map<String, Object> metadata = new HashMap<>();
-        metadata.put("authenticationType", action.name());
-        if (errorMessage != null) {
-            metadata.put("failureReason", errorMessage);
+        public static class Builder {
+            private String httpMethod;
+            private String endpoint;
+            private String userId;
+            private String username;
+            private String resultMessage;
+            private Integer statusCode;
+            private String ipAddress;
+            private String userAgent;
+            private String sessionId;
+            private String requestId;
+            private Long durationMs;
+
+            public Builder httpMethod(String httpMethod) { this.httpMethod = httpMethod; return this; }
+            public Builder endpoint(String endpoint) { this.endpoint = endpoint; return this; }
+            public Builder userId(String userId) { this.userId = userId; return this; }
+            public Builder username(String username) { this.username = username; return this; }
+            public Builder resultMessage(String resultMessage) { this.resultMessage = resultMessage; return this; }
+            public Builder statusCode(Integer statusCode) { this.statusCode = statusCode; return this; }
+            public Builder ipAddress(String ipAddress) { this.ipAddress = ipAddress; return this; }
+            public Builder userAgent(String userAgent) { this.userAgent = userAgent; return this; }
+            public Builder sessionId(String sessionId) { this.sessionId = sessionId; return this; }
+            public Builder requestId(String requestId) { this.requestId = requestId; return this; }
+            public Builder durationMs(Long durationMs) { this.durationMs = durationMs; return this; }
+
+            public AuthenticationAuditData build() {
+                return new AuthenticationAuditData(this);
+            }
+        }
+    }
+
+    // Helper methods
+
+    /**
+     * Get request ID from various sources
+     */
+    private String getRequestId(HttpServletRequest request) {
+        // Try to get from request attribute first
+        String requestId = (String) request.getAttribute("REQUEST_ID");
+        if (requestId != null) {
+            return requestId;
         }
 
-        logAuditEvent(
-                userId,
-                username,
-                request.getMethod(),
-                request.getRequestURI(),
-                action,
-                "Authentication",
-                null,
-                null,
-                null,
-                result,
-                result == AuditResult.SUCCESS ? 200 : 401,
-                errorMessage,
-                getClientIpAddress(request),
-                request.getHeader("User-Agent"),
-                request.getSession().getId(),
-                durationMs,
-                metadata
-        );
+        // Try to get from MDC
+        requestId = org.slf4j.MDC.get("requestId");
+        if (requestId != null) {
+            return requestId;
+        }
+
+        // Generate a new one if none found
+        return UUID.randomUUID().toString();
     }
 
     /**
      * Extract user ID from Spring Security context
+     * User ID is stored as a custom claim in the JWT token
      */
     private String extractUserIdFromSecurity() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.isAuthenticated() && 
-                !"anonymousUser".equals(authentication.getPrincipal())) {
-                
-                Object principal = authentication.getPrincipal();
-                if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
-                    org.springframework.security.core.userdetails.UserDetails userDetails = 
-                        (org.springframework.security.core.userdetails.UserDetails) principal;
-                    
-                    // If using our User entity, it should have an ID
-                    if (userDetails instanceof org.ganjp.blog.auth.model.entity.User) {
-                        return ((org.ganjp.blog.auth.model.entity.User) userDetails).getId();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && 
+            !authentication.getName().equals("anonymousUser")) {
+            
+            // Try to extract user ID from JWT token via request
+            try {
+                ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+                if (attributes != null) {
+                    HttpServletRequest request = attributes.getRequest();
+                    String authHeader = request.getHeader("Authorization");
+                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                        String token = authHeader.substring(7);
+                        return jwtUtils.extractUserId(token);
                     }
                 }
+            } catch (Exception e) {
+                log.debug("Could not extract user ID from JWT token, falling back to username", e);
             }
-        } catch (Exception e) {
-            log.debug("Could not extract user ID from security context", e);
+            
+            // Fallback to username if user ID extraction fails
+            return authentication.getName();
         }
         return null;
     }
 
     /**
      * Extract username from Spring Security context
+     * Username is stored as the subject in the JWT token
      */
     private String extractUsernameFromSecurity() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.isAuthenticated() && 
-                !"anonymousUser".equals(authentication.getPrincipal())) {
-                return authentication.getName();
-            }
-        } catch (Exception e) {
-            log.debug("Could not extract username from security context", e);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && 
+            !authentication.getName().equals("anonymousUser")) {
+            return authentication.getName();
         }
         return null;
     }
 
     /**
-     * Extract resource type from endpoint
-     */
-    private String extractResourceTypeFromEndpoint(String endpoint) {
-        if (endpoint == null) return null;
-        
-        if (endpoint.contains("/users")) return "User";
-        if (endpoint.contains("/roles")) return "Role";
-        if (endpoint.contains("/auth")) return "Authentication";
-        
-        return "Unknown";
-    }
-
-    /**
-     * Extract resource ID from endpoint (e.g., /v1/users/{id} -> {id})
-     */
-    private String extractResourceIdFromEndpoint(String endpoint) {
-        if (endpoint == null) return null;
-        
-        // Look for UUID pattern in the endpoint
-        String[] segments = endpoint.split("/");
-        for (String segment : segments) {
-            // Check if segment looks like a UUID or ID
-            if (segment.matches("[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}") ||
-                segment.matches("\\d+") ||
-                (segment.length() > 10 && !segment.contains("-") && segment.matches("[a-zA-Z0-9]+"))) {
-                return segment;
-            }
-        }
-        
-        return null;
-    }
-
-    /**
-     * Get client IP address from request
+     * Get client IP address from HTTP request
      */
     private String getClientIpAddress(HttpServletRequest request) {
-        String[] headerNames = {
-            "X-Forwarded-For",
-            "X-Real-IP",
-            "Proxy-Client-IP",
-            "WL-Proxy-Client-IP",
-            "HTTP_X_FORWARDED_FOR",
-            "HTTP_X_FORWARDED",
-            "HTTP_X_CLUSTER_CLIENT_IP",
-            "HTTP_CLIENT_IP",
-            "HTTP_FORWARDED_FOR",
-            "HTTP_FORWARDED",
-            "HTTP_VIA",
-            "REMOTE_ADDR"
-        };
-
-        for (String header : headerNames) {
-            String ip = request.getHeader(header);
-            if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-                // Handle comma-separated IPs (take the first one)
-                return ip.split(",")[0].trim();
-            }
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("X-Real-IP");
         }
-
-        return request.getRemoteAddr();
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getRemoteAddr();
+        }
+        
+        // Handle multiple IPs in X-Forwarded-For (take the first one)
+        if (ipAddress != null && ipAddress.contains(",")) {
+            ipAddress = ipAddress.split(",")[0].trim();
+        }
+        
+        // Normalize IPv6 localhost to IPv4 for better readability
+        if ("0:0:0:0:0:0:0:1".equals(ipAddress) || "::1".equals(ipAddress)) {
+            ipAddress = "127.0.0.1";
+        }
+        
+        return ipAddress;
     }
 
     /**
-     * Serialize object to JSON string with size limit
+     * Get user agent from HTTP request
      */
-    private String truncateAndSerialize(Object data) {
-        if (data == null) return null;
-        
-        try {
-            String json = objectMapper.writeValueAsString(data);
-            return truncateString(json, MAX_DATA_LENGTH);
-        } catch (JsonProcessingException e) {
-            log.warn("Failed to serialize audit data", e);
-            return truncateString(data.toString(), MAX_DATA_LENGTH);
-        }
+    private String getUserAgent(HttpServletRequest request) {
+        return request.getHeader("User-Agent");
     }
 
     /**
-     * Serialize metadata map to JSON
+     * Get session ID from HTTP request
      */
-    private String serializeMetadata(Map<String, Object> metadata) {
-        if (metadata == null || metadata.isEmpty()) return null;
-        
+    private String getSessionId(HttpServletRequest request) {
         try {
-            return objectMapper.writeValueAsString(metadata);
-        } catch (JsonProcessingException e) {
-            log.warn("Failed to serialize metadata", e);
+            return request.getSession(false) != null ? request.getSession().getId() : null;
+        } catch (Exception e) {
             return null;
         }
     }
 
     /**
-     * Truncate string to specified maximum length
+     * Clean up old audit logs based on retention policy
      */
-    private String truncateString(String str, int maxLength) {
-        if (str == null) return null;
-        if (str.length() <= maxLength) return str;
-        return str.substring(0, maxLength - 3) + "...";
-    }
-
-    /**
-     * Clean up old audit logs (for scheduled maintenance)
-     */
-    @Transactional
     public void cleanupOldAuditLogs(int retentionDays) {
         try {
             LocalDateTime cutoffDate = LocalDateTime.now().minusDays(retentionDays);
+            log.info("Cleaning up audit logs older than {} days (before {})", retentionDays, cutoffDate);
+            
+            // Perform actual cleanup using repository
             auditLogRepository.deleteOldAuditLogs(cutoffDate);
-            log.info("Cleaned up audit logs older than {} days", retentionDays);
+            log.info("Cleanup completed for audit logs older than {}", cutoffDate);
         } catch (Exception e) {
             log.error("Failed to cleanup old audit logs", e);
+            throw e;
         }
     }
 }

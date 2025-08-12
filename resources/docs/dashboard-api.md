@@ -193,3 +193,176 @@ fetch('/v1/users/dashboard/stats', {
   }
 }
 ```
+
+## Audit Logs
+
+### Get Audit Logs
+
+**Endpoint:** `GET /v1/audit`
+
+**Authorization:** Required - Admin or Super Admin role
+
+**Description:** Retrieves audit logs with pagination and filtering support. The page size should be determined by the "Rows per page" setting with a default of 20.
+
+#### Query Parameters
+
+- `page` (optional): Page number (0-based indexing). Default: 0
+- `size` (optional): Number of records per page from "Rows per page" setting. Default: 20
+- `sort` (optional): Sort criteria (e.g., `timestamp,desc`). Default: `timestamp,desc`
+- `userId` (optional): Filter by user ID
+- `httpMethod` (optional): Filter by HTTP method (POST, PUT, DELETE, etc.)
+- `resultPattern` (optional): Filter by result message pattern
+- `endpointPattern` (optional): Filter by endpoint pattern
+- `startDate` (optional): Filter from date (YYYY-MM-DD format)
+- `endDate` (optional): Filter to date (YYYY-MM-DD format)
+- `startTime` (optional): Filter from datetime (ISO 8601 format)
+- `endTime` (optional): Filter to datetime (ISO 8601 format)
+
+#### Example Request
+```
+GET /v1/audit?page=0&size=20&sort=timestamp,desc&startDate=2025-08-11&endDate=2025-08-12
+```
+
+#### Response Format
+```json
+{
+  "status": {
+    "code": 200,
+    "message": "Audit logs retrieved successfully",
+    "errors": null
+  },
+  "data": {
+    "content": [
+      {
+        "id": "ff674f83-5067-49a3-b53f-121b3a05f254",
+        "userId": "gjpb",
+        "username": "gjpb",
+        "httpMethod": "POST",
+        "endpoint": "/api/v1/auth/tokens",
+        "requestId": "7e3a942f-3af1-4e74-bccf-c052f0a69de8",
+        "result": "Token operation successful",
+        "statusCode": 200,
+        "errorMessage": null,
+        "ipAddress": "127.0.0.1",
+        "userAgent": "PostmanRuntime/7.45.0",
+        "sessionId": "no-session",
+        "durationMs": 167,
+        "timestamp": "2025-08-11T20:25:01.867514"
+      }
+    ],
+    "pageable": {
+      "pageNumber": 0,
+      "pageSize": 20,
+      "sort": {
+        "empty": false,
+        "unsorted": false,
+        "sorted": true
+      },
+      "offset": 0,
+      "unpaged": false,
+      "paged": true
+    },
+    "last": true,
+    "totalPages": 1,
+    "totalElements": 2,
+    "first": true,
+    "size": 20,
+    "number": 0,
+    "sort": {
+      "empty": false,
+      "unsorted": false,
+      "sorted": true
+    },
+    "numberOfElements": 2,
+    "empty": false
+  },
+  "meta": {
+    "serverDateTime": "2025-08-13 14:30:00",
+    "requestId": "audit-logs-001",
+    "sessionId": "session-123"
+  }
+}
+```
+
+#### Pagination Settings
+
+- **Default Page Size**: 20 (configurable via "Rows per page" setting)
+- **Supported Page Sizes**: 10, 20, 50, 100
+- **Default Sort**: `timestamp,desc` (newest first)
+- **Supported Sort Fields**: `timestamp`, `username`, `httpMethod`, `endpoint`, `result`, `ipAddress`, `durationMs`
+
+### Usage Examples
+
+#### cURL - Get Recent Audit Logs
+```bash
+curl -X GET "http://localhost:8080/v1/audit?page=0&size=20&sort=timestamp,desc" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+#### cURL - Filter by Date Range
+```bash
+curl -X GET "http://localhost:8080/v1/audit?startDate=2025-08-11&endDate=2025-08-12&size=20" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+#### JavaScript/Fetch - Dynamic Page Size
+```javascript
+const rowsPerPage = 20; // From "Rows per page" setting
+const page = 0;
+
+fetch(`/v1/audit?page=${page}&size=${rowsPerPage}&sort=timestamp,desc`, {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'Content-Type': 'application/json'
+  }
+})
+.then(response => response.json())
+.then(data => {
+  console.log('Audit logs:', data.data);
+  console.log(`Total elements: ${data.data.totalElements}`);
+  console.log(`Current page size: ${data.data.size}`);
+});
+```
+
+### Audit Logs Error Responses
+
+#### Unauthorized (401)
+```json
+{
+  "status": {
+    "code": 401,
+    "message": "Unauthorized",
+    "errors": {
+      "error": "Invalid or expired token"
+    }
+  },
+  "data": null,
+  "meta": {
+    "serverDateTime": "2025-08-13 14:30:00",
+    "requestId": "audit-logs-001",
+    "sessionId": "no-session"
+  }
+}
+```
+
+#### Forbidden (403)
+```json
+{
+  "status": {
+    "code": 403,
+    "message": "Access Denied",
+    "errors": {
+      "error": "Insufficient privileges - Admin role required"
+    }
+  },
+  "data": null,
+  "meta": {
+    "serverDateTime": "2025-08-13 14:30:00",
+    "requestId": "audit-logs-001",
+    "sessionId": "session-123"
+  }
+}
+```
