@@ -204,6 +204,10 @@ fetch('/v1/users/dashboard/stats', {
 
 **Description:** Retrieves audit logs with pagination and filtering support. The page size should be determined by the "Rows per page" setting with a default of 20.
 
+**Enhanced Feature:** The audit system now captures user identification from JWT tokens for every API call:
+- `userId`: Unique user identifier (UUID) extracted from JWT token claims
+- `username`: Username (subject) extracted from JWT token for display purposes
+
 #### Query Parameters
 
 - `page` (optional): Page number (0-based indexing). Default: 0
@@ -235,7 +239,7 @@ GET /v1/audit?page=0&size=20&sort=timestamp,desc&startDate=2025-08-11&endDate=20
     "content": [
       {
         "id": "ff674f83-5067-49a3-b53f-121b3a05f254",
-        "userId": "gjpb",
+        "userId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         "username": "gjpb",
         "httpMethod": "POST",
         "endpoint": "/api/v1/auth/tokens",
@@ -283,6 +287,23 @@ GET /v1/audit?page=0&size=20&sort=timestamp,desc&startDate=2025-08-11&endDate=20
   }
 }
 ```
+
+#### Audit Log Fields Explanation
+
+- **id**: Unique identifier for the audit log entry
+- **userId**: Unique user ID (UUID) extracted from JWT token `userId` claim
+- **username**: Username extracted from JWT token `sub` (subject) claim
+- **httpMethod**: HTTP method used (GET, POST, PUT, DELETE, etc.)
+- **endpoint**: API endpoint that was accessed
+- **requestId**: Unique identifier for the request
+- **result**: Result message describing the operation outcome
+- **statusCode**: HTTP status code returned
+- **errorMessage**: Error details (null for successful operations)
+- **ipAddress**: Client IP address
+- **userAgent**: Client user agent string
+- **sessionId**: Session identifier
+- **durationMs**: Request duration in milliseconds
+- **timestamp**: When the operation occurred
 
 #### Pagination Settings
 

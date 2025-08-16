@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.common.audit.service.AuditService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class AuthenticationAuditInterceptor implements HandlerInterceptor {
 
     private final AuditService auditService;
+    private final JwtUtils jwtUtils;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -183,6 +185,24 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
     }
 
     /**
+     * Extract user ID from JWT token in the Authorization header
+     * @param request HttpServletRequest containing the Authorization header
+     * @return User ID extracted from token, or null if not available
+     */
+    private String extractUserIdFromToken(HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7); // Remove "Bearer " prefix
+                return jwtUtils.extractUserId(token);
+            }
+        } catch (Exception e) {
+            log.debug("Could not extract user ID from JWT token", e);
+        }
+        return null;
+    }
+
+    /**
      * Extract request data and create audit data object
      */
     private AuditService.AuthenticationAuditData createAuditData(
@@ -194,10 +214,18 @@ public class AuthenticationAuditInterceptor implements HandlerInterceptor {
         
         Long durationMs = startTimeMs != null ? System.currentTimeMillis() - startTimeMs : null;
         
+        // Extract user ID from JWT token (for successful authentications)
+        String userId = extractUserIdFromToken(request);
+        
+        // If no user ID found in token, fallback to username for authentication failures
+        if (userId == null && username != null) {
+            userId = username;
+        }
+        
         return AuditService.AuthenticationAuditData.builder()
                 .httpMethod(request.getMethod())
                 .endpoint(request.getRequestURI())
-                .userId(username)
+                .userId(userId)
                 .username(username)
                 .resultMessage(resultMessage)
                 .statusCode(response.getStatus())

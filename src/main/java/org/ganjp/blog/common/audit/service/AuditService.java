@@ -5,11 +5,7 @@ import org.ganjp.blog.common.audit.model.entity.AuditLog;
 import org.ganjp.blog.common.audit.repository.AuditLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +40,9 @@ public class AuditService {
             Long durationMs) {
 
         try {
-            String userId = extractUserIdFromSecurity();
-            String username = extractUsernameFromSecurity();
+            // Extract user data synchronously from the request before async processing
+            String userId = extractUserIdFromRequest(request);
+            String username = extractUsernameFromRequest(request);
             String requestId = getRequestId(request);
 
             AuditLog auditLog = AuditLog.builder()
@@ -86,8 +83,9 @@ public class AuditService {
             Long durationMs) {
 
         try {
-            String userId = extractUserIdFromSecurity();
-            String username = extractUsernameFromSecurity();
+            // Extract user data synchronously from the request before async processing
+            String userId = extractUserIdFromRequest(request);
+            String username = extractUsernameFromRequest(request);
             String requestId = getRequestId(request);
 
             AuditLog auditLog = AuditLog.builder()
@@ -286,44 +284,41 @@ public class AuditService {
     }
 
     /**
-     * Extract user ID from Spring Security context
-     * User ID is stored as a custom claim in the JWT token
+     * Extract user ID directly from HTTP request JWT token
+     * This method is used for sync extraction before async processing
      */
-    private String extractUserIdFromSecurity() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && 
-            !authentication.getName().equals("anonymousUser")) {
-            
-            // Try to extract user ID from JWT token via request
-            try {
-                ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-                if (attributes != null) {
-                    HttpServletRequest request = attributes.getRequest();
-                    String authHeader = request.getHeader("Authorization");
-                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                        String token = authHeader.substring(7);
-                        return jwtUtils.extractUserId(token);
-                    }
+    private String extractUserIdFromRequest(HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                String userId = jwtUtils.extractUserId(token);
+                if (userId != null && !userId.trim().isEmpty()) {
+                    return userId;
                 }
-            } catch (Exception e) {
-                log.debug("Could not extract user ID from JWT token, falling back to username", e);
             }
-            
-            // Fallback to username if user ID extraction fails
-            return authentication.getName();
+        } catch (Exception e) {
+            log.debug("Could not extract user ID from JWT token in request: {}", e.getMessage());
         }
         return null;
     }
 
     /**
-     * Extract username from Spring Security context
-     * Username is stored as the subject in the JWT token
+     * Extract username directly from HTTP request JWT token
+     * This method is used for sync extraction before async processing
      */
-    private String extractUsernameFromSecurity() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && 
-            !authentication.getName().equals("anonymousUser")) {
-            return authentication.getName();
+    private String extractUsernameFromRequest(HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                String username = jwtUtils.extractUsername(token);
+                if (username != null && !username.trim().isEmpty()) {
+                    return username;
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Could not extract username from JWT token in request: {}", e.getMessage());
         }
         return null;
     }
