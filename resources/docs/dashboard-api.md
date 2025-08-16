@@ -213,18 +213,63 @@ fetch('/v1/users/dashboard/stats', {
 - `page` (optional): Page number (0-based indexing). Default: 0
 - `size` (optional): Number of records per page from "Rows per page" setting. Default: 20
 - `sort` (optional): Sort criteria (e.g., `timestamp,desc`). Default: `timestamp,desc`
-- `userId` (optional): Filter by user ID
-- `httpMethod` (optional): Filter by HTTP method (POST, PUT, DELETE, etc.)
-- `resultPattern` (optional): Filter by result message pattern
-- `endpointPattern` (optional): Filter by endpoint pattern
+
+**Basic Search Parameters:**
+- `userId` (optional): Filter by user ID (exact match)
+- `username` (optional): Filter by username (partial match, case-insensitive)
+- `httpMethod` (optional): Filter by HTTP method (GET, POST, PUT, DELETE, etc.)
+- `endpoint` (optional): Filter by endpoint (partial match)
+- `result` (optional): Filter by result message (partial match)
+- `statusCode` (optional): Filter by HTTP status code (exact match)
+- `ipAddress` (optional): Filter by IP address (exact match)
+
+**Duration Parameters:**
+- `minDurationMs` (optional): Filter by minimum request duration in milliseconds
+- `maxDurationMs` (optional): Filter by maximum request duration in milliseconds
+
+**Date/Time Parameters:**
 - `startDate` (optional): Filter from date (YYYY-MM-DD format)
 - `endDate` (optional): Filter to date (YYYY-MM-DD format)
 - `startTime` (optional): Filter from datetime (ISO 8601 format)
 - `endTime` (optional): Filter to datetime (ISO 8601 format)
 
-#### Example Request
+**Legacy Parameters (backward compatibility):**
+- `resultPattern` (optional): Filter by result message pattern (use `result` instead)
+- `endpointPattern` (optional): Filter by endpoint pattern (use `endpoint` instead)
+- `endDate` (optional): Filter to date (YYYY-MM-DD format)
+- `startTime` (optional): Filter from datetime (ISO 8601 format)
+- `endTime` (optional): Filter to datetime (ISO 8601 format)
+
+#### Example Requests
+
+**Basic date range search:**
 ```
 GET /v1/audit?page=0&size=20&sort=timestamp,desc&startDate=2025-08-11&endDate=2025-08-12
+```
+
+**Search by username and HTTP method:**
+```
+GET /v1/audit?username=gjpb&httpMethod=POST&page=0&size=20
+```
+
+**Search by status code and IP address:**
+```
+GET /v1/audit?statusCode=200&ipAddress=127.0.0.1&page=0&size=20
+```
+
+**Search by endpoint and result:**
+```
+GET /v1/audit?endpoint=/auth/tokens&result=successful&page=0&size=20
+```
+
+**Search by duration range:**
+```
+GET /v1/audit?minDurationMs=100&maxDurationMs=5000&page=0&size=20
+```
+
+**Combined search with multiple criteria:**
+```
+GET /v1/audit?username=gjpb&httpMethod=POST&statusCode=200&startDate=2025-08-11&endDate=2025-08-12&page=0&size=20
 ```
 
 #### Response Format
@@ -328,12 +373,41 @@ curl -X GET "http://localhost:8080/v1/audit?startDate=2025-08-11&endDate=2025-08
   -H "Content-Type: application/json"
 ```
 
-#### JavaScript/Fetch - Dynamic Page Size
+#### cURL - Filter by Username and HTTP Method
+```bash
+curl -X GET "http://localhost:8080/v1/audit?username=gjpb&httpMethod=POST&page=0&size=20" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+#### cURL - Filter by Status Code and Duration
+```bash
+curl -X GET "http://localhost:8080/v1/audit?statusCode=200&minDurationMs=100&maxDurationMs=5000&page=0&size=20" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+#### cURL - Combined Search with Multiple Criteria
+```bash
+curl -X GET "http://localhost:8080/v1/audit?username=gjpb&endpoint=/auth/tokens&statusCode=200&startDate=2025-08-11&page=0&size=20" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+#### JavaScript/Fetch - Dynamic Page Size with Filters
 ```javascript
 const rowsPerPage = 20; // From "Rows per page" setting
 const page = 0;
+const searchParams = new URLSearchParams({
+  page: page,
+  size: rowsPerPage,
+  sort: 'timestamp,desc',
+  username: 'gjpb',
+  httpMethod: 'POST',
+  statusCode: '200'
+});
 
-fetch(`/v1/audit?page=${page}&size=${rowsPerPage}&sort=timestamp,desc`, {
+fetch(`/v1/audit?${searchParams}`, {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer ' + token,
@@ -345,6 +419,30 @@ fetch(`/v1/audit?page=${page}&size=${rowsPerPage}&sort=timestamp,desc`, {
   console.log('Audit logs:', data.data);
   console.log(`Total elements: ${data.data.totalElements}`);
   console.log(`Current page size: ${data.data.size}`);
+});
+```
+
+#### JavaScript/Fetch - Date Range and Duration Search
+```javascript
+const searchParams = new URLSearchParams({
+  startDate: '2025-08-11',
+  endDate: '2025-08-12',
+  minDurationMs: '100',
+  maxDurationMs: '5000',
+  page: '0',
+  size: '20'
+});
+
+fetch(`/v1/audit?${searchParams}`, {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'Content-Type': 'application/json'
+  }
+})
+.then(response => response.json())
+.then(data => {
+  console.log('Filtered audit logs:', data.data);
 });
 ```
 

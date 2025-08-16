@@ -114,6 +114,36 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, String> {
             Pageable pageable);
 
     /**
+     * Find audit logs by enhanced criteria with additional filtering options
+     */
+    @Query("SELECT a FROM AuditLog a WHERE " +
+           "(:userId IS NULL OR a.userId = :userId) AND " +
+           "(:username IS NULL OR a.username LIKE %:username%) AND " +
+           "(:httpMethod IS NULL OR a.httpMethod = :httpMethod) AND " +
+           "(:endpoint IS NULL OR a.endpoint LIKE %:endpoint%) AND " +
+           "(:result IS NULL OR a.result LIKE %:result%) AND " +
+           "(:statusCode IS NULL OR a.statusCode = :statusCode) AND " +
+           "(:ipAddress IS NULL OR a.ipAddress = :ipAddress) AND " +
+           "(:minDurationMs IS NULL OR a.durationMs >= :minDurationMs) AND " +
+           "(:maxDurationMs IS NULL OR a.durationMs <= :maxDurationMs) AND " +
+           "(:startTime IS NULL OR a.timestamp >= :startTime) AND " +
+           "(:endTime IS NULL OR a.timestamp <= :endTime) " +
+           "ORDER BY a.timestamp DESC")
+    Page<AuditLog> findByEnhancedCriteria(
+            @Param("userId") String userId,
+            @Param("username") String username,
+            @Param("httpMethod") String httpMethod,
+            @Param("endpoint") String endpoint,
+            @Param("result") String result,
+            @Param("statusCode") Integer statusCode,
+            @Param("ipAddress") String ipAddress,
+            @Param("minDurationMs") Long minDurationMs,
+            @Param("maxDurationMs") Long maxDurationMs,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime,
+            Pageable pageable);
+
+    /**
      * Delete audit logs older than specified date (for cleanup)
      */
     @Modifying

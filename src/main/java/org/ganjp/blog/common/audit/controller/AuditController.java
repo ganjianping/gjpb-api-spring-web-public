@@ -35,7 +35,14 @@ public class AuditController {
     @GetMapping
     public ResponseEntity<ApiResponse<Page<AuditLog>>> getAuditLogs(
             @RequestParam(required = false) String userId,
+            @RequestParam(required = false) String username,
             @RequestParam(required = false) String httpMethod,
+            @RequestParam(required = false) String endpoint,
+            @RequestParam(required = false) String result,
+            @RequestParam(required = false) Integer statusCode,
+            @RequestParam(required = false) String ipAddress,
+            @RequestParam(required = false) Long minDurationMs,
+            @RequestParam(required = false) Long maxDurationMs,
             @RequestParam(required = false) String resultPattern,
             @RequestParam(required = false) String endpointPattern,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
@@ -56,8 +63,21 @@ public class AuditController {
             effectiveEndTime = endDate.atTime(LocalTime.MAX); // 23:59:59.999999999
         }
 
-        Page<AuditLog> auditLogs = auditQueryService.findAuditLogs(
-                userId, httpMethod, resultPattern, endpointPattern, effectiveStartTime, effectiveEndTime, pageable);
+        // Use enhanced method if any of the new parameters are provided
+        boolean useEnhancedSearch = username != null || endpoint != null || result != null || 
+                                   statusCode != null || ipAddress != null || 
+                                   minDurationMs != null || maxDurationMs != null;
+
+        Page<AuditLog> auditLogs;
+        if (useEnhancedSearch) {
+            auditLogs = auditQueryService.findAuditLogsEnhanced(
+                    userId, username, httpMethod, endpoint, result, statusCode, ipAddress,
+                    minDurationMs, maxDurationMs, effectiveStartTime, effectiveEndTime, pageable);
+        } else {
+            // Fall back to legacy method for backward compatibility
+            auditLogs = auditQueryService.findAuditLogs(
+                    userId, httpMethod, resultPattern, endpointPattern, effectiveStartTime, effectiveEndTime, pageable);
+        }
 
         return ResponseEntity.ok(ApiResponse.success(auditLogs, "Audit logs retrieved successfully"));
     }

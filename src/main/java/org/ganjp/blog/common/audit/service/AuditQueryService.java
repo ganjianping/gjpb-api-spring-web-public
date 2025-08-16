@@ -44,6 +44,28 @@ public class AuditQueryService {
     }
 
     /**
+     * Find audit logs with enhanced criteria including additional filtering options
+     */
+    public Page<AuditLog> findAuditLogsEnhanced(
+            String userId,
+            String username,
+            String httpMethod,
+            String endpoint,
+            String result,
+            Integer statusCode,
+            String ipAddress,
+            Long minDurationMs,
+            Long maxDurationMs,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            Pageable pageable) {
+
+        return auditLogRepository.findByEnhancedCriteria(
+                userId, username, httpMethod, endpoint, result, statusCode, ipAddress,
+                minDurationMs, maxDurationMs, startTime, endTime, pageable);
+    }
+
+    /**
      * Find audit logs for a specific user
      */
     public Page<AuditLog> findUserAuditLogs(String userId, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable) {
