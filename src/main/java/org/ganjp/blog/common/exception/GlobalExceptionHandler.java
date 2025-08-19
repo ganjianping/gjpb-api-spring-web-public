@@ -64,6 +64,18 @@ public class GlobalExceptionHandler {
     }
     
     /**
+     * Handles business logic exceptions
+     */
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<Object>> handleBusinessException(BusinessException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", ex.getMessage());
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(400, "Business error", errors));
+    }
+    
+    /**
      * Handles general runtime exceptions
      */
     @ExceptionHandler(RuntimeException.class)
