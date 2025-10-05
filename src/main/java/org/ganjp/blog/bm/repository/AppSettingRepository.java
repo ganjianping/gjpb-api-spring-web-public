@@ -43,6 +43,11 @@ public interface AppSettingRepository extends JpaRepository<AppSetting, String> 
     List<AppSetting> findByIsPublicTrueAndLangOrderByName(AppSetting.Language lang);
 
     /**
+     * Find public setting by name and language
+     */
+    Optional<AppSetting> findByNameAndLangAndIsPublicTrue(String name, AppSetting.Language lang);
+
+    /**
      * Find user-editable settings (non-system configs)
      */
     List<AppSetting> findByIsSystemFalseOrderByNameAscLangAsc();
