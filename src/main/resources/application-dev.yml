@@ -27,3 +27,18 @@ logging:
     org.springframework: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# Logo upload configuration
+logo:
+  upload:
+    # Local directory for logo storage (relative to project root or absolute path)
+    directory: /Users/ganjianping/Local/Logos
+    # Maximum file size (in bytes) - 5MB
+    max-file-size: 5242880
+    # Image resize settings
+    resize:
+      # Fixed size for logos (width or height will be 256, maintaining aspect ratio)
+      target-size: 256
+    # Base URL path for accessing logos (relative path recommended)
+    # For development: use relative path that works with any host
+    base-url: /uploads/logos

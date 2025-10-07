@@ -25,3 +25,19 @@ logging:
     name: logs/gjpb.log
   pattern:
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Logo upload configuration
+logo:
+  upload:
+    # Production directory for logo storage (absolute path recommended)
+    directory: /var/www/gjpb/uploads/logos
+    # Maximum file size (in bytes) - 5MB
+    max-file-size: 5242880
+    # Image resize settings
+    resize:
+      # Fixed size for logos (width or height will be 256, maintaining aspect ratio)
+      target-size: 256
+    # Base URL path for accessing logos
+    # For production: use your actual domain or relative path
+    # Examples: https://your-domain.com/uploads/logos OR /uploads/logos
+    base-url: /uploads/logos
