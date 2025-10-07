@@ -81,19 +81,21 @@ public class LogoService {
 
         String oldFilename = logo.getFilename();
         boolean imageUpdated = false;
+        boolean nameChanged = false;
 
-        // Update image if new one provided
+        // Check if name is being changed
+        if (request.getName() != null && !request.getName().equals(logo.getName())) {
+            nameChanged = true;
+        }
+
+        // Update image if new one provided via URL
         if (request.hasNewImage()) {
             ImageProcessingService.ProcessedImage processedImage;
             
             // Use updated name if provided, otherwise use existing name
             String nameForFilename = request.getName() != null ? request.getName() : logo.getName();
             
-            if (request.getFile() != null && !request.getFile().isEmpty()) {
-                processedImage = imageProcessingService.processUploadedFile(request.getFile(), nameForFilename);
-            } else {
-                processedImage = imageProcessingService.processImageFromUrl(request.getOriginalUrl(), nameForFilename);
-            }
+            processedImage = imageProcessingService.processImageFromUrl(request.getOriginalUrl(), nameForFilename);
 
             logo.setOriginalUrl(request.getOriginalUrl());
             logo.setFilename(processedImage.getFilename());
@@ -101,6 +103,15 @@ public class LogoService {
             logo.setLogoUrl(processedImage.getLogoUrl());
             
             imageUpdated = true;
+        } else if (nameChanged && !imageUpdated) {
+            // If only name changed (no new image), rename the existing file
+            String newFilename = imageProcessingService.renameLogoFile(oldFilename, request.getName(), logo.getExtension());
+            if (newFilename != null) {
+                logo.setFilename(newFilename);
+                // Update logo URL with new filename
+                String baseUrl = logo.getLogoUrl().substring(0, logo.getLogoUrl().lastIndexOf("/") + 1);
+                logo.setLogoUrl(baseUrl + newFilename);
+            }
         }
 
         // Update other fields if provided
@@ -124,7 +135,7 @@ public class LogoService {
 
         Logo updatedLogo = logoRepository.save(logo);
         
-        // Delete old image file if image was updated
+        // Delete old image file if image was updated (replaced with new image)
         if (imageUpdated && oldFilename != null) {
             imageProcessingService.deleteLogoFile(oldFilename);
         }
@@ -140,6 +151,25 @@ public class LogoService {
         Logo logo = logoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Logo not found with ID: " + id));
         return toResponse(logo);
+    }
+
+    /**
+     * Get logo file by filename for viewing in browser
+     * @param filename The filename to retrieve
+     * @return File object representing the logo file
+     * @throws IOException if file not found or error reading file
+     */
+    public java.io.File getLogoFileByFilename(String filename) throws IOException {
+        // Validate that the filename exists in database for security
+        List<Logo> logos = logoRepository.findAll();
+        boolean filenameExists = logos.stream()
+                .anyMatch(logo -> filename.equals(logo.getFilename()));
+        
+        if (!filenameExists) {
+            throw new IllegalArgumentException("Logo not found with filename: " + filename);
+        }
+        
+        return imageProcessingService.getLogoFile(filename);
     }
 
     /**

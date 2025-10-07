@@ -187,6 +187,61 @@ public class ImageProcessingService {
     }
 
     /**
+     * Rename logo file in storage when logo name changes
+     * @param oldFilename Current filename in storage
+     * @param newLogoName New logo name
+     * @param extension File extension
+     * @return New filename if successful, null if failed
+     */
+    public String renameLogoFile(String oldFilename, String newLogoName, String extension) {
+        try {
+            Path uploadDir = Paths.get(uploadProperties.getDirectory());
+            Path oldPath = uploadDir.resolve(oldFilename);
+            
+            if (!Files.exists(oldPath)) {
+                log.warn("Logo file not found for renaming: {}", oldPath);
+                return null;
+            }
+            
+            // Generate new filename based on new logo name
+            String newFilename = generateFilename(newLogoName, extension);
+            Path newPath = uploadDir.resolve(newFilename);
+            
+            // Rename the file
+            Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+            log.info("Renamed logo file from {} to {}", oldFilename, newFilename);
+            
+            return newFilename;
+        } catch (IOException e) {
+            log.error("Error renaming logo file from {} with new name: {}", oldFilename, newLogoName, e);
+            return null;
+        }
+    }
+
+    /**
+     * Get logo file from storage
+     * @param filename The filename to retrieve
+     * @return File object representing the logo file
+     * @throws IOException if file not found or error reading file
+     */
+    public File getLogoFile(String filename) throws IOException {
+        Path uploadDir = Paths.get(uploadProperties.getDirectory());
+        Path fullPath = uploadDir.resolve(filename);
+        
+        if (!Files.exists(fullPath)) {
+            throw new IOException("Logo file not found: " + filename);
+        }
+        
+        File file = fullPath.toFile();
+        if (!file.isFile() || !file.canRead()) {
+            throw new IOException("Cannot read logo file: " + filename);
+        }
+        
+        log.debug("Retrieved logo file: {}", fullPath);
+        return file;
+    }
+
+    /**
      * Delete logo file from storage
      */
     public void deleteLogoFile(String filename) {

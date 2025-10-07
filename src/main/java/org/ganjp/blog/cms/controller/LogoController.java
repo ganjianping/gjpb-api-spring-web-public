@@ -10,11 +10,15 @@ import org.ganjp.blog.cms.model.dto.LogoResponse;
 import org.ganjp.blog.cms.model.dto.LogoUpdateRequest;
 import org.ganjp.blog.cms.service.LogoService;
 import org.ganjp.blog.common.model.ApiResponse;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -93,10 +97,10 @@ public class LogoController {
      * Update an existing logo
      * PUT /v1/logos/{id}
      */
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<LogoResponse>> updateLogo(
             @PathVariable String id,
-            @Valid @ModelAttribute LogoUpdateRequest request,
+            @Valid @RequestBody LogoUpdateRequest request,
             HttpServletRequest httpRequest) {
         try {
             String userId = extractUserIdFromRequest(httpRequest);
@@ -126,6 +130,33 @@ public class LogoController {
             log.error(LOGO_NOT_FOUND_MSG, e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error(404, LOGO_NOT_FOUND_ERROR + e.getMessage(), null));
+        }
+    }
+
+    /**
+     * View logo file in browser by filename
+     * GET /v1/logos/view/{filename}
+     * Returns the actual image file to be displayed in browser
+     */
+    @GetMapping("/view/{filename}")
+    public ResponseEntity<Resource> viewLogo(@PathVariable String filename) {
+        try {
+            File logoFile = logoService.getLogoFileByFilename(filename);
+            Resource resource = new FileSystemResource(logoFile);
+            
+            // Determine content type based on file extension
+            String contentType = determineContentType(filename);
+            
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (IllegalArgumentException e) {
+            log.error("Logo not found: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            log.error("Error reading logo file: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -211,5 +242,29 @@ public class LogoController {
      */
     private String extractUserIdFromRequest(HttpServletRequest request) {
         return jwtUtils.extractUserIdFromToken(request);
+    }
+
+    /**
+     * Determine content type based on file extension
+     * @param filename The filename to check
+     * @return Content type string (e.g., "image/png", "image/svg+xml")
+     */
+    private String determineContentType(String filename) {
+        String lowerFilename = filename.toLowerCase();
+        if (lowerFilename.endsWith(".png")) {
+            return "image/png";
+        } else if (lowerFilename.endsWith(".jpg") || lowerFilename.endsWith(".jpeg")) {
+            return "image/jpeg";
+        } else if (lowerFilename.endsWith(".gif")) {
+            return "image/gif";
+        } else if (lowerFilename.endsWith(".svg")) {
+            return "image/svg+xml";
+        } else if (lowerFilename.endsWith(".webp")) {
+            return "image/webp";
+        } else if (lowerFilename.endsWith(".bmp")) {
+            return "image/bmp";
+        } else {
+            return "application/octet-stream"; // fallback
+        }
     }
 }
