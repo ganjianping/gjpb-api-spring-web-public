@@ -53,7 +53,6 @@ CREATE TABLE `cms_logo` (
   `original_url` varchar(500) DEFAULT NULL COMMENT 'Original source URL',
   `filename` varchar(255) NOT NULL COMMENT 'Stored filename',
   `extension` varchar(16) NOT NULL COMMENT 'File extension (png, jpg, webp, etc.)',
-  `logo_url` varchar(500) NOT NULL COMMENT 'Public URL to access the logo (applied to website links)',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',

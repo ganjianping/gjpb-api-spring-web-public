@@ -53,7 +53,6 @@ public class LogoService {
                 .originalUrl(request.getOriginalUrl())
                 .filename(processedImage.getFilename())
                 .extension(processedImage.getExtension())
-                .logoUrl(processedImage.getLogoUrl())
                 .tags(request.getTags())
                 .lang(request.getLang())
                 .displayOrder(request.getDisplayOrder())
@@ -100,7 +99,6 @@ public class LogoService {
             logo.setOriginalUrl(request.getOriginalUrl());
             logo.setFilename(processedImage.getFilename());
             logo.setExtension(processedImage.getExtension());
-            logo.setLogoUrl(processedImage.getLogoUrl());
             
             imageUpdated = true;
         } else if (nameChanged && !imageUpdated) {
@@ -108,9 +106,6 @@ public class LogoService {
             String newFilename = imageProcessingService.renameLogoFile(oldFilename, request.getName(), logo.getExtension());
             if (newFilename != null) {
                 logo.setFilename(newFilename);
-                // Update logo URL with new filename
-                String baseUrl = logo.getLogoUrl().substring(0, logo.getLogoUrl().lastIndexOf("/") + 1);
-                logo.setLogoUrl(baseUrl + newFilename);
             }
         }
 
@@ -257,7 +252,6 @@ public class LogoService {
                 .originalUrl(logo.getOriginalUrl())
                 .filename(logo.getFilename())
                 .extension(logo.getExtension())
-                .logoUrl(logo.getLogoUrl())
                 .tags(logo.getTags())
                 .lang(logo.getLang())
                 .displayOrder(logo.getDisplayOrder())

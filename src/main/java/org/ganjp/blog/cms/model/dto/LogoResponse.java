@@ -22,7 +22,6 @@ public class LogoResponse {
     private String originalUrl;
     private String filename;
     private String extension;
-    private String logoUrl;
     private String tags;
     private org.ganjp.blog.cms.model.entity.Logo.Language lang;
     private Integer displayOrder;

@@ -140,13 +140,9 @@ public class ImageProcessingService {
         
         log.info("Image saved: {}", fullPath);
         
-        // Generate public URL
-        String logoUrl = uploadProperties.getBaseUrl() + "/" + filename;
-        
         return ProcessedImage.builder()
                 .filename(filename)
                 .extension(extension)
-                .logoUrl(logoUrl)
                 .originalUrl(originalUrl)
                 .build();
     }
@@ -175,13 +171,9 @@ public class ImageProcessingService {
         
         log.info("SVG file saved: {}", fullPath);
         
-        // Generate public URL
-        String logoUrl = uploadProperties.getBaseUrl() + "/" + filename;
-        
         return ProcessedImage.builder()
                 .filename(filename)
                 .extension(extension)
-                .logoUrl(logoUrl)
                 .originalUrl(originalUrl)
                 .build();
     }
@@ -393,7 +385,6 @@ public class ImageProcessingService {
     public static class ProcessedImage {
         private String filename;
         private String extension;
-        private String logoUrl;
         private String originalUrl;
     }
 }

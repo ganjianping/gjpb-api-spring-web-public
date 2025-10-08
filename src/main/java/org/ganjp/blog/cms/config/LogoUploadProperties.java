@@ -23,12 +23,6 @@ public class LogoUploadProperties {
     private long maxFileSize = 5242880;
 
     /**
-     * Base URL path for accessing uploaded logos
-     * Can be relative path (e.g., /uploads/logos) or absolute URL (e.g., https://cdn.example.com/logos)
-     */
-    private String baseUrl = "/uploads/logos";
-
-    /**
      * Resize configuration
      */
     private Resize resize = new Resize();

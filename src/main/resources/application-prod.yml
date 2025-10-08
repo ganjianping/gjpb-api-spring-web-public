@@ -37,7 +37,3 @@ logo:
     resize:
       # Fixed size for logos (width or height will be 256, maintaining aspect ratio)
       target-size: 256
-    # Base URL path for accessing logos
-    # For production: use your actual domain or relative path
-    # Examples: https://your-domain.com/uploads/logos OR /uploads/logos
-    base-url: /uploads/logos

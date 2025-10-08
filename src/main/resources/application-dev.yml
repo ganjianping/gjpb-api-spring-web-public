@@ -39,6 +39,3 @@ logo:
     resize:
       # Fixed size for logos (width or height will be 256, maintaining aspect ratio)
       target-size: 256
-    # Base URL path for accessing logos (relative path recommended)
-    # For development: use relative path that works with any host
-    base-url: /api/v1/logos/view

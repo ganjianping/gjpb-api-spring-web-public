@@ -36,9 +36,6 @@ public class Logo extends BaseEntity {
     @Column(name = "extension", length = 16, nullable = false)
     private String extension;
 
-    @Column(name = "logo_url", length = 500, nullable = false)
-    private String logoUrl;
-
     @Column(name = "tags", length = 500)
     private String tags;
 
