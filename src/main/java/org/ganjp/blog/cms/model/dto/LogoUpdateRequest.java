@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * DTO for updating a logo
@@ -24,8 +23,6 @@ public class LogoUpdateRequest {
     @Size(max = 500, message = "Original URL must not exceed 500 characters")
     private String originalUrl;
 
-    private MultipartFile file;
-
     @Size(max = 500, message = "Tags must not exceed 500 characters")
     private String tags;
 
@@ -39,6 +36,6 @@ public class LogoUpdateRequest {
      * Check if there's a new image to update
      */
     public boolean hasNewImage() {
-        return (file != null && !file.isEmpty()) || (originalUrl != null && !originalUrl.trim().isEmpty());
+        return (originalUrl != null && !originalUrl.trim().isEmpty());
     }
 }
