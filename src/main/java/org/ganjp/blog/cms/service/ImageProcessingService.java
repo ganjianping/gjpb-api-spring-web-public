@@ -33,6 +33,70 @@ import java.util.UUID;
 public class ImageProcessingService {
 
     private final LogoUploadProperties uploadProperties;
+    public LogoUploadProperties getUploadProperties() {
+        return uploadProperties;
+    }
+        /**
+         * Convert image file to a new format (SVG to PNG/JPG, PNG to JPG, etc.)
+         * @param sourceFile The source image file
+         * @param targetExtension The target extension (e.g., png, jpg)
+         * @param logoName The logo name for filename generation
+         * @return The new filename if successful, null if failed
+         */
+    public String convertImageFormat(File sourceFile, String targetExtension, String logoName) {
+        String sourceExtension = getFileExtension(sourceFile.getName());
+        String newFilename = generateFilename(logoName, targetExtension);
+        Path uploadDir = Paths.get(uploadProperties.getDirectory());
+        Path newPath = uploadDir.resolve(newFilename);
+        try {
+            if ("svg".equalsIgnoreCase(sourceExtension) && !"svg".equalsIgnoreCase(targetExtension)) {
+                // Only allow SVG to PNG directly
+                if ("png".equalsIgnoreCase(targetExtension)) {
+                    try (InputStream svgInputStream = new FileInputStream(sourceFile);
+                         OutputStream pngOutputStream = new FileOutputStream(newPath.toFile())) {
+                        org.apache.batik.transcoder.image.PNGTranscoder transcoder = new org.apache.batik.transcoder.image.PNGTranscoder();
+                        org.apache.batik.transcoder.TranscoderInput input = new org.apache.batik.transcoder.TranscoderInput(svgInputStream);
+                        org.apache.batik.transcoder.TranscoderOutput output = new org.apache.batik.transcoder.TranscoderOutput(pngOutputStream);
+                        transcoder.transcode(input, output);
+                    }
+                } else if ("jpg".equalsIgnoreCase(targetExtension) || "jpeg".equalsIgnoreCase(targetExtension)) {
+                    // Convert SVG to PNG first, then PNG to JPG
+                    String tempPngFilename = generateFilename(logoName, "png");
+                    Path tempPngPath = uploadDir.resolve(tempPngFilename);
+                    try (InputStream svgInputStream = new FileInputStream(sourceFile);
+                         OutputStream pngOutputStream = new FileOutputStream(tempPngPath.toFile())) {
+                        org.apache.batik.transcoder.image.PNGTranscoder transcoder = new org.apache.batik.transcoder.image.PNGTranscoder();
+                        org.apache.batik.transcoder.TranscoderInput input = new org.apache.batik.transcoder.TranscoderInput(svgInputStream);
+                        org.apache.batik.transcoder.TranscoderOutput output = new org.apache.batik.transcoder.TranscoderOutput(pngOutputStream);
+                        transcoder.transcode(input, output);
+                    }
+                    // Now convert PNG to JPG
+                    BufferedImage pngImage = ImageIO.read(tempPngPath.toFile());
+                    if (pngImage == null) {
+                        throw new IOException("Unable to read intermediate PNG file for SVG to JPG conversion: " + tempPngFilename);
+                    }
+                    ImageIO.write(pngImage, targetExtension, newPath.toFile());
+                    // Delete temp PNG file
+                    Files.deleteIfExists(tempPngPath);
+                } else {
+                    log.error("Unsupported target extension for SVG conversion: {}", targetExtension);
+                    return null;
+                }
+            } else {
+                // Raster to raster conversion (PNG <-> JPG <-> BMP <-> WEBP)
+                BufferedImage image = ImageIO.read(sourceFile);
+                if (image == null) {
+                    throw new IOException("Unable to read image file for conversion: " + sourceFile.getName());
+                }
+                ImageIO.write(image, targetExtension, newPath.toFile());
+            }
+            log.info("Converted image {} to format {} as {}", sourceFile.getName(), targetExtension, newFilename);
+            return newFilename;
+        } catch (Exception e) {
+            log.error("Error converting image format from {} to {}: {}", sourceFile.getName(), targetExtension, e.getMessage());
+            return null;
+        }
+    }
 
     /**
      * Process uploaded file: resize to 256px and save (skip resize for SVG)

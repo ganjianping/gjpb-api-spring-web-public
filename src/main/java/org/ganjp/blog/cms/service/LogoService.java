@@ -1,4 +1,6 @@
 package org.ganjp.blog.cms.service;
+import java.io.File;
+import java.nio.file.Paths;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,32 +83,39 @@ public class LogoService {
         String oldFilename = logo.getFilename();
         boolean imageUpdated = false;
         boolean nameChanged = false;
+        boolean extensionChanged = false;
 
         // Check if name is being changed
         if (request.getName() != null && !request.getName().equals(logo.getName())) {
             nameChanged = true;
         }
 
-        // Update image if new one provided via URL
-        if (request.hasNewImage()) {
-            ImageProcessingService.ProcessedImage processedImage;
-            
-            // Use updated name if provided, otherwise use existing name
-            String nameForFilename = request.getName() != null ? request.getName() : logo.getName();
-            
-            processedImage = imageProcessingService.processImageFromUrl(request.getOriginalUrl(), nameForFilename);
+        // Check if extension is being changed
+        if (request.getExtension() != null && !request.getExtension().equals(logo.getExtension())) {
+            extensionChanged = true;
+        }
 
-            logo.setOriginalUrl(request.getOriginalUrl());
-            logo.setFilename(processedImage.getFilename());
-            logo.setExtension(processedImage.getExtension());
-            
-            imageUpdated = true;
-        } else if (nameChanged && !imageUpdated) {
-            // If only name changed (no new image), rename the existing file
-            String newFilename = imageProcessingService.renameLogoFile(oldFilename, request.getName(), logo.getExtension());
-            if (newFilename != null) {
-                logo.setFilename(newFilename);
-            }
+        if ((nameChanged || extensionChanged) && !imageUpdated) {
+                // If extension changed, convert image format
+                String nameForFilename = request.getName() != null ? request.getName() : logo.getName();
+                String extensionForFilename = request.getExtension() != null ? request.getExtension() : logo.getExtension();
+                File oldFile = Paths.get(imageProcessingService.getUploadProperties().getDirectory()).resolve(oldFilename).toFile();
+                String newFilename;
+                if (extensionChanged) {
+                    newFilename = imageProcessingService.convertImageFormat(oldFile, extensionForFilename, nameForFilename);
+                } else {
+                    newFilename = imageProcessingService.renameLogoFile(oldFilename, nameForFilename, extensionForFilename);
+                }
+                if (newFilename != null) {
+                    logo.setFilename(newFilename);
+                    if (extensionChanged) {
+                        logo.setExtension(request.getExtension());
+                        // Optionally delete the old file if conversion succeeded
+                        if (!oldFilename.equals(newFilename) && oldFile.exists()) {
+                            oldFile.delete();
+                        }
+                    }
+                }
         }
 
         // Update other fields if provided

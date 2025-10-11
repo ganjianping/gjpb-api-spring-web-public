@@ -23,6 +23,10 @@ public class LogoUpdateRequest {
     @Size(max = 500, message = "Original URL must not exceed 500 characters")
     private String originalUrl;
 
+    @Pattern(regexp = "^(png|jpg|jpeg|gif|svg|webp|bmp)$", message = "Extension must be one of: png, jpg, jpeg, gif, svg, webp, bmp")
+    @Size(max = 16, message = "Extension must not exceed 16 characters")
+    private String extension;
+
     @Size(max = 500, message = "Tags must not exceed 500 characters")
     private String tags;
 

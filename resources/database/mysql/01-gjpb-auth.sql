@@ -162,7 +162,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     request_id CHAR(36) DEFAULT NULL COMMENT 'Request ID from meta.requestId',
 
     -- Operation result (changed from ENUM to VARCHAR to store status.message)
-    result VARCHAR(100) NOT NULL COMMENT 'Result message from response status.message',
+    result VARCHAR(255) NOT NULL COMMENT 'Result message from response status.message',
     status_code INT DEFAULT NULL COMMENT 'HTTP status code',
     error_message TEXT DEFAULT NULL COMMENT 'Error details if operation failed',
 
