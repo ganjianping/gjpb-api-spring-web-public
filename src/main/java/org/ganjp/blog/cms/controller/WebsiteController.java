@@ -34,14 +34,19 @@ public class WebsiteController {
     /**
      * Get all websites with pagination and filtering
      */
+    /**
+     * Flexible search websites by name, language, tags, and status
+     * GET /v1/websites?name=xxx&lang=EN&tags=yyy&isActive=true
+     */
     @GetMapping
     public ResponseEntity<ApiResponse<Page<WebsiteResponse>>> getWebsites(
-            @RequestParam(required = false) String searchTerm,
+            @RequestParam(required = false) String name,
             @RequestParam(required = false) Website.Language lang,
+            @RequestParam(required = false) String tags,
             @RequestParam(required = false) Boolean isActive,
             Pageable pageable
     ) {
-        Page<WebsiteResponse> websites = websiteService.getWebsites(searchTerm, lang, isActive, pageable);
+        Page<WebsiteResponse> websites = websiteService.getWebsites(name, lang, tags, isActive, pageable);
         return ResponseEntity.ok(ApiResponse.success(websites, "Websites retrieved successfully"));
     }
 

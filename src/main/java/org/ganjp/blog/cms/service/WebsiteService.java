@@ -136,10 +136,12 @@ public class WebsiteService {
      * Get all websites with pagination and filtering
      */
     @Transactional(readOnly = true)
-    public Page<WebsiteResponse> getWebsites(String searchTerm, Website.Language lang, Boolean isActive, Pageable pageable) {
-        log.debug("Retrieving websites with filters - searchTerm: {}, lang: {}, isActive: {}", searchTerm, lang, isActive);
-
-        Page<Website> websites = websiteRepository.findWithFilters(searchTerm, lang, isActive, pageable);
+    /**
+     * Flexible search for websites by name, language, tags, and status
+     */
+    public Page<WebsiteResponse> getWebsites(String name, Website.Language lang, String tags, Boolean isActive, Pageable pageable) {
+        log.debug("Retrieving websites with filters - name: {}, lang: {}, tags: {}, isActive: {}", name, lang, tags, isActive);
+        Page<Website> websites = websiteRepository.searchWebsites(name, lang, tags, isActive, pageable);
         return websites.map(WebsiteResponse::from);
     }
 

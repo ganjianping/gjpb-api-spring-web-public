@@ -47,16 +47,18 @@ public interface WebsiteRepository extends JpaRepository<Website, String> {
     /**
      * Find websites with search functionality
      */
+    /**
+     * Flexible search by name, language, tags, and status
+     */
     @Query("SELECT w FROM Website w WHERE " +
-           "(:searchTerm IS NULL OR " +
-           "LOWER(w.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(w.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(w.tags) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND " +
+           "(:name IS NULL OR LOWER(w.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
            "(:lang IS NULL OR w.lang = :lang) AND " +
+           "(:tags IS NULL OR w.tags LIKE CONCAT('%', :tags, '%')) AND " +
            "(:isActive IS NULL OR w.isActive = :isActive)")
-    Page<Website> findWithFilters(
-        @Param("searchTerm") String searchTerm,
+    Page<Website> searchWebsites(
+        @Param("name") String name,
         @Param("lang") Website.Language lang,
+        @Param("tags") String tags,
         @Param("isActive") Boolean isActive,
         Pageable pageable
     );
