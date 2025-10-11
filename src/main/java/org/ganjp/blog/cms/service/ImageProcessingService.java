@@ -272,19 +272,21 @@ public class ImageProcessingService {
     }
 
     /**
-     * Generate filename based on logo name with timestamp
+     * Generate filename based on logo name with targetSize and timestamp
      * Rules:
      * - Convert to lowercase
      * - Replace spaces with underscores
      * - Convert Chinese characters to Pinyin with underscores
+     * - Add targetSize suffix _256px (or configured size)
      * - Add timestamp suffix _yyyyMMddHHmmss
-     * Example: "My Logo" -> "my_logo_20231015143022.png"
-     * Example: "我的标志" -> "wo_de_biao_zhi_20231015143022.png"
+     * Example: "My Logo" -> "my_logo_256px_20231015143022.png"
+     * Example: "我的标志" -> "wo_de_biao_zhi_256px_20231015143022.png"
      */
     private String generateFilename(String logoName, String extension) {
         String processedName = convertToFilename(logoName);
+        int targetSize = uploadProperties.getResize().getTargetSize();
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        return processedName + "_" + timestamp + "." + extension;
+        return processedName + "_" + targetSize + "_" + timestamp + "." + extension;
     }
     
     /**
