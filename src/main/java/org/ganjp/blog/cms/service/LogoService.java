@@ -24,6 +24,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class LogoService {
+    /**
+     * Flexible search for logos by name, language, tags, and status
+     */
+    public List<LogoResponse> searchLogos(String name, Logo.Language lang, String tags, Boolean isActive) {
+        return logoRepository.searchLogos(name, lang, tags, isActive)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
 
     private final LogoRepository logoRepository;
     private final ImageProcessingService imageProcessingService;

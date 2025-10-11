@@ -181,12 +181,16 @@ public class LogoController {
     }
 
     /**
-     * Search logos by name
-     * GET /v1/logos/search?keyword=xxx
+     * Flexible search logos by name, language, tags, and status
+     * GET /v1/logos/search?name=xxx&lang=EN&tags=xxx&isActive=true
      */
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<LogoResponse>>> searchLogos(@RequestParam String keyword) {
-        List<LogoResponse> logos = logoService.searchLogosByName(keyword);
+    public ResponseEntity<ApiResponse<List<LogoResponse>>> searchLogos(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Logo.Language lang,
+            @RequestParam(required = false) String tags,
+            @RequestParam(required = false) Boolean isActive) {
+        List<LogoResponse> logos = logoService.searchLogos(name, lang, tags, isActive);
         return ResponseEntity.ok(ApiResponse.success(logos, "Logos retrieved successfully"));
     }
 
