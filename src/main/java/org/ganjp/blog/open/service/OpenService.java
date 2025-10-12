@@ -6,7 +6,7 @@ import org.ganjp.blog.bm.model.entity.AppSetting;
 import org.ganjp.blog.bm.repository.AppSettingRepository;
 import org.ganjp.blog.cms.model.entity.Logo;
 import org.ganjp.blog.cms.repository.LogoRepository;
-import org.ganjp.blog.cms.service.ImageProcessingService;
+import org.ganjp.blog.cms.service.LogoProcessingService;
 import org.ganjp.blog.open.model.OpenAppSettingDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +27,7 @@ public class OpenService {
 
     private final AppSettingRepository appSettingRepository;
     private final LogoRepository logoRepository;
-    private final ImageProcessingService imageProcessingService;
+    private final LogoProcessingService logoProcessingService;
 
     /**
      * Get all public app settings (only name, value, lang)
@@ -62,6 +62,6 @@ public class OpenService {
             throw new IllegalArgumentException("Logo not found or not active with filename: " + filename);
         }
         
-        return imageProcessingService.getLogoFile(filename);
+        return logoProcessingService.getLogoFile(filename);
     }
 }

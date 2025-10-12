@@ -30,7 +30,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ImageProcessingService {
+public class LogoProcessingService {
 
     private final LogoUploadProperties uploadProperties;
     public LogoUploadProperties getUploadProperties() {

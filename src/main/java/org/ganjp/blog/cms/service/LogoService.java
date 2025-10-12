@@ -24,6 +24,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class LogoService {
+    private final LogoRepository logoRepository;
+    private final LogoProcessingService logoProcessingService;
+
     /**
      * Flexible search for logos by name, language, tags, and status
      */
@@ -33,9 +36,6 @@ public class LogoService {
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
-
-    private final LogoRepository logoRepository;
-    private final ImageProcessingService imageProcessingService;
 
     /**
      * Create a new logo
@@ -50,11 +50,11 @@ public class LogoService {
         }
 
         // Process image (upload or download from URL)
-        ImageProcessingService.ProcessedImage processedImage;
+        LogoProcessingService.ProcessedImage processedImage;
         if (request.getFile() != null && !request.getFile().isEmpty()) {
-            processedImage = imageProcessingService.processUploadedFile(request.getFile(), request.getName());
+            processedImage = logoProcessingService.processUploadedFile(request.getFile(), request.getName());
         } else {
-            processedImage = imageProcessingService.processImageFromUrl(request.getOriginalUrl(), request.getName());
+            processedImage = logoProcessingService.processImageFromUrl(request.getOriginalUrl(), request.getName());
         }
 
         // Create logo entity
@@ -108,12 +108,12 @@ public class LogoService {
                 // If extension changed, convert image format
                 String nameForFilename = request.getName() != null ? request.getName() : logo.getName();
                 String extensionForFilename = request.getExtension() != null ? request.getExtension() : logo.getExtension();
-                File oldFile = Paths.get(imageProcessingService.getUploadProperties().getDirectory()).resolve(oldFilename).toFile();
+                File oldFile = Paths.get(logoProcessingService.getUploadProperties().getDirectory()).resolve(oldFilename).toFile();
                 String newFilename;
                 if (extensionChanged) {
-                    newFilename = imageProcessingService.convertImageFormat(oldFile, extensionForFilename, nameForFilename);
+                    newFilename = logoProcessingService.convertImageFormat(oldFile, extensionForFilename, nameForFilename);
                 } else {
-                    newFilename = imageProcessingService.renameLogoFile(oldFilename, nameForFilename, extensionForFilename);
+                    newFilename = logoProcessingService.renameLogoFile(oldFilename, nameForFilename, extensionForFilename);
                 }
                 if (newFilename != null) {
                     logo.setFilename(newFilename);
@@ -150,7 +150,7 @@ public class LogoService {
         
         // Delete old image file if image was updated (replaced with new image)
         if (imageUpdated && oldFilename != null) {
-            imageProcessingService.deleteLogoFile(oldFilename);
+            logoProcessingService.deleteLogoFile(oldFilename);
         }
 
         log.info("Logo updated successfully: {}", id);
@@ -182,7 +182,7 @@ public class LogoService {
             throw new IllegalArgumentException("Logo not found with filename: " + filename);
         }
         
-        return imageProcessingService.getLogoFile(filename);
+        return logoProcessingService.getLogoFile(filename);
     }
 
     /**
@@ -254,7 +254,7 @@ public class LogoService {
         
         // Delete physical file
         if (filename != null) {
-            imageProcessingService.deleteLogoFile(filename);
+            logoProcessingService.deleteLogoFile(filename);
         }
 
         log.info("Logo permanently deleted: {}", id);

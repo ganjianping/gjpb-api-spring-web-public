@@ -14,6 +14,7 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.ganjp.blog.cms.util.CmsUtil;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -145,7 +146,7 @@ public class LogoController {
             Resource resource = new FileSystemResource(logoFile);
             
             // Determine content type based on file extension
-            String contentType = determineContentType(filename);
+            String contentType = CmsUtil.determineContentType(filename);
             
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
@@ -246,29 +247,5 @@ public class LogoController {
      */
     private String extractUserIdFromRequest(HttpServletRequest request) {
         return jwtUtils.extractUserIdFromToken(request);
-    }
-
-    /**
-     * Determine content type based on file extension
-     * @param filename The filename to check
-     * @return Content type string (e.g., "image/png", "image/svg+xml")
-     */
-    private String determineContentType(String filename) {
-        String lowerFilename = filename.toLowerCase();
-        if (lowerFilename.endsWith(".png")) {
-            return "image/png";
-        } else if (lowerFilename.endsWith(".jpg") || lowerFilename.endsWith(".jpeg")) {
-            return "image/jpeg";
-        } else if (lowerFilename.endsWith(".gif")) {
-            return "image/gif";
-        } else if (lowerFilename.endsWith(".svg")) {
-            return "image/svg+xml";
-        } else if (lowerFilename.endsWith(".webp")) {
-            return "image/webp";
-        } else if (lowerFilename.endsWith(".bmp")) {
-            return "image/bmp";
-        } else {
-            return "application/octet-stream"; // fallback
-        }
     }
 }

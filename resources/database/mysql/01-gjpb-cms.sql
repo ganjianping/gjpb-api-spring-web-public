@@ -83,3 +83,35 @@ CREATE TABLE `cms_logo` (
   CONSTRAINT `chk_cms_logo_original_url` CHECK (`original_url` IS NULL OR `original_url` LIKE 'http%')
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Logo images';
+
+CREATE TABLE `cms_image` (
+  `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
+  `name` varchar(255) NOT NULL COMMENT 'Image display name',
+  `original_url` varchar(500) DEFAULT NULL COMMENT 'Original source URL',
+  `source_name` varchar(255) DEFAULT NULL COMMENT 'Image source name',
+  `filename` varchar(255) NOT NULL COMMENT 'Stored filename',
+  `thumbnail_filename` varchar(255) DEFAULT NULL COMMENT 'Thumbnail filename',
+  `extension` varchar(10) NOT NULL COMMENT 'File extension (png, jpg, webp, svg, etc.)',
+  `mime_type` varchar(100) DEFAULT NULL COMMENT 'MIME type (image/jpeg, image/png, etc.)',
+  `size_bytes` bigint UNSIGNED DEFAULT NULL COMMENT 'File size in bytes',
+  `width` smallint UNSIGNED DEFAULT NULL COMMENT 'Image width in pixels',
+  `height` smallint UNSIGNED DEFAULT NULL COMMENT 'Image height in pixels',
+  `alt_text` varchar(500) DEFAULT NULL COMMENT 'Alt text for accessibility',
+  `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
+  `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
+  `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+  `created_by` char(36) DEFAULT NULL COMMENT 'Created by user ID',
+  `updated_by` char(36) DEFAULT NULL COMMENT 'Last updated by user ID',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Active status flag',
+
+  PRIMARY KEY (`id`),
+  INDEX `idx_active_lang_order` (`is_active`, `lang`, `display_order`),
+  INDEX `idx_filename` (`filename`),
+  INDEX `idx_thumbnail_filename` (`thumbnail_filename`),
+  INDEX `idx_created_at` (`created_at`),
+  INDEX `idx_created_by` (`created_by`),
+  INDEX `idx_updated_by` (`updated_by`),
+  FULLTEXT INDEX `ftx_name_alt` (`name`, `alt_text`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='CMS Image Management';

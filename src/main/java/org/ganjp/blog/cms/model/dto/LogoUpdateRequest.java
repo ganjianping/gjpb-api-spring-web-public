@@ -35,11 +35,4 @@ public class LogoUpdateRequest {
     private Integer displayOrder;
 
     private Boolean isActive;
-
-    /**
-     * Check if there's a new image to update
-     */
-    public boolean hasNewImage() {
-        return (originalUrl != null && !originalUrl.trim().isEmpty());
-    }
 }
