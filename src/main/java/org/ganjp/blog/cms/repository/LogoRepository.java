@@ -54,4 +54,9 @@ public interface LogoRepository extends JpaRepository<Logo, String> {
      * Check if logo with filename exists
      */
     boolean existsByFilename(String filename);
+
+    /**
+     * Find logo by filename and active status
+     */
+    Optional<Logo> findByFilenameAndIsActiveTrue(String filename);
 }

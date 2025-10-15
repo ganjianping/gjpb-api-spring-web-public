@@ -20,4 +20,7 @@ public interface ImageRepository extends JpaRepository<Image, String> {
 
     boolean existsByFilename(String filename);
     boolean existsByThumbnailFilename(String thumbnailFilename);
+
+    @Query("SELECT i FROM Image i WHERE (i.filename = :name OR i.thumbnailFilename = :name) AND i.isActive = true")
+    Optional<Image> findByFilenameAndIsActiveTrue(@Param("name") String name);
 }
