@@ -45,10 +45,67 @@ public class ImageService {
         Optional<Image> imageOpt = imageRepository.findByIdAndIsActiveTrue(id);
         if (imageOpt.isEmpty()) return null;
         Image image = imageOpt.get();
+        String oldExtension = image.getExtension();
+        String oldFilename = image.getFilename();
+        String oldThumbnail = image.getThumbnailFilename();
         if (request.getName() != null) image.setName(request.getName());
         if (request.getOriginalUrl() != null) image.setOriginalUrl(request.getOriginalUrl());
         if (request.getSourceName() != null) image.setSourceName(request.getSourceName());
-        if (request.getExtension() != null) image.setExtension(request.getExtension());
+        if (request.getExtension() != null && !request.getExtension().equalsIgnoreCase(oldExtension)) {
+            // Need to convert stored files to new extension
+            String newExt = request.getExtension().toLowerCase();
+            try {
+                Path uploadDir = Paths.get(imageUploadProperties.getDirectory());
+                Path oldImagePath = uploadDir.resolve(oldFilename);
+                Path oldThumbPath = uploadDir.resolve(oldThumbnail);
+
+                String newFilename = replaceExtension(oldFilename, newExt);
+                String newThumbnail = replaceExtension(oldThumbnail, newExt);
+                Path newImagePath = uploadDir.resolve(newFilename);
+                Path newThumbPath = uploadDir.resolve(newThumbnail);
+
+                // Try to read and write using ImageIO (conversion)
+                try {
+                    BufferedImage img = ImageIO.read(oldImagePath.toFile());
+                    if (img != null) {
+                        ImageIO.write(img, newExt, newImagePath.toFile());
+                    } else {
+                        // fallback to copy/rename if ImageIO cannot read (e.g., SVG)
+                        Files.copy(oldImagePath, newImagePath);
+                    }
+                } catch (Exception e) {
+                    // fallback: move/rename file
+                    Files.copy(oldImagePath, newImagePath);
+                }
+
+                try {
+                    BufferedImage timg = ImageIO.read(oldThumbPath.toFile());
+                    if (timg != null) {
+                        ImageIO.write(timg, newExt, newThumbPath.toFile());
+                    } else {
+                        Files.copy(oldThumbPath, newThumbPath);
+                    }
+                } catch (Exception e) {
+                    Files.copy(oldThumbPath, newThumbPath);
+                }
+
+                // Remove old files
+                try { Files.deleteIfExists(oldImagePath); } catch (Exception ignored) {}
+                try { Files.deleteIfExists(oldThumbPath); } catch (Exception ignored) {}
+
+                // Update entity fields to new names/extension/mime/size
+                image.setFilename(newFilename);
+                image.setThumbnailFilename(newThumbnail);
+                image.setExtension(newExt);
+                image.setMimeType(CmsUtil.determineContentType(newFilename));
+                try { image.setSizeBytes(Files.size(newImagePath)); } catch (Exception ignored) {}
+            } catch (IOException e) {
+                log.error("Failed to convert image files to new extension {} for image {}", request.getExtension(), id, e);
+                throw new RuntimeException("Failed to convert image files to new extension: " + e.getMessage(), e);
+            }
+        } else if (request.getExtension() != null) {
+            image.setExtension(request.getExtension());
+        }
         if (request.getMimeType() != null) image.setMimeType(request.getMimeType());
         if (request.getAltText() != null) image.setAltText(request.getAltText());
         if (request.getTags() != null) image.setTags(request.getTags());
@@ -224,5 +281,11 @@ public class ImageService {
 
         log.debug("Retrieved image file: {}", fullPath);
         return file;
+    }
+
+    private String replaceExtension(String filename, String newExt) {
+        int dot = filename.lastIndexOf('.');
+        if (dot == -1) return filename + "." + newExt;
+        return filename.substring(0, dot + 1) + newExt;
     }
 }
