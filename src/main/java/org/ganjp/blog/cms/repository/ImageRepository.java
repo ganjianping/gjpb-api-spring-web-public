@@ -14,6 +14,17 @@ public interface ImageRepository extends JpaRepository<Image, String> {
     @Query("SELECT i FROM Image i WHERE i.tags LIKE CONCAT('%', :tag, '%') AND i.isActive = true ORDER BY i.displayOrder")
     List<Image> findByTagsContaining(@Param("tag") String tag);
 
+    @Query("SELECT i FROM Image i WHERE " +
+        "(:name IS NULL OR LOWER(i.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+        "(:lang IS NULL OR i.lang = :lang) AND " +
+        "(:tags IS NULL OR i.tags LIKE CONCAT('%', :tags, '%')) AND " +
+        "(:isActive IS NULL OR i.isActive = :isActive) " +
+        "ORDER BY i.displayOrder")
+    List<Image> searchImages(@Param("name") String name,
+                             @Param("lang") org.ganjp.blog.cms.model.entity.Image.Language lang,
+                             @Param("tags") String tags,
+                             @Param("isActive") Boolean isActive);
+
     List<Image> findByIsActiveTrueOrderByDisplayOrderAsc();
 
     Optional<Image> findByIdAndIsActiveTrue(String id);

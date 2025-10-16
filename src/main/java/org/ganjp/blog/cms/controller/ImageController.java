@@ -172,9 +172,21 @@ public class ImageController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<ImageResponse>>> searchImages(@RequestParam String keyword) {
+    public ResponseEntity<ApiResponse<List<ImageResponse>>> searchImages(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Image.Language lang,
+            @RequestParam(required = false) String tags,
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) String keyword
+    ) {
         try {
-            List<ImageResponse> images = imageService.searchImages(keyword);
+            // backward compatibility: if keyword is provided use the old simple search
+            List<ImageResponse> images;
+            if (keyword != null && !keyword.isBlank()) {
+                images = imageService.searchImages(keyword);
+            } else {
+                images = imageService.searchImages(name, lang, tags, isActive);
+            }
             return ResponseEntity.ok(ApiResponse.success(images, "Images found"));
         } catch (Exception e) {
             log.error("Error searching images", e);

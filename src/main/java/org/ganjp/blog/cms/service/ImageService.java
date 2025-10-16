@@ -133,6 +133,11 @@ public class ImageService {
         return images.stream().map(this::toResponse).toList();
     }
 
+    public List<ImageResponse> searchImages(String name, Image.Language lang, String tags, Boolean isActive) {
+        List<Image> images = imageRepository.searchImages(name, lang, tags, isActive);
+        return images.stream().map(this::toResponse).toList();
+    }
+
     public ImageResponse createImage(ImageCreateRequest request, String userId) throws IOException {
         String id = UUID.randomUUID().toString();
         BufferedImage originalImage;
