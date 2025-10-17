@@ -9,6 +9,7 @@ import org.ganjp.blog.cms.repository.LogoRepository;
 import org.ganjp.blog.cms.service.ImageService;
 import org.ganjp.blog.cms.service.LogoProcessingService;
 import org.ganjp.blog.cms.repository.ImageRepository;
+import org.ganjp.blog.cms.repository.VideoRepository;
 import org.ganjp.blog.open.model.OpenAppSettingDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,8 @@ public class OpenService {
     private final ImageRepository imageRepository;
     private final ImageService imageService;
     private final LogoProcessingService logoProcessingService;
+    private final VideoRepository videoRepository;
+    private final org.ganjp.blog.cms.service.VideoService videoService;
     /**
      * Get image file by filename for public viewing
      * No authentication required
@@ -73,5 +76,16 @@ public class OpenService {
     logoRepository.findByFilenameAndIsActiveTrue(filename)
         .orElseThrow(() -> new IllegalArgumentException("Logo not found or not active with filename: " + filename));
         return logoProcessingService.getLogoFile(filename);
+    }
+
+    /**
+     * Get video file by filename for public viewing
+     */
+    public File getVideoFile(String filename) throws IOException {
+        log.debug("Fetching public video file: {}", filename);
+        if (!videoRepository.existsByFilename(filename)) {
+            throw new IllegalArgumentException("Video not found or not active with filename: " + filename);
+        }
+        return videoService.getVideoFileByFilename(filename);
     }
 }

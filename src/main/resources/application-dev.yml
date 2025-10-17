@@ -53,3 +53,11 @@ image:
       max-size: 1920
       # Maximum width or height for thumbnails
       thumbnail-size: 400
+
+# Video upload configuration
+video:
+  upload:
+    # Production directory for video storage
+    directory: /Users/ganjianping/Local/Videos
+    # Maximum file size (in bytes) - 1GB
+    max-file-size: 1073741824

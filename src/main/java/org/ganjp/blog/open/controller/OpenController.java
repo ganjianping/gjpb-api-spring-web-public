@@ -7,10 +7,12 @@ import org.ganjp.blog.open.model.OpenAppSettingDto;
 import org.ganjp.blog.open.service.OpenService;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpRange;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
@@ -90,6 +92,79 @@ public class OpenController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IOException e) {
             log.error("Error reading image file: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * View video by filename
+     * GET /v1/open/videos/{filename}
+     * No authentication required
+     * Returns video file for download/streaming. Range requests are not handled here — the video file is returned as-is.
+     */
+    @GetMapping("/videos/{filename}")
+    public ResponseEntity<?> viewVideo(@PathVariable String filename, @RequestHeader(value = "Range", required = false) String rangeHeader) {
+        try {
+            java.io.File file = openService.getVideoFile(filename);
+            long contentLength = file.length();
+            String contentType = org.ganjp.blog.cms.util.CmsUtil.determineContentType(filename);
+
+            if (rangeHeader == null) {
+                Resource resource = new FileSystemResource(file);
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(contentType))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                        .contentLength(contentLength)
+                        .body(resource);
+            }
+
+            HttpRange httpRange = HttpRange.parseRanges(rangeHeader).get(0);
+            long start = httpRange.getRangeStart(contentLength);
+            long end = httpRange.getRangeEnd(contentLength);
+            long rangeLength = end - start + 1;
+
+            java.io.InputStream rangeStream = new java.io.InputStream() {
+                private final java.io.RandomAccessFile raf;
+                private long remaining = rangeLength;
+                {
+                    this.raf = new java.io.RandomAccessFile(file, "r");
+                    this.raf.seek(start);
+                }
+                @Override
+                public int read() throws java.io.IOException {
+                    if (remaining <= 0) return -1;
+                    int b = raf.read();
+                    if (b != -1) remaining--;
+                    return b;
+                }
+                @Override
+                public int read(byte[] b, int off, int len) throws java.io.IOException {
+                    if (remaining <= 0) return -1;
+                    int toRead = (int) Math.min(len, remaining);
+                    int r = raf.read(b, off, toRead);
+                    if (r > 0) remaining -= r;
+                    return r;
+                }
+                @Override
+                public void close() throws java.io.IOException {
+                    try { raf.close(); } finally { super.close(); }
+                }
+            };
+
+            InputStreamResource resource = new InputStreamResource(rangeStream);
+
+            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                    .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_RANGE, "bytes " + start + "-" + end + "/" + contentLength)
+                    .contentLength(rangeLength)
+                    .body(resource);
+
+        } catch (IllegalArgumentException e) {
+            log.error("Video not found: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            log.error("Error reading video file: {}", filename, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

@@ -21,6 +21,16 @@ public class CmsUtil {
             return "image/webp";
         } else if (lowerFilename.endsWith(".bmp")) {
             return "image/bmp";
+        } else if (lowerFilename.endsWith(".mp4")) {
+            return "video/mp4";
+        } else if (lowerFilename.endsWith(".webm")) {
+            return "video/webm";
+        } else if (lowerFilename.endsWith(".ogv") || lowerFilename.endsWith(".ogg")) {
+            return "video/ogg";
+        } else if (lowerFilename.endsWith(".mov")) {
+            return "video/quicktime";
+        } else if (lowerFilename.endsWith(".mkv")) {
+            return "video/x-matroska";
         } else {
             return "application/octet-stream"; // fallback
         }
