@@ -30,17 +30,17 @@ public class VideoService {
         Video video = new Video();
         String id = UUID.randomUUID().toString();
         video.setId(id);
-    video.setName(request.getName());
-    // originalUrl, sourceName, width, height, duration removed
-    video.setCoverImageFilename(request.getCoverImageFilename());
+        video.setName(request.getName());
+        // originalUrl, sourceName, width, height, duration removed
+        video.setCoverImageFilename(request.getCoverImageFilename());
         video.setDescription(request.getDescription());
         video.setTags(request.getTags());
         if (request.getLang() != null) video.setLang(request.getLang());
         if (request.getDisplayOrder() != null) video.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) video.setIsActive(request.getIsActive());
 
-    // handle file upload (required)
-    if (request.getFile() != null && !request.getFile().isEmpty()) {
+        // handle file upload (required)
+        if (request.getFile() != null && !request.getFile().isEmpty()) {
             MultipartFile file = request.getFile();
             String originalFilename = file.getOriginalFilename();
             // prefer original filename; if missing, fall back to timestamp-based name
@@ -64,6 +64,42 @@ public class VideoService {
             video.setSizeBytes(Files.size(target));
         } else {
             throw new IllegalArgumentException("file is required");
+        }
+
+        // handle optional cover image upload
+        if (request.getCoverImageFile() != null && !request.getCoverImageFile().isEmpty()) {
+            MultipartFile cover = request.getCoverImageFile();
+            String coverOriginal = cover.getOriginalFilename();
+            String coverFilename;
+            if (coverOriginal == null || coverOriginal.isBlank()) {
+                coverFilename = System.currentTimeMillis() + "-cover";
+            } else {
+                coverFilename = coverOriginal.replaceAll("\\s+", "-");
+            }
+            Path imagesDir = Path.of(uploadProperties.getDirectory(), "images");
+            Files.createDirectories(imagesDir);
+            Path coverTarget = imagesDir.resolve(coverFilename);
+
+            // if filename exists, auto-rename by appending a numeric suffix
+            if (Files.exists(coverTarget)) {
+                String name = coverFilename;
+                String ext = "";
+                int dot = coverFilename.lastIndexOf('.');
+                if (dot > 0) {
+                    name = coverFilename.substring(0, dot);
+                    ext = coverFilename.substring(dot); // includes dot
+                }
+                int idx = 1;
+                do {
+                    String candidate = name + "-" + idx + ext;
+                    coverTarget = imagesDir.resolve(candidate);
+                    idx++;
+                } while (Files.exists(coverTarget));
+                coverFilename = coverTarget.getFileName().toString();
+            }
+
+            Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+            video.setCoverImageFilename(coverFilename);
         }
 
         Timestamp now = new Timestamp(System.currentTimeMillis());
@@ -109,7 +145,7 @@ public class VideoService {
 
     public java.io.File getVideoFileByFilename(String filename) throws java.io.IOException {
         if (filename == null) throw new IllegalArgumentException("filename is null");
-        Path videoPath = Path.of(uploadProperties.getDirectory(), "videos", filename);
+        Path videoPath = Path.of(uploadProperties.getDirectory(), filename);
         if (!Files.exists(videoPath)) {
             throw new IllegalArgumentException("Video file not found: " + filename);
         }
@@ -118,12 +154,21 @@ public class VideoService {
 
     public org.springframework.core.io.Resource getVideoResource(String filename) throws java.io.IOException {
         if (filename == null) throw new IllegalArgumentException("filename is null");
-        Path videoPath = Path.of(uploadProperties.getDirectory(), "videos", filename);
+        Path videoPath = Path.of(uploadProperties.getDirectory(), filename);
         if (!Files.exists(videoPath)) {
             throw new IllegalArgumentException("Video file not found: " + filename);
         }
         java.net.URI uri = videoPath.toUri();
         return new org.springframework.core.io.UrlResource(uri);
+    }
+
+    public java.io.File getCoverImageFileByFilename(String filename) throws java.io.IOException {
+        if (filename == null) throw new IllegalArgumentException("filename is null");
+        Path coverPath = Path.of(uploadProperties.getDirectory(), "images", filename);
+        if (!Files.exists(coverPath)) {
+            throw new IllegalArgumentException("Cover image file not found: " + filename);
+        }
+        return coverPath.toFile();
     }
 
     public boolean deleteVideo(String id, String userId) {

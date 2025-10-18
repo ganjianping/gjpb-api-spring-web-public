@@ -88,4 +88,17 @@ public class OpenService {
         }
         return videoService.getVideoFileByFilename(filename);
     }
+
+    /**
+     * Get video cover image file by filename for public viewing
+     */
+    public File getVideoCoverFile(String filename) throws IOException {
+        log.debug("Fetching public video cover image file: {}", filename);
+        // Ensure a Video exists with this cover image filename or main filename
+        if (!videoRepository.existsByFilename(filename)) {
+            throw new IllegalArgumentException("Video cover image not found or not active with filename: " + filename);
+        }
+        // Delegate to VideoService to locate the cover image under images/ directory
+        return videoService.getCoverImageFileByFilename(filename);
+    }
 }

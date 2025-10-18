@@ -15,6 +15,7 @@ public class VideoCreateRequest {
     private String name;
     private MultipartFile file;
     private String coverImageFilename;
+    private MultipartFile coverImageFile;
     private String description;
     private String tags;
     private org.ganjp.blog.cms.model.entity.Video.Language lang;

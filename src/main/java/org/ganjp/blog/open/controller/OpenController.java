@@ -96,6 +96,30 @@ public class OpenController {
         }
     }
 
+    @GetMapping("/videos/cover-image/{filename}")
+    public ResponseEntity<Resource> viewVideoCoverImage(@PathVariable String filename) {
+        try {
+            File imageFile = openService.getVideoCoverFile(filename);
+            if (imageFile == null || !imageFile.exists()) {
+                log.error("Video cover image not found: {}", filename);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            Resource resource = new FileSystemResource(imageFile);
+            // Determine content type based on file extension
+            String contentType = org.ganjp.blog.cms.util.CmsUtil.determineContentType(filename);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (IllegalArgumentException e) {
+            log.error("Video cover image not found: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            log.error("Error reading video cover image: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     /**
      * View video by filename
      * GET /v1/open/videos/{filename}
