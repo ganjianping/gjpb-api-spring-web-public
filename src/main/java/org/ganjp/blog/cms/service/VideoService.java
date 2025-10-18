@@ -28,38 +28,42 @@ public class VideoService {
 
     public VideoResponse createVideo(VideoCreateRequest request, String userId) throws IOException {
         Video video = new Video();
-    String id = UUID.randomUUID().toString();
+        String id = UUID.randomUUID().toString();
         video.setId(id);
-        video.setName(request.getName());
-        video.setOriginalUrl(request.getOriginalUrl());
-        video.setSourceName(request.getSourceName());
-        video.setCoverImageUrl(request.getCoverImageUrl());
-        video.setWidth(request.getWidth());
-        video.setHeight(request.getHeight());
-        video.setDuration(request.getDuration());
+    video.setName(request.getName());
+    // originalUrl, sourceName, width, height, duration removed
+    video.setCoverImageFilename(request.getCoverImageFilename());
         video.setDescription(request.getDescription());
         video.setTags(request.getTags());
         if (request.getLang() != null) video.setLang(request.getLang());
         if (request.getDisplayOrder() != null) video.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) video.setIsActive(request.getIsActive());
 
-        // handle file upload if present
-        if (request.getFile() != null && !request.getFile().isEmpty()) {
+    // handle file upload (required)
+    if (request.getFile() != null && !request.getFile().isEmpty()) {
             MultipartFile file = request.getFile();
             String originalFilename = file.getOriginalFilename();
-            String filename = System.currentTimeMillis() + "-" + (originalFilename == null ? "video" : originalFilename.replaceAll("\\s+", "-"));
+            // prefer original filename; if missing, fall back to timestamp-based name
+            String filename;
+            if (originalFilename == null || originalFilename.isBlank()) {
+                filename = System.currentTimeMillis() + "-video";
+            } else {
+                filename = originalFilename.replaceAll("\\s+", "-");
+            }
             Path videoDir = Path.of(uploadProperties.getDirectory());
             Files.createDirectories(videoDir);
             Path target = videoDir.resolve(filename);
+
+            // If filename already exists on disk or in DB, reject to avoid overwrite
+            if (Files.exists(target) || videoRepository.existsByFilename(filename)) {
+                throw new IllegalArgumentException("Filename already exists: " + filename);
+            }
+
             Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
             video.setFilename(filename);
             video.setSizeBytes(Files.size(target));
-        } else if (request.getOriginalUrl() != null && !request.getOriginalUrl().isBlank()) {
-            // store originalUrl as reference; filename may be null
-            video.setFilename(null);
-            video.setSizeBytes(null);
         } else {
-            throw new IllegalArgumentException("Either file or originalUrl must be provided");
+            throw new IllegalArgumentException("file is required");
         }
 
         Timestamp now = new Timestamp(System.currentTimeMillis());
@@ -77,13 +81,10 @@ public class VideoService {
         if (opt.isEmpty()) return null;
         Video video = opt.get();
         if (request.getName() != null) video.setName(request.getName());
-        if (request.getOriginalUrl() != null) video.setOriginalUrl(request.getOriginalUrl());
-        if (request.getSourceName() != null) video.setSourceName(request.getSourceName());
+    // originalUrl and sourceName removed
         if (request.getFilename() != null) video.setFilename(request.getFilename());
-        if (request.getCoverImageUrl() != null) video.setCoverImageUrl(request.getCoverImageUrl());
-        if (request.getWidth() != null) video.setWidth(request.getWidth());
-        if (request.getHeight() != null) video.setHeight(request.getHeight());
-        if (request.getDuration() != null) video.setDuration(request.getDuration());
+    if (request.getCoverImageFilename() != null) video.setCoverImageFilename(request.getCoverImageFilename());
+    // width/height/duration fields removed
         if (request.getDescription() != null) video.setDescription(request.getDescription());
         if (request.getTags() != null) video.setTags(request.getTags());
         if (request.getLang() != null) video.setLang(request.getLang());
@@ -145,14 +146,10 @@ public class VideoService {
         VideoResponse r = new VideoResponse();
         r.setId(v.getId());
         r.setName(v.getName());
-        r.setOriginalUrl(v.getOriginalUrl());
-        r.setSourceName(v.getSourceName());
         r.setFilename(v.getFilename());
         r.setSizeBytes(v.getSizeBytes());
-        r.setCoverImageUrl(v.getCoverImageUrl());
-        r.setWidth(v.getWidth());
-        r.setHeight(v.getHeight());
-        r.setDuration(v.getDuration());
+    r.setCoverImageFilename(v.getCoverImageFilename());
+    // originalUrl, sourceName, width, height, duration removed
         r.setDescription(v.getDescription());
         r.setTags(v.getTags());
         r.setLang(v.getLang());

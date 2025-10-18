@@ -42,19 +42,7 @@ public class VideoController {
         }
     }
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<VideoResponse>> createVideoFromUrl(@Valid @RequestBody VideoCreateRequest request, HttpServletRequest httpRequest) {
-        try {
-            String userId = jwtUtils.extractUserIdFromToken(httpRequest);
-            VideoResponse res = videoService.createVideo(request, userId);
-            return ResponseEntity.status(201).body(ApiResponse.success(res, "Video created from URL"));
-        } catch (IOException e) {
-            log.error("Error creating video from URL", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error creating video from URL: " + e.getMessage(), null));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(400, e.getMessage(), null));
-        }
-    }
+    // create-from-URL endpoint removed; file upload is required
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<VideoResponse>> getVideo(@PathVariable String id) {

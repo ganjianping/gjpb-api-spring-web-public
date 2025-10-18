@@ -11,13 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class VideoUpdateRequest {
     private String name;
-    private String originalUrl;
-    private String sourceName;
     private String filename; // optional if external
-    private String coverImageUrl;
-    private Integer width;
-    private Integer height;
-    private Integer duration;
+    private String coverImageFilename;
     private String description;
     private String tags;
     private org.ganjp.blog.cms.model.entity.Video.Language lang;
