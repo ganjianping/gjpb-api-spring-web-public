@@ -81,21 +81,8 @@ public class VideoService {
             Path coverTarget = imagesDir.resolve(coverFilename);
 
             // if filename exists, auto-rename by appending a numeric suffix
-            if (Files.exists(coverTarget)) {
-                String name = coverFilename;
-                String ext = "";
-                int dot = coverFilename.lastIndexOf('.');
-                if (dot > 0) {
-                    name = coverFilename.substring(0, dot);
-                    ext = coverFilename.substring(dot); // includes dot
-                }
-                int idx = 1;
-                do {
-                    String candidate = name + "-" + idx + ext;
-                    coverTarget = imagesDir.resolve(candidate);
-                    idx++;
-                } while (Files.exists(coverTarget));
-                coverFilename = coverTarget.getFileName().toString();
+            if (Files.exists(coverTarget) || videoRepository.existsByFilename(coverFilename)) {
+                throw new IllegalArgumentException("Video Cover image already exists: " + coverFilename);
             }
 
             Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
