@@ -155,6 +155,7 @@ CREATE TABLE `cms_audio` (
   `size_bytes` bigint UNSIGNED DEFAULT NULL COMMENT 'File size in bytes',
   `cover_image_filename` varchar(500) DEFAULT NULL COMMENT 'Cover image filename (stored in uploads)',
   `description` varchar(500) DEFAULT NULL COMMENT 'Audio description',
+  `subtitle` text DEFAULT NULL COMMENT 'Subtitle or transcript',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
@@ -166,6 +167,8 @@ CREATE TABLE `cms_audio` (
 
   PRIMARY KEY (`id`),
   INDEX `idx_active_lang_order` (`is_active`, `lang`, `display_order`),
+  INDEX `idx_original_url` (`original_url`),
+  INDEX `idx_source_name` (`source_name`),
   INDEX `idx_filename` (`filename`),
   INDEX `idx_cover_image_filename` (`cover_image_filename`),
   INDEX `idx_created_at` (`created_at`),

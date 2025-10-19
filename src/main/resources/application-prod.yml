@@ -62,3 +62,11 @@ video:
     # Cover image resize settings for videos (cover images will be resized when uploaded)
     cover-image:
       max-size: 600
+
+# Audio upload configuration (mirrors video.upload)
+audio:
+  upload:
+    directory: /var/www/gjpb/uploads/audios
+    max-file-size: 1073741824
+    cover-image:
+      max-size: 600

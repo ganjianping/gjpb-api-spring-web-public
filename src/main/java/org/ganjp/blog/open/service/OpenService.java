@@ -34,6 +34,8 @@ public class OpenService {
     private final LogoProcessingService logoProcessingService;
     private final VideoRepository videoRepository;
     private final org.ganjp.blog.cms.service.VideoService videoService;
+    private final org.ganjp.blog.cms.repository.AudioRepository audioRepository;
+    private final org.ganjp.blog.cms.service.AudioService audioService;
     /**
      * Get image file by filename for public viewing
      * No authentication required
@@ -100,5 +102,27 @@ public class OpenService {
         }
         // Delegate to VideoService to locate the cover image under images/ directory
         return videoService.getCoverImageFileByFilename(filename);
+    }
+
+    /**
+     * Get audio file by filename for public viewing
+     */
+    public File getAudioFile(String filename) throws IOException {
+        log.debug("Fetching public audio file: {}", filename);
+        if (!audioRepository.existsByFilename(filename)) {
+            throw new IllegalArgumentException("Audio not found or not active with filename: " + filename);
+        }
+        return audioService.getAudioFileByFilename(filename);
+    }
+
+    /**
+     * Get audio cover image file by filename for public viewing
+     */
+    public File getAudioCoverFile(String filename) throws IOException {
+        log.debug("Fetching public audio cover image file: {}", filename);
+        if (!audioRepository.existsByFilename(filename)) {
+            throw new IllegalArgumentException("Audio cover image not found or not active with filename: " + filename);
+        }
+        return audioService.getCoverImageFileByFilename(filename);
     }
 }
