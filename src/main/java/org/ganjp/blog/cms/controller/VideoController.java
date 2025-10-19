@@ -80,6 +80,19 @@ public class VideoController {
         }
     }
 
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<VideoResponse>> updateVideoJson(@PathVariable String id, @Valid @RequestBody VideoUpdateRequest request, HttpServletRequest httpRequest) {
+        try {
+            String userId = jwtUtils.extractUserIdFromToken(httpRequest);
+            VideoResponse r = videoService.updateVideo(id, request, userId);
+            if (r == null) return ResponseEntity.status(404).body(ApiResponse.error(404, "Video not found", null));
+            return ResponseEntity.ok(ApiResponse.success(r, "Video updated"));
+        } catch (Exception e) {
+            log.error("Error updating video (json)", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error updating video: " + e.getMessage(), null));
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteVideo(@PathVariable String id, HttpServletRequest httpRequest) {
         try {
