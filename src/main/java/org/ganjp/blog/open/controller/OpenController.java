@@ -96,7 +96,7 @@ public class OpenController {
         }
     }
 
-    @GetMapping("/videos/cover-image/{filename}")
+    @GetMapping("/videos/cover-images/{filename}")
     public ResponseEntity<Resource> viewVideoCoverImage(@PathVariable String filename) {
         try {
             File imageFile = openService.getVideoCoverFile(filename);

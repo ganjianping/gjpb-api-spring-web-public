@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -76,7 +78,7 @@ public class VideoService {
             } else {
                 coverFilename = coverOriginal.replaceAll("\\s+", "-");
             }
-            Path imagesDir = Path.of(uploadProperties.getDirectory(), "images");
+            Path imagesDir = Path.of(uploadProperties.getDirectory(), "cover-images");
             Files.createDirectories(imagesDir);
             Path coverTarget = imagesDir.resolve(coverFilename);
 
@@ -85,7 +87,23 @@ public class VideoService {
                 throw new IllegalArgumentException("Video Cover image already exists: " + coverFilename);
             }
 
-            Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+            // attempt to read and resize image; if not readable (e.g., SVG), fallback to raw copy
+            try {
+                BufferedImage original = ImageIO.read(cover.getInputStream());
+                if (original != null) {
+                    BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
+                    String ext = "png";
+                    int dot = coverFilename.lastIndexOf('.');
+                    if (dot > 0 && dot < coverFilename.length() - 1) ext = coverFilename.substring(dot + 1).toLowerCase();
+                    ImageIO.write(resized, ext, coverTarget.toFile());
+                } else {
+                    // unknown format (SVG etc.), copy raw bytes
+                    Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                }
+            } catch (IOException e) {
+                // if any problem with ImageIO, fallback to raw copy
+                Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+            }
             video.setCoverImageFilename(coverFilename);
         }
 
@@ -121,7 +139,7 @@ public class VideoService {
                 } else {
                     coverFilename = coverOriginal.replaceAll("\\s+", "-");
                 }
-                Path imagesDir = Path.of(uploadProperties.getDirectory(), "images");
+                Path imagesDir = Path.of(uploadProperties.getDirectory(), "cover-images");
                 Files.createDirectories(imagesDir);
                 Path coverTarget = imagesDir.resolve(coverFilename);
 
@@ -148,7 +166,20 @@ public class VideoService {
                     } catch (IOException ignored) {}
                 }
 
-                Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                // resize like in create flow
+                try {
+                    BufferedImage original = ImageIO.read(cover.getInputStream());
+                    if (original != null) {
+                        BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
+                        String writeExt = "png";
+                        if (dot > 0 && dot < coverFilename.length() - 1) writeExt = coverFilename.substring(dot + 1).toLowerCase();
+                        ImageIO.write(resized, writeExt, coverTarget.toFile());
+                    } else {
+                        Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                } catch (IOException e) {
+                    Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                }
                 video.setCoverImageFilename(coverFilename);
             }
         } catch (IOException e) {
@@ -198,7 +229,7 @@ public class VideoService {
 
     public java.io.File getCoverImageFileByFilename(String filename) throws java.io.IOException {
         if (filename == null) throw new IllegalArgumentException("filename is null");
-        Path coverPath = Path.of(uploadProperties.getDirectory(), "images", filename);
+        Path coverPath = Path.of(uploadProperties.getDirectory(), "cover-images", filename);
         if (!Files.exists(coverPath)) {
             throw new IllegalArgumentException("Cover image file not found: " + filename);
         }
@@ -239,5 +270,17 @@ public class VideoService {
         if (v.getCreatedAt() != null) r.setCreatedAt(v.getCreatedAt().toString());
         if (v.getUpdatedAt() != null) r.setUpdatedAt(v.getUpdatedAt().toString());
         return r;
+    }
+
+    private BufferedImage resizeImageIfNeeded(BufferedImage image, int maxSize) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        if (width <= maxSize && height <= maxSize) return image;
+        float scale = Math.min((float) maxSize / width, (float) maxSize / height);
+        int newWidth = Math.round(width * scale);
+        int newHeight = Math.round(height * scale);
+        BufferedImage resized = new BufferedImage(newWidth, newHeight, image.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : image.getType());
+        resized.getGraphics().drawImage(image, 0, 0, newWidth, newHeight, null);
+        return resized;
     }
 }

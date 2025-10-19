@@ -61,3 +61,6 @@ video:
     directory: /Users/ganjianping/Local/Videos
     # Maximum file size (in bytes) - 1GB
     max-file-size: 1073741824
+    # Cover image resize settings for videos (cover images will be resized when uploaded)
+    cover-image:
+      max-size: 600
