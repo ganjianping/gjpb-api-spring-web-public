@@ -6,6 +6,8 @@ public class VideoResponse {
     private String filename;
     private Long sizeBytes;
     private String coverImageFilename;
+    private String originalUrl;
+    private String sourceName;
     private String description;
     private String tags;
     private org.ganjp.blog.cms.model.entity.Video.Language lang;
@@ -27,6 +29,10 @@ public class VideoResponse {
     public void setSizeBytes(Long sizeBytes) { this.sizeBytes = sizeBytes; }
     public String getCoverImageFilename() { return coverImageFilename; }
     public void setCoverImageFilename(String coverImageFilename) { this.coverImageFilename = coverImageFilename; }
+    public String getOriginalUrl() { return originalUrl; }
+    public void setOriginalUrl(String originalUrl) { this.originalUrl = originalUrl; }
+    public String getSourceName() { return sourceName; }
+    public void setSourceName(String sourceName) { this.sourceName = sourceName; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     public String getTags() { return tags; }

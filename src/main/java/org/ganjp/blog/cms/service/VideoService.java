@@ -35,6 +35,9 @@ public class VideoService {
         video.setName(request.getName());
         // originalUrl, sourceName, width, height, duration removed
         video.setCoverImageFilename(request.getCoverImageFilename());
+    // set original source info if provided
+    if (request.getOriginalUrl() != null) video.setOriginalUrl(request.getOriginalUrl());
+    if (request.getSourceName() != null) video.setSourceName(request.getSourceName());
         video.setDescription(request.getDescription());
         video.setTags(request.getTags());
         if (request.getLang() != null) video.setLang(request.getLang());
@@ -123,7 +126,9 @@ public class VideoService {
         Video video = opt.get();
         if (request.getName() != null) video.setName(request.getName());
     // originalUrl and sourceName removed
-        if (request.getFilename() != null) video.setFilename(request.getFilename());
+    if (request.getFilename() != null) video.setFilename(request.getFilename());
+    if (request.getOriginalUrl() != null) video.setOriginalUrl(request.getOriginalUrl());
+    if (request.getSourceName() != null) video.setSourceName(request.getSourceName());
         // handle explicit cover filename update
         if (request.getCoverImageFilename() != null) {
             video.setCoverImageFilename(request.getCoverImageFilename());
@@ -259,7 +264,8 @@ public class VideoService {
         r.setFilename(v.getFilename());
         r.setSizeBytes(v.getSizeBytes());
     r.setCoverImageFilename(v.getCoverImageFilename());
-    // originalUrl, sourceName, width, height, duration removed
+    r.setOriginalUrl(v.getOriginalUrl());
+    r.setSourceName(v.getSourceName());
         r.setDescription(v.getDescription());
         r.setTags(v.getTags());
         r.setLang(v.getLang());

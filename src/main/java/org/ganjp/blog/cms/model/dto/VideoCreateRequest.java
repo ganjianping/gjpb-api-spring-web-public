@@ -14,6 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class VideoCreateRequest {
     private String name;
     private MultipartFile file;
+    private String originalUrl;
+    private String sourceName;
     private String coverImageFilename;
     private MultipartFile coverImageFile;
     private String description;

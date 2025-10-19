@@ -13,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class VideoUpdateRequest {
     private String name;
     private String filename; // optional if external
+    private String originalUrl;
+    private String sourceName;
     private String coverImageFilename;
     // allow uploading a new cover image when updating
     private MultipartFile coverImageFile;

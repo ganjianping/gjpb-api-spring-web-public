@@ -31,6 +31,12 @@ public class Video {
     @Column(name = "cover_image_filename", length = 500)
     private String coverImageFilename;
 
+    @Column(name = "original_url", length = 500)
+    private String originalUrl;
+
+    @Column(name = "source_name", length = 255)
+    private String sourceName;
+
     @Column(length = 500)
     private String description;
 
