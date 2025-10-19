@@ -67,8 +67,8 @@ public class VideoController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<VideoResponse>> updateVideo(@PathVariable String id, @Valid @RequestBody VideoUpdateRequest request, HttpServletRequest httpRequest) {
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<VideoResponse>> updateVideo(@PathVariable String id, @Valid @ModelAttribute VideoUpdateRequest request, HttpServletRequest httpRequest) {
         try {
             String userId = jwtUtils.extractUserIdFromToken(httpRequest);
             VideoResponse r = videoService.updateVideo(id, request, userId);

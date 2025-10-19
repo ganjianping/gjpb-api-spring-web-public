@@ -106,7 +106,54 @@ public class VideoService {
         if (request.getName() != null) video.setName(request.getName());
     // originalUrl and sourceName removed
         if (request.getFilename() != null) video.setFilename(request.getFilename());
-    if (request.getCoverImageFilename() != null) video.setCoverImageFilename(request.getCoverImageFilename());
+        // handle explicit cover filename update
+        if (request.getCoverImageFilename() != null) {
+            video.setCoverImageFilename(request.getCoverImageFilename());
+        }
+        // handle uploaded cover image replacement
+        try {
+            if (request.getCoverImageFile() != null && !request.getCoverImageFile().isEmpty()) {
+                MultipartFile cover = request.getCoverImageFile();
+                String coverOriginal = cover.getOriginalFilename();
+                String coverFilename;
+                if (coverOriginal == null || coverOriginal.isBlank()) {
+                    coverFilename = System.currentTimeMillis() + "-cover";
+                } else {
+                    coverFilename = coverOriginal.replaceAll("\\s+", "-");
+                }
+                Path imagesDir = Path.of(uploadProperties.getDirectory(), "images");
+                Files.createDirectories(imagesDir);
+                Path coverTarget = imagesDir.resolve(coverFilename);
+
+                // If filename exists, auto-rename by appending numeric suffix
+                int suffix = 1;
+                String base = coverFilename;
+                String ext = "";
+                int dot = coverFilename.lastIndexOf('.');
+                if (dot > 0) {
+                    base = coverFilename.substring(0, dot);
+                    ext = coverFilename.substring(dot);
+                }
+                while (Files.exists(coverTarget) || videoRepository.existsByFilename(coverFilename)) {
+                    coverFilename = base + "-" + suffix + ext;
+                    coverTarget = imagesDir.resolve(coverFilename);
+                    suffix++;
+                }
+
+                // delete old cover file if present
+                if (video.getCoverImageFilename() != null) {
+                    try {
+                        Path old = imagesDir.resolve(video.getCoverImageFilename());
+                        Files.deleteIfExists(old);
+                    } catch (IOException ignored) {}
+                }
+
+                Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                video.setCoverImageFilename(coverFilename);
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Failed to save cover image: " + e.getMessage());
+        }
     // width/height/duration fields removed
         if (request.getDescription() != null) video.setDescription(request.getDescription());
         if (request.getTags() != null) video.setTags(request.getTags());
