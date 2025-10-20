@@ -70,4 +70,4 @@ audio:
     directory: /Users/ganjianping/Local/Audios
     max-file-size: 1073741824
     cover-image:
-      max-size: 600
+      max-size: 400

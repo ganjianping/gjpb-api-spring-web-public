@@ -18,6 +18,7 @@ public class AudioCreateRequest {
     private String coverImageFilename;
     private MultipartFile coverImageFile;
     private String description;
+    private String subtitle;
     private String tags;
     private org.ganjp.blog.cms.model.entity.Video.Language lang;
     private Integer displayOrder;

@@ -35,9 +35,9 @@ public class VideoService {
         video.setName(request.getName());
         // originalUrl, sourceName, width, height, duration removed
         video.setCoverImageFilename(request.getCoverImageFilename());
-    // set original source info if provided
-    if (request.getOriginalUrl() != null) video.setOriginalUrl(request.getOriginalUrl());
-    if (request.getSourceName() != null) video.setSourceName(request.getSourceName());
+        // set original source info if provided
+        if (request.getOriginalUrl() != null) video.setOriginalUrl(request.getOriginalUrl());
+        if (request.getSourceName() != null) video.setSourceName(request.getSourceName());
         video.setDescription(request.getDescription());
         video.setTags(request.getTags());
         if (request.getLang() != null) video.setLang(request.getLang());

@@ -35,7 +35,8 @@ public class AudioService {
         audio.setCoverImageFilename(request.getCoverImageFilename());
         if (request.getOriginalUrl() != null) audio.setOriginalUrl(request.getOriginalUrl());
         if (request.getSourceName() != null) audio.setSourceName(request.getSourceName());
-        audio.setDescription(request.getDescription());
+    audio.setDescription(request.getDescription());
+    if (request.getSubtitle() != null) audio.setSubtitle(request.getSubtitle());
         audio.setTags(request.getTags());
         if (request.getLang() != null) audio.setLang(request.getLang());
         if (request.getDisplayOrder() != null) audio.setDisplayOrder(request.getDisplayOrder());
@@ -171,7 +172,8 @@ public class AudioService {
             throw new IllegalArgumentException("Failed to save cover image: " + e.getMessage());
         }
 
-        if (request.getDescription() != null) audio.setDescription(request.getDescription());
+    if (request.getDescription() != null) audio.setDescription(request.getDescription());
+    if (request.getSubtitle() != null) audio.setSubtitle(request.getSubtitle());
         if (request.getTags() != null) audio.setTags(request.getTags());
         if (request.getLang() != null) audio.setLang(request.getLang());
         if (request.getDisplayOrder() != null) audio.setDisplayOrder(request.getDisplayOrder());
@@ -234,9 +236,10 @@ public class AudioService {
         r.setFilename(a.getFilename());
         r.setSizeBytes(a.getSizeBytes());
         r.setCoverImageFilename(a.getCoverImageFilename());
-        r.setOriginalUrl(a.getOriginalUrl());
-        r.setSourceName(a.getSourceName());
-        r.setDescription(a.getDescription());
+    r.setOriginalUrl(a.getOriginalUrl());
+    r.setSourceName(a.getSourceName());
+    r.setSubtitle(a.getSubtitle());
+    r.setDescription(a.getDescription());
         r.setTags(a.getTags());
         r.setLang(a.getLang());
         r.setDisplayOrder(a.getDisplayOrder());

@@ -19,6 +19,7 @@ public class AudioUpdateRequest {
     // allow uploading a new cover image when updating
     private MultipartFile coverImageFile;
     private String description;
+    private String subtitle;
     private String tags;
 
     private org.ganjp.blog.cms.model.entity.Video.Language lang;

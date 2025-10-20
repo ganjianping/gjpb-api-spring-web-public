@@ -37,6 +37,8 @@ public class Audio {
 
     @Column(length = 500)
     private String description;
+    @Column(columnDefinition = "text")
+    private String subtitle;
 
     @Column(length = 500)
     private String tags;
@@ -44,7 +46,7 @@ public class Audio {
     @Enumerated(EnumType.STRING)
     @Column(length = 2, nullable = false)
     @Builder.Default
-    private Video.Language lang = Video.Language.EN; // reuse Video.Language enum
+    private org.ganjp.blog.cms.model.entity.Video.Language lang = org.ganjp.blog.cms.model.entity.Video.Language.EN;
 
     @Column(name = "display_order", nullable = false)
     @Builder.Default
@@ -65,4 +67,6 @@ public class Audio {
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;
+
+    // language enum is shared with Video entity
 }

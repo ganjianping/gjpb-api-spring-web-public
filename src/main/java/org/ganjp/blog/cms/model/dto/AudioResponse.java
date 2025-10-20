@@ -8,6 +8,7 @@ public class AudioResponse {
     private String coverImageFilename;
     private String originalUrl;
     private String sourceName;
+    private String subtitle;
     private String description;
     private String tags;
     private org.ganjp.blog.cms.model.entity.Video.Language lang;
@@ -33,6 +34,8 @@ public class AudioResponse {
     public void setOriginalUrl(String originalUrl) { this.originalUrl = originalUrl; }
     public String getSourceName() { return sourceName; }
     public void setSourceName(String sourceName) { this.sourceName = sourceName; }
+    public String getSubtitle() { return subtitle; }
+    public void setSubtitle(String subtitle) { this.subtitle = subtitle; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     public String getTags() { return tags; }
