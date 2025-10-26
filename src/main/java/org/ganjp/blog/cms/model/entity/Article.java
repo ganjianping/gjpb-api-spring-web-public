@@ -6,28 +6,26 @@ import lombok.*;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "cms_audio")
+@Table(name = "cms_article")
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Audio {
+public class Article {
     @Id
     @Column(length = 36, nullable = false)
     private String id;
 
     @Column(length = 255, nullable = false)
-    private String name;
+    private String title;
 
-    @Column(length = 255, nullable = false)
-    private String filename;
+    @Column(length = 500)
+    private String summary;
 
-    @Column(name = "size_bytes")
-    private Long sizeBytes;
-
-    @Column(name = "cover_image_filename", length = 500)
-    private String coverImageFilename;
+    @Lob
+    @Column(columnDefinition = "longtext")
+    private String content;
 
     @Column(name = "original_url", length = 500)
     private String originalUrl;
@@ -35,10 +33,11 @@ public class Audio {
     @Column(name = "source_name", length = 255)
     private String sourceName;
 
-    @Column(length = 500)
-    private String description;
-    @Column(columnDefinition = "text")
-    private String subtitle;
+    @Column(name = "cover_image_filename", length = 500)
+    private String coverImageFilename;
+
+    @Column(name = "cover_image_original_url", length = 500)
+    private String coverImageOriginalUrl;
 
     @Column(length = 500)
     private String tags;
@@ -46,7 +45,7 @@ public class Audio {
     @Enumerated(EnumType.STRING)
     @Column(length = 2, nullable = false)
     @Builder.Default
-    private Language lang = Language.EN;
+    private Article.Language lang = Article.Language.EN;
 
     @Column(name = "display_order", nullable = false)
     @Builder.Default
@@ -68,7 +67,5 @@ public class Audio {
     @Builder.Default
     private Boolean isActive = true;
 
-    public enum Language {
-        EN, ZH
-    }
+    public enum Language { EN, ZH }
 }

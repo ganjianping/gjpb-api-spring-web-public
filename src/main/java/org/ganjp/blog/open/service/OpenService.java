@@ -36,6 +36,8 @@ public class OpenService {
     private final org.ganjp.blog.cms.service.VideoService videoService;
     private final org.ganjp.blog.cms.repository.AudioRepository audioRepository;
     private final org.ganjp.blog.cms.service.AudioService audioService;
+    private final org.ganjp.blog.cms.repository.ArticleRepository articleRepository;
+    private final org.ganjp.blog.cms.service.ArticleService articleService;
     /**
      * Get image file by filename for public viewing
      * No authentication required
@@ -124,5 +126,16 @@ public class OpenService {
             throw new IllegalArgumentException("Audio cover image not found or not active with filename: " + filename);
         }
         return audioService.getCoverImageFileByFilename(filename);
+    }
+
+    /**
+     * Get article cover image file by filename for public viewing
+     */
+    public File getArticleCoverFile(String filename) throws IOException {
+        log.debug("Fetching public article cover image file: {}", filename);
+        if (!articleRepository.existsByCoverImageFilename(filename)) {
+            throw new IllegalArgumentException("Article cover image not found or not active with filename: " + filename);
+        }
+        return articleService.getCoverImageFileByFilename(filename);
     }
 }

@@ -143,6 +143,29 @@ public class OpenController {
         }
     }
 
+    @GetMapping("/articles/cover-images/{filename}")
+    public ResponseEntity<Resource> viewArticleCoverImage(@PathVariable String filename) {
+        try {
+            File imageFile = openService.getArticleCoverFile(filename);
+            if (imageFile == null || !imageFile.exists()) {
+                log.error("Article cover image not found: {}", filename);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            Resource resource = new FileSystemResource(imageFile);
+            String contentType = org.ganjp.blog.cms.util.CmsUtil.determineContentType(filename);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (IllegalArgumentException e) {
+            log.error("Article cover image not found: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            log.error("Error reading article cover image: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/audios/{filename}")
     public ResponseEntity<?> viewAudio(@PathVariable String filename, @RequestHeader(value = "Range", required = false) String rangeHeader) {
         try {

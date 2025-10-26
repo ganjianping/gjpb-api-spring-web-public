@@ -35,8 +35,8 @@ public class AudioService {
         audio.setCoverImageFilename(request.getCoverImageFilename());
         if (request.getOriginalUrl() != null) audio.setOriginalUrl(request.getOriginalUrl());
         if (request.getSourceName() != null) audio.setSourceName(request.getSourceName());
-    audio.setDescription(request.getDescription());
-    if (request.getSubtitle() != null) audio.setSubtitle(request.getSubtitle());
+        audio.setDescription(request.getDescription());
+        if (request.getSubtitle() != null) audio.setSubtitle(request.getSubtitle());
         audio.setTags(request.getTags());
         if (request.getLang() != null) audio.setLang(request.getLang());
         if (request.getDisplayOrder() != null) audio.setDisplayOrder(request.getDisplayOrder());

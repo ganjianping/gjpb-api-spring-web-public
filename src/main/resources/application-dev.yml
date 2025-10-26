@@ -71,3 +71,12 @@ audio:
     max-file-size: 1073741824
     cover-image:
       max-size: 400
+
+# Article upload configuration
+article:
+  upload:
+    # Local directory for article-related assets (covers)
+    directory: /Users/ganjianping/Local/Articles
+    # Cover image resize settings for articles
+    cover-image:
+      max-size: 800

@@ -175,3 +175,37 @@ CREATE TABLE `cms_audio` (
   INDEX `idx_created_by` (`created_by`),
   INDEX `idx_updated_by` (`updated_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='CMS Audio Management';
+
+
+CREATE TABLE `cms_article` (
+  `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
+  `title` varchar(255) NOT NULL COMMENT 'Article title',
+  `summary` varchar(500) DEFAULT NULL COMMENT 'Brief article summary/excerpt',
+  `content` longtext DEFAULT NULL COMMENT 'Full article content',
+  `original_url` varchar(500) DEFAULT NULL COMMENT 'Original source URL',
+  `source_name` varchar(255) DEFAULT NULL COMMENT 'Content source name',
+  `cover_image_filename` varchar(500) DEFAULT NULL COMMENT 'Cover image file path',
+  `cover_image_original_url` varchar(500) DEFAULT NULL COMMENT 'Cover image original URL',
+  `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
+  `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
+  `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+  `created_by` char(36) DEFAULT NULL COMMENT 'Created by user ID',
+  `updated_by` char(36) DEFAULT NULL COMMENT 'Last updated by user ID',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Active status flag',
+
+   PRIMARY KEY (`id`),
+   UNIQUE KEY `idx_title_lang` (`title`, `lang`),
+   KEY `idx_tags` (`tags`),
+   KEY `idx_original_url` (`original_url`),
+   KEY `idx_lang_active` (`lang`, `is_active`),
+   KEY `idx_display_order` (`display_order`),
+   KEY `idx_created_at` (`created_at`),
+   KEY `idx_created_by` (`created_by`),
+   KEY `idx_updated_by` (`updated_by`),
+   KEY `idx_is_active` (`is_active`),
+   KEY `idx_active_order` (`is_active`, `display_order`),
+   KEY `idx_lang_active_order` (`lang`, `is_active`, `display_order`),
+   FULLTEXT KEY `idx_fulltext_search` (`title`, `summary`, `content`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='CMS Article Management';

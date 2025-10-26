@@ -4,27 +4,23 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.cms.model.entity.Image.Language;
+import org.ganjp.blog.cms.model.entity.Article;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ImageResponse {
+public class ArticleResponse {
     private String id;
-    private String name;
+    private String title;
+    private String summary;
+    private String content;
     private String originalUrl;
     private String sourceName;
-    private String filename;
-    private String thumbnailFilename;
-    private String extension;
-    private String mimeType;
-    private Long sizeBytes;
-    private Integer width;
-    private Integer height;
-    private String altText;
+    private String coverImageFilename;
+    private String coverImageOriginalUrl;
     private String tags;
-    private Language lang;
+    private Article.Language lang;
     private Integer displayOrder;
     private String createdBy;
     private String updatedBy;
