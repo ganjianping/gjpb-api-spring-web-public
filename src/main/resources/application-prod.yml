@@ -79,3 +79,11 @@ article:
     # Cover image resize settings for articles
     cover-image:
       max-size: 800
+
+# Generic file upload configuration (for cms_file)
+file:
+  upload:
+    # Production directory for generic file storage (documents, attachments)
+    directory: /var/www/gjpb/uploads/files
+    # Maximum file size (in bytes) - 1GB
+    max-file-size: 1073741824

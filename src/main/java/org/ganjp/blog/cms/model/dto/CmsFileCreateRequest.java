@@ -1,11 +1,17 @@
 package org.ganjp.blog.cms.model.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.NotBlank;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CmsFileCreateRequest {
     @NotBlank
     private String name;
@@ -17,4 +23,5 @@ public class CmsFileCreateRequest {
     private String tags;
     private org.ganjp.blog.cms.model.entity.CmsFile.Language lang;
     private Integer displayOrder;
+    private Boolean isActive;
 }

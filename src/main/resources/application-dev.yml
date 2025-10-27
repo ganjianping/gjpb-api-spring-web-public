@@ -80,3 +80,11 @@ article:
     # Cover image resize settings for articles
     cover-image:
       max-size: 800
+
+# Generic file upload configuration (for cms_file)
+file:
+  upload:
+    # Local directory for generic file storage (documents, attachments)
+    directory: /Users/ganjianping/Local/Files
+    # Maximum file size (in bytes) - 100MB
+    max-file-size: 104857600
