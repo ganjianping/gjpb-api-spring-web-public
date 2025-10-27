@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "cms_file")
 @Data
-public class CmsFile {
+public class File {
     @Id
     private String id;
 

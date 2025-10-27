@@ -4,20 +4,27 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
+import org.ganjp.blog.cms.model.entity.File;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CmsFileUpdateRequest {
+public class FileResponse {
+    private String id;
     private String name;
     private String originalUrl;
     private String sourceName;
-    private MultipartFile file;
-    private String filename; // optional desired filename
+    private String filename;
+    private Long sizeBytes;
+    private String extension;
+    private String mimeType;
     private String tags;
-    private org.ganjp.blog.cms.model.entity.CmsFile.Language lang;
+    private File.Language lang;
     private Integer displayOrder;
+    private String createdAt;
+    private String updatedAt;
+    private String createdBy;
+    private String updatedBy;
     private Boolean isActive;
 }

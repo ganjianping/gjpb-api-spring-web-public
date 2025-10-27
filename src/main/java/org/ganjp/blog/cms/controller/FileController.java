@@ -5,7 +5,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.cms.model.dto.*;
-import org.ganjp.blog.cms.service.CmsFileService;
+import org.ganjp.blog.cms.service.FileService;
 import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.springframework.core.io.InputStreamResource;
@@ -22,15 +22,15 @@ import java.util.List;
 @RequestMapping("/v1/files")
 @RequiredArgsConstructor
 @Slf4j
-public class CmsFileController {
-    private final CmsFileService cmsFileService;
+public class FileController {
+    private final FileService fileService;
     private final JwtUtils jwtUtils;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<CmsFileResponse>> createFile(@Valid @ModelAttribute CmsFileCreateRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<ApiResponse<FileResponse>> createFile(@Valid @ModelAttribute FileCreateRequest request, HttpServletRequest httpRequest) {
         try {
             String userId = jwtUtils.extractUserIdFromToken(httpRequest);
-            CmsFileResponse r = cmsFileService.createFile(request, userId);
+            FileResponse r = fileService.createFile(request, userId);
             return ResponseEntity.status(201).body(ApiResponse.success(r, "File created"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, e.getMessage(), null));
@@ -41,10 +41,10 @@ public class CmsFileController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<CmsFileResponse>> createFileJson(@Valid @RequestBody CmsFileCreateRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<ApiResponse<FileResponse>> createFileJson(@Valid @RequestBody FileCreateRequest request, HttpServletRequest httpRequest) {
         try {
             String userId = jwtUtils.extractUserIdFromToken(httpRequest);
-            CmsFileResponse r = cmsFileService.createFile(request, userId);
+            FileResponse r = fileService.createFile(request, userId);
             return ResponseEntity.status(201).body(ApiResponse.success(r, "File created"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, e.getMessage(), null));
@@ -55,9 +55,9 @@ public class CmsFileController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmsFileResponse>> getFile(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<FileResponse>> getFile(@PathVariable String id) {
         try {
-            CmsFileResponse r = cmsFileService.getFileById(id);
+            FileResponse r = fileService.getFileById(id);
             if (r == null) return ResponseEntity.status(404).body(ApiResponse.error(404, "File not found", null));
             return ResponseEntity.ok(ApiResponse.success(r, "File found"));
         } catch (Exception e) {
@@ -67,9 +67,9 @@ public class CmsFileController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CmsFileResponse>>> listFiles() {
+    public ResponseEntity<ApiResponse<List<FileResponse>>> listFiles() {
         try {
-            List<CmsFileResponse> list = cmsFileService.listFiles();
+            List<FileResponse> list = fileService.listFiles();
             return ResponseEntity.ok(ApiResponse.success(list, "Files listed"));
         } catch (Exception e) {
             log.error("Error listing files", e);
@@ -78,10 +78,10 @@ public class CmsFileController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<CmsFileResponse>> updateFile(@PathVariable String id, @Valid @ModelAttribute CmsFileUpdateRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<ApiResponse<FileResponse>> updateFile(@PathVariable String id, @Valid @ModelAttribute FileUpdateRequest request, HttpServletRequest httpRequest) {
         try {
             String userId = jwtUtils.extractUserIdFromToken(httpRequest);
-            CmsFileResponse r = cmsFileService.updateFile(id, request, userId);
+            FileResponse r = fileService.updateFile(id, request, userId);
             if (r == null) return ResponseEntity.status(404).body(ApiResponse.error(404, "File not found", null));
             return ResponseEntity.ok(ApiResponse.success(r, "File updated"));
         } catch (Exception e) {
@@ -91,10 +91,10 @@ public class CmsFileController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<CmsFileResponse>> updateFileJson(@PathVariable String id, @Valid @RequestBody CmsFileUpdateRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<ApiResponse<FileResponse>> updateFileJson(@PathVariable String id, @Valid @RequestBody FileUpdateRequest request, HttpServletRequest httpRequest) {
         try {
             String userId = jwtUtils.extractUserIdFromToken(httpRequest);
-            CmsFileResponse r = cmsFileService.updateFile(id, request, userId);
+            FileResponse r = fileService.updateFile(id, request, userId);
             if (r == null) return ResponseEntity.status(404).body(ApiResponse.error(404, "File not found", null));
             return ResponseEntity.ok(ApiResponse.success(r, "File updated"));
         } catch (Exception e) {
@@ -107,7 +107,7 @@ public class CmsFileController {
     public ResponseEntity<ApiResponse<Void>> deleteFile(@PathVariable String id, HttpServletRequest httpRequest) {
         try {
             String userId = jwtUtils.extractUserIdFromToken(httpRequest);
-            boolean ok = cmsFileService.deleteFile(id, userId);
+            boolean ok = fileService.deleteFile(id, userId);
             if (!ok) return ResponseEntity.status(404).body(ApiResponse.error(404, "File not found", null));
             return ResponseEntity.ok(ApiResponse.success(null, "File deleted"));
         } catch (Exception e) {
@@ -120,7 +120,7 @@ public class CmsFileController {
     @GetMapping("/download/{filename}")
     public ResponseEntity<?> downloadByFilename(@PathVariable String filename) {
         try {
-            java.io.File file = cmsFileService.getFileByFilename(filename);
+            java.io.File file = fileService.getFileByFilename(filename);
             java.io.InputStream is = new java.io.FileInputStream(file);
             InputStreamResource resource = new InputStreamResource(is);
             String ct = org.ganjp.blog.cms.util.CmsUtil.determineContentType(filename);

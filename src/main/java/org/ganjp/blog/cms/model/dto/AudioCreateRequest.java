@@ -20,7 +20,7 @@ public class AudioCreateRequest {
     private String description;
     private String subtitle;
     private String tags;
-    private org.ganjp.blog.cms.model.entity.Video.Language lang;
+    private org.ganjp.blog.cms.model.entity.Audio.Language lang;
     private Integer displayOrder;
     private Boolean isActive;
 }

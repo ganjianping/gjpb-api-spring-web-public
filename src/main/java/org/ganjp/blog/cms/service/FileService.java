@@ -1,12 +1,12 @@
 package org.ganjp.blog.cms.service;
 
 import lombok.RequiredArgsConstructor;
-import org.ganjp.blog.cms.config.ArticleUploadProperties;
-import org.ganjp.blog.cms.model.dto.CmsFileCreateRequest;
-import org.ganjp.blog.cms.model.dto.CmsFileResponse;
-import org.ganjp.blog.cms.model.dto.CmsFileUpdateRequest;
-import org.ganjp.blog.cms.model.entity.CmsFile;
-import org.ganjp.blog.cms.repository.CmsFileRepository;
+import org.ganjp.blog.cms.config.FileUploadProperties;
+import org.ganjp.blog.cms.model.dto.FileCreateRequest;
+import org.ganjp.blog.cms.model.dto.FileResponse;
+import org.ganjp.blog.cms.model.dto.FileUpdateRequest;
+import org.ganjp.blog.cms.model.entity.File;
+import org.ganjp.blog.cms.repository.FileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,12 +21,12 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class CmsFileService {
-    private final CmsFileRepository cmsFileRepository;
-    private final ArticleUploadProperties uploadProperties; // reuse article upload props
+public class FileService {
+    private final FileRepository fileRepository;
+    private final FileUploadProperties uploadProperties; // file upload config
 
-    public CmsFileResponse createFile(CmsFileCreateRequest request, String userId) {
-        CmsFile f = new CmsFile();
+    public FileResponse createFile(FileCreateRequest request, String userId) {
+        File f = new File();
         String id = UUID.randomUUID().toString();
         f.setId(id);
         f.setName(request.getName());
@@ -38,7 +38,7 @@ public class CmsFileService {
 
         try {
             String baseDir = uploadProperties.getDirectory();
-            Path filesDir = Path.of(baseDir, "files");
+            Path filesDir = Path.of(baseDir);
             Files.createDirectories(filesDir);
 
             if (request.getFile() != null && !request.getFile().isEmpty()) {
@@ -99,14 +99,14 @@ public class CmsFileService {
         f.setCreatedBy(userId);
         f.setUpdatedBy(userId);
 
-        CmsFile saved = cmsFileRepository.save(f);
+        File saved = fileRepository.save(f);
         return toResponse(saved);
     }
 
-    public CmsFileResponse updateFile(String id, CmsFileUpdateRequest request, String userId) {
-        Optional<CmsFile> opt = cmsFileRepository.findById(id);
+    public FileResponse updateFile(String id, FileUpdateRequest request, String userId) {
+        Optional<File> opt = fileRepository.findById(id);
         if (opt.isEmpty()) return null;
-        CmsFile f = opt.get();
+        File f = opt.get();
         if (request.getName() != null) f.setName(request.getName());
         if (request.getOriginalUrl() != null) f.setOriginalUrl(request.getOriginalUrl());
         if (request.getSourceName() != null) f.setSourceName(request.getSourceName());
@@ -114,7 +114,7 @@ public class CmsFileService {
 
         try {
             String baseDir = uploadProperties.getDirectory();
-            Path filesDir = Path.of(baseDir, "files");
+            Path filesDir = Path.of(baseDir);
             Files.createDirectories(filesDir);
 
             if (request.getFile() != null && !request.getFile().isEmpty()) {
@@ -150,40 +150,40 @@ public class CmsFileService {
 
         f.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         f.setUpdatedBy(userId);
-        CmsFile saved = cmsFileRepository.save(f);
+        File saved = fileRepository.save(f);
         return toResponse(saved);
     }
 
-    public CmsFileResponse getFileById(String id) {
-        Optional<CmsFile> opt = cmsFileRepository.findById(id);
+    public FileResponse getFileById(String id) {
+        Optional<File> opt = fileRepository.findById(id);
         return opt.map(this::toResponse).orElse(null);
     }
 
     public java.io.File getFileByFilename(String filename) {
         if (filename == null) throw new IllegalArgumentException("filename is null");
-        Path p = Path.of(uploadProperties.getDirectory(), "files", filename);
+        Path p = Path.of(uploadProperties.getDirectory(), filename);
         if (!Files.exists(p)) throw new IllegalArgumentException("File not found: " + filename);
         return p.toFile();
     }
 
-    public java.util.List<CmsFileResponse> listFiles() {
-        List<CmsFile> all = cmsFileRepository.findAll();
+    public java.util.List<FileResponse> listFiles() {
+        List<File> all = fileRepository.findAll();
         return all.stream().map(this::toResponse).toList();
     }
 
     public boolean deleteFile(String id, String userId) {
-        Optional<CmsFile> opt = cmsFileRepository.findById(id);
+        Optional<File> opt = fileRepository.findById(id);
         if (opt.isEmpty()) return false;
-        CmsFile f = opt.get();
+        File f = opt.get();
         f.setIsActive(false);
         f.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         f.setUpdatedBy(userId);
-        cmsFileRepository.save(f);
+        fileRepository.save(f);
         return true;
     }
 
-    private CmsFileResponse toResponse(CmsFile f) {
-        CmsFileResponse r = new CmsFileResponse();
+    private FileResponse toResponse(File f) {
+        FileResponse r = new FileResponse();
         r.setId(f.getId());
         r.setName(f.getName());
         r.setOriginalUrl(f.getOriginalUrl());
