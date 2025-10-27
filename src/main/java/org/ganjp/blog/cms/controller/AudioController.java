@@ -3,6 +3,7 @@ package org.ganjp.blog.cms.controller;
 import lombok.RequiredArgsConstructor;
 import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.cms.model.dto.*;
+import org.ganjp.blog.cms.model.entity.Audio;
 import org.ganjp.blog.cms.service.AudioService;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.springframework.core.io.InputStreamResource;
@@ -107,7 +108,7 @@ public class AudioController {
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<AudioResponse>>> searchAudios(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Video.Language lang,
+            @RequestParam(required = false) Audio.Language lang,
             @RequestParam(required = false) String tags,
             @RequestParam(required = false) Boolean isActive
     ) {

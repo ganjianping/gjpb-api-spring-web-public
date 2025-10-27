@@ -18,7 +18,7 @@ public interface AudioRepository extends JpaRepository<Audio, String> {
         "(:isActive IS NULL OR a.isActive = :isActive) " +
         "ORDER BY a.displayOrder")
     List<Audio> searchAudios(@Param("name") String name,
-                 @Param("lang") org.ganjp.blog.cms.model.entity.Video.Language lang,
+                 @Param("lang") Audio.Language lang,
                  @Param("tags") String tags,
                  @Param("isActive") Boolean isActive);
 

@@ -224,7 +224,7 @@ public class AudioService {
         return true;
     }
 
-    public List<AudioResponse> searchAudios(String name, org.ganjp.blog.cms.model.entity.Video.Language lang, String tags, Boolean isActive) {
+    public List<AudioResponse> searchAudios(String name, Audio.Language lang, String tags, Boolean isActive) {
         List<Audio> list = audioRepository.searchAudios(name, lang, tags, isActive);
         return list.stream().map(this::toResponse).toList();
     }

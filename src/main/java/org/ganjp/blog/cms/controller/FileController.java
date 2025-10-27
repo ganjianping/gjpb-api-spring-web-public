@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.util.List;
+import org.ganjp.blog.cms.model.entity.File;
 
 @RestController
 @RequestMapping("/v1/files")
@@ -67,9 +68,29 @@ public class FileController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<FileResponse>>> listFiles() {
+    public ResponseEntity<ApiResponse<List<FileResponse>>> listFiles(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String lang,
+            @RequestParam(required = false) String tags,
+            @RequestParam(required = false) Boolean isActive) {
         try {
-            List<FileResponse> list = fileService.listFiles();
+            File.Language langEnum = null;
+            if (lang != null && !lang.isBlank()) {
+                try {
+                    langEnum = File.Language.valueOf(lang.toUpperCase());
+                } catch (IllegalArgumentException ex) {
+                    return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid lang value", null));
+                }
+            }
+
+            List<FileResponse> list;
+            // if any search parameter provided, use search; otherwise return all
+            if (name != null || langEnum != null || tags != null || isActive != null) {
+                list = fileService.searchFiles(name, langEnum, tags, isActive);
+            } else {
+                list = fileService.listFiles();
+            }
+
             return ResponseEntity.ok(ApiResponse.success(list, "Files listed"));
         } catch (Exception e) {
             log.error("Error listing files", e);

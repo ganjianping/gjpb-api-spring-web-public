@@ -171,6 +171,11 @@ public class FileService {
         return all.stream().map(this::toResponse).toList();
     }
 
+    public java.util.List<FileResponse> searchFiles(String name, File.Language lang, String tags, Boolean isActive) {
+        List<File> list = fileRepository.searchFiles(name, lang, tags, isActive);
+        return list.stream().map(this::toResponse).toList();
+    }
+
     public boolean deleteFile(String id, String userId) {
         Optional<File> opt = fileRepository.findById(id);
         if (opt.isEmpty()) return false;
