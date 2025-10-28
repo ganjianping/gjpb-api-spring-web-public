@@ -38,6 +38,8 @@ public class OpenService {
     private final org.ganjp.blog.cms.service.AudioService audioService;
     private final org.ganjp.blog.cms.repository.ArticleRepository articleRepository;
     private final org.ganjp.blog.cms.service.ArticleService articleService;
+    private final org.ganjp.blog.cms.repository.FileRepository fileRepository;
+    private final org.ganjp.blog.cms.service.FileService fileService;
     /**
      * Get image file by filename for public viewing
      * No authentication required
@@ -137,5 +139,17 @@ public class OpenService {
             throw new IllegalArgumentException("Article cover image not found or not active with filename: " + filename);
         }
         return articleService.getCoverImageFileByFilename(filename);
+    }
+
+    /**
+     * Get a generic CMS file by filename for public viewing
+     * Ensures the file record exists and is active before returning the file
+     */
+    public File getFile(String filename) throws IOException {
+        log.debug("Fetching public cms file: {}", filename);
+        if (!fileRepository.existsByFilename(filename)) {
+            throw new IllegalArgumentException("File not found or not active with filename: " + filename);
+        }
+        return fileService.getFileByFilename(filename);
     }
 }

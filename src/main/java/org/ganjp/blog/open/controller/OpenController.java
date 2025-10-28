@@ -166,6 +166,34 @@ public class OpenController {
         }
     }
 
+    /**
+     * Public download of a generic CMS file
+     * GET /v1/open/files/{filename}
+     */
+    @GetMapping("/files/{filename}")
+    public ResponseEntity<Resource> viewFile(@PathVariable String filename) {
+        try {
+            java.io.File file = openService.getFile(filename);
+            if (file == null || !file.exists()) {
+                log.error("File not found: {}", filename);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            Resource resource = new FileSystemResource(file);
+            String contentType = org.ganjp.blog.cms.util.CmsUtil.determineContentType(filename);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .contentLength(file.length())
+                    .body(resource);
+        } catch (IllegalArgumentException e) {
+            log.error("File not found: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            log.error("Error reading file: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/audios/{filename}")
     public ResponseEntity<?> viewAudio(@PathVariable String filename, @RequestHeader(value = "Range", required = false) String rangeHeader) {
         try {
