@@ -68,15 +68,11 @@ public class FileService {
                     try { java.net.URL u = new java.net.URL(url); String p = u.getPath(); int last = p.lastIndexOf('/'); String lastSeg = last>=0? p.substring(last+1): p; if (lastSeg==null||lastSeg.isBlank()) lastSeg = System.currentTimeMillis()+"-file"; stored = lastSeg.replaceAll("\\s+","-"); } catch (Exception ex) { stored = System.currentTimeMillis()+"-file"; }
                 }
                 Path target = filesDir.resolve(stored);
-                int suffix = 1;
-                String base = stored;
-                String ext = "";
                 int dot = stored.lastIndexOf('.');
-                if (dot>0) { base = stored.substring(0,dot); ext = stored.substring(dot); }
-                while (Files.exists(target)) {
-                    stored = base + "-" + suffix + ext;
-                    target = filesDir.resolve(stored);
-                    suffix++;
+                // When downloading from an external originalUrl, do not auto-rename if the file already exists.
+                // Throw an error to let the caller decide how to handle duplicates.
+                if (Files.exists(target)) {
+                    throw new IllegalArgumentException("File already exists: " + stored);
                 }
                 try (java.io.InputStream is = new java.net.URL(url).openStream()) {
                     byte[] data = is.readAllBytes();
