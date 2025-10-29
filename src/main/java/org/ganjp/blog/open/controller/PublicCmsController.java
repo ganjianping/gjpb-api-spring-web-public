@@ -5,6 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.cms.model.entity.*;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.ganjp.blog.open.model.PaginatedResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.List;
 import org.ganjp.blog.open.service.PublicCmsService;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +21,7 @@ import java.util.Locale;
 @Slf4j
 public class PublicCmsController {
     private final PublicCmsService publicCmsService;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     // websites
     @GetMapping("/websites")
@@ -29,7 +35,8 @@ public class PublicCmsController {
         if (lang != null && !lang.isBlank()) {
             try { l = Website.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
         }
-        var resp = publicCmsService.getWebsites(name, l, tags, isActive, page, size);
+        var respRaw = publicCmsService.getWebsites(name, l, tags, isActive, page, size);
+        var resp = sanitizePaginated(respRaw);
         return ApiResponse.success(resp, "Websites retrieved");
     }
 
@@ -44,7 +51,8 @@ public class PublicCmsController {
         if (lang != null && !lang.isBlank()) {
             try { l = org.ganjp.blog.cms.model.entity.Image.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
         }
-        var resp = publicCmsService.getImages(name, l, tags, isActive, page, size);
+        var respRaw = publicCmsService.getImages(name, l, tags, isActive, page, size);
+        var resp = sanitizePaginated(respRaw);
         return ApiResponse.success(resp, "Images retrieved");
     }
 
@@ -59,7 +67,8 @@ public class PublicCmsController {
         if (lang != null && !lang.isBlank()) {
             try { l = org.ganjp.blog.cms.model.entity.Image.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
         }
-        var resp = publicCmsService.getLogos(name, l, tags, isActive, page, size);
+        var respRaw = publicCmsService.getLogos(name, l, tags, isActive, page, size);
+        var resp = sanitizePaginated(respRaw);
         return ApiResponse.success(resp, "Logos retrieved");
     }
 
@@ -74,7 +83,8 @@ public class PublicCmsController {
         if (lang != null && !lang.isBlank()) {
             try { l = org.ganjp.blog.cms.model.entity.Video.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
         }
-        var resp = publicCmsService.getVideos(name, l, tags, isActive, page, size);
+        var respRaw = publicCmsService.getVideos(name, l, tags, isActive, page, size);
+        var resp = sanitizePaginated(respRaw);
         return ApiResponse.success(resp, "Videos retrieved");
     }
 
@@ -89,7 +99,8 @@ public class PublicCmsController {
         if (lang != null && !lang.isBlank()) {
             try { l = org.ganjp.blog.cms.model.entity.File.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
         }
-        var resp = publicCmsService.getFiles(name, l, tags, isActive, page, size);
+        var respRaw = publicCmsService.getFiles(name, l, tags, isActive, page, size);
+        var resp = sanitizePaginated(respRaw);
         return ApiResponse.success(resp, "Files retrieved");
     }
 
@@ -104,7 +115,8 @@ public class PublicCmsController {
         if (lang != null && !lang.isBlank()) {
             try { l = org.ganjp.blog.cms.model.entity.Audio.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
         }
-        var resp = publicCmsService.getAudios(name, l, tags, isActive, page, size);
+        var respRaw = publicCmsService.getAudios(name, l, tags, isActive, page, size);
+        var resp = sanitizePaginated(respRaw);
         return ApiResponse.success(resp, "Audios retrieved");
     }
 
@@ -119,7 +131,28 @@ public class PublicCmsController {
         if (lang != null && !lang.isBlank()) {
             try { l = org.ganjp.blog.cms.model.entity.Article.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
         }
-        var resp = publicCmsService.getArticles(title, l, tags, isActive, page, size);
+        var respRaw = publicCmsService.getArticles(title, l, tags, isActive, page, size);
+        var resp = sanitizePaginated(respRaw);
         return ApiResponse.success(resp, "Articles retrieved");
+    }
+
+    private <T> PaginatedResponse<Map<String, Object>> sanitizePaginated(PaginatedResponse<T> raw) {
+    List<Map<String, Object>> list = raw.getContent().stream()
+        .map(item -> objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {}))
+                .filter(m -> {
+                    Object isActive = m.get("isActive");
+                    return isActive == null || Boolean.TRUE.equals(isActive);
+                })
+                .map(m -> {
+                    m.remove("isActive");
+                    m.remove("createdAt");
+                    m.remove("createdBy");
+                    m.remove("updatedBy");
+                    m.remove("tagsArray");
+                    return m;
+                })
+                .collect(Collectors.toList());
+
+        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), list.size());
     }
 }
