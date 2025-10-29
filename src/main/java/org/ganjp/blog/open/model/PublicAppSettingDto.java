@@ -13,7 +13,7 @@ import org.ganjp.blog.bm.model.entity.AppSetting;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OpenAppSettingDto {
+public class PublicAppSettingDto {
 
     private String name;
     private String value;
@@ -22,8 +22,8 @@ public class OpenAppSettingDto {
     /**
      * Convert from AppSetting entity to open DTO
      */
-    public static OpenAppSettingDto fromEntity(AppSetting setting) {
-        return OpenAppSettingDto.builder()
+    public static PublicAppSettingDto fromEntity(AppSetting setting) {
+        return PublicAppSettingDto.builder()
                 .name(setting.getName())
                 .value(setting.getValue())
                 .lang(setting.getLang().name())

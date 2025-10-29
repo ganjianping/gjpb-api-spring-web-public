@@ -10,7 +10,7 @@ import org.ganjp.blog.cms.service.ImageService;
 import org.ganjp.blog.cms.service.LogoProcessingService;
 import org.ganjp.blog.cms.repository.ImageRepository;
 import org.ganjp.blog.cms.repository.VideoRepository;
-import org.ganjp.blog.open.model.OpenAppSettingDto;
+import org.ganjp.blog.open.model.PublicAppSettingDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,13 +59,13 @@ public class PublicAssetService {
      * Get all public app settings (only name, value, lang)
      * Only returns settings marked as public (isPublic = true)
      */
-    public List<OpenAppSettingDto> getAllAppSettings() {
+    public List<PublicAppSettingDto> getAllAppSettings() {
         log.debug("Fetching all public app settings");
         
         List<AppSetting> settings = appSettingRepository.findByIsPublicTrueOrderByNameAscLangAsc();
         
         return settings.stream()
-                .map(OpenAppSettingDto::fromEntity)
+                .map(PublicAppSettingDto::fromEntity)
                 .collect(Collectors.toList());
     }
 

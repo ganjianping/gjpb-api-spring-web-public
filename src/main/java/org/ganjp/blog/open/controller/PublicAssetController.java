@@ -3,7 +3,7 @@ package org.ganjp.blog.open.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.common.model.ApiResponse;
-import org.ganjp.blog.open.model.OpenAppSettingDto;
+import org.ganjp.blog.open.model.PublicAppSettingDto;
 import org.ganjp.blog.open.service.PublicAssetService;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -37,8 +37,8 @@ public class PublicAssetController {
      * Only returns settings marked as public
      */
     @GetMapping("/app-settings")
-    public ResponseEntity<ApiResponse<List<OpenAppSettingDto>>> getAllAppSettings() {
-        List<OpenAppSettingDto> settings = publicAssetService.getAllAppSettings();
+    public ResponseEntity<ApiResponse<List<PublicAppSettingDto>>> getAllAppSettings() {
+        List<PublicAppSettingDto> settings = publicAssetService.getAllAppSettings();
         return ResponseEntity.ok(ApiResponse.success(settings, "Public app settings retrieved successfully"));
     }
 
