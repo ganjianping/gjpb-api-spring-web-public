@@ -71,4 +71,8 @@ public class PublicCmsService {
         List<ArticleResponse> all = articleService.searchArticles(title, lang, tags, isActive);
         return paginateList(all, page, size);
     }
+
+    public ArticleResponse getArticleById(String id) {
+        return articleService.getArticleById(id);
+    }
 }

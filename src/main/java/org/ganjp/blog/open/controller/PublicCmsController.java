@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.List;
 import org.ganjp.blog.open.service.PublicCmsService;
+import org.ganjp.blog.cms.model.dto.ArticleResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Locale;
@@ -136,6 +137,13 @@ public class PublicCmsController {
         return ApiResponse.success(resp, "Articles retrieved");
     }
 
+    @GetMapping("/articles/{id}")
+    public ApiResponse<ArticleResponse> getArticleById(@PathVariable String id) {
+        ArticleResponse r = publicCmsService.getArticleById(id);
+        if (r == null) return ApiResponse.error(404, "Article not found", null);
+        return ApiResponse.success(r, "Article retrieved");
+    }
+
     private <T> PaginatedResponse<Map<String, Object>> sanitizePaginated(PaginatedResponse<T> raw) {
     List<Map<String, Object>> list = raw.getContent().stream()
         .map(item -> objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {}))
@@ -149,6 +157,7 @@ public class PublicCmsController {
                     m.remove("createdBy");
                     m.remove("updatedBy");
                     m.remove("tagsArray");
+                    m.remove("content");
                     return m;
                 })
                 .collect(Collectors.toList());
