@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class OpenService {
+public class PublicAssetService {
     private final AppSettingRepository appSettingRepository;
     private final LogoRepository logoRepository;
     private final ImageRepository imageRepository;

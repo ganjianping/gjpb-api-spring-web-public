@@ -32,7 +32,7 @@ security:
     - "/"                   # Root endpoint
     - "/v1/register"        # User registration endpoint
     - "/v1/auth/**"         # Authentication endpoints
-    - "/v1/open/**"         # Open API endpoints (publicly accessible without authentication)
+    - "/v1/public/**"       # Public API endpoints (publicly accessible without authentication)
     - "/actuator/health"    # Health check endpoint
     - "/swagger-ui/**"      # Swagger UI
     - "/v3/api-docs/**"     # API documentation

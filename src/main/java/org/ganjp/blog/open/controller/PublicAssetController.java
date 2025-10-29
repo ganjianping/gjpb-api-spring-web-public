@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.ganjp.blog.open.model.OpenAppSettingDto;
-import org.ganjp.blog.open.service.OpenService;
+import org.ganjp.blog.open.service.PublicAssetService;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.InputStreamResource;
@@ -24,12 +24,12 @@ import java.util.List;
  * These endpoints are publicly accessible and don't require JWT tokens
  */
 @RestController
-@RequestMapping("/v1/open")
+@RequestMapping("/v1/public")
 @RequiredArgsConstructor
 @Slf4j
-public class OpenController {
+public class PublicAssetController {
 
-    private final OpenService openService;
+    private final PublicAssetService publicAssetService;
 
     /**
      * Get all public app settings (only name, value, lang)
@@ -38,7 +38,7 @@ public class OpenController {
      */
     @GetMapping("/app-settings")
     public ResponseEntity<ApiResponse<List<OpenAppSettingDto>>> getAllAppSettings() {
-        List<OpenAppSettingDto> settings = openService.getAllAppSettings();
+        List<OpenAppSettingDto> settings = publicAssetService.getAllAppSettings();
         return ResponseEntity.ok(ApiResponse.success(settings, "Public app settings retrieved successfully"));
     }
 
@@ -51,7 +51,7 @@ public class OpenController {
     @GetMapping("/logos/{filename}")
     public ResponseEntity<Resource> viewLogo(@PathVariable String filename) {
         try {
-            File logoFile = openService.getLogoFile(filename);
+            File logoFile = publicAssetService.getLogoFile(filename);
             Resource resource = new FileSystemResource(logoFile);
             
             // Determine content type based on file extension
@@ -79,7 +79,7 @@ public class OpenController {
     @GetMapping("/images/{filename}")
     public ResponseEntity<Resource> viewImage(@PathVariable String filename) {
         try {
-            File imageFile = openService.getImageFile(filename);
+            File imageFile = publicAssetService.getImageFile(filename);
             Resource resource = new FileSystemResource(imageFile);
             // Determine content type based on file extension
             String contentType = org.ganjp.blog.cms.util.CmsUtil.determineContentType(filename);
@@ -99,7 +99,7 @@ public class OpenController {
     @GetMapping("/videos/cover-images/{filename}")
     public ResponseEntity<Resource> viewVideoCoverImage(@PathVariable String filename) {
         try {
-            File imageFile = openService.getVideoCoverFile(filename);
+            File imageFile = publicAssetService.getVideoCoverFile(filename);
             if (imageFile == null || !imageFile.exists()) {
                 log.error("Video cover image not found: {}", filename);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -123,7 +123,7 @@ public class OpenController {
     @GetMapping("/audios/cover-images/{filename}")
     public ResponseEntity<Resource> viewAudioCoverImage(@PathVariable String filename) {
         try {
-            File imageFile = openService.getAudioCoverFile(filename);
+            File imageFile = publicAssetService.getAudioCoverFile(filename);
             if (imageFile == null || !imageFile.exists()) {
                 log.error("Audio cover image not found: {}", filename);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -146,7 +146,7 @@ public class OpenController {
     @GetMapping("/articles/cover-images/{filename}")
     public ResponseEntity<Resource> viewArticleCoverImage(@PathVariable String filename) {
         try {
-            File imageFile = openService.getArticleCoverFile(filename);
+            File imageFile = publicAssetService.getArticleCoverFile(filename);
             if (imageFile == null || !imageFile.exists()) {
                 log.error("Article cover image not found: {}", filename);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -173,7 +173,7 @@ public class OpenController {
     @GetMapping("/files/{filename}")
     public ResponseEntity<Resource> viewFile(@PathVariable String filename) {
         try {
-            java.io.File file = openService.getFile(filename);
+            java.io.File file = publicAssetService.getFile(filename);
             if (file == null || !file.exists()) {
                 log.error("File not found: {}", filename);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -197,7 +197,7 @@ public class OpenController {
     @GetMapping("/audios/{filename}")
     public ResponseEntity<?> viewAudio(@PathVariable String filename, @RequestHeader(value = "Range", required = false) String rangeHeader) {
         try {
-            java.io.File file = openService.getAudioFile(filename);
+            java.io.File file = publicAssetService.getAudioFile(filename);
             long contentLength = file.length();
             String contentType = org.ganjp.blog.cms.util.CmsUtil.determineContentType(filename);
 
@@ -270,7 +270,7 @@ public class OpenController {
     @GetMapping("/videos/{filename}")
     public ResponseEntity<?> viewVideo(@PathVariable String filename, @RequestHeader(value = "Range", required = false) String rangeHeader) {
         try {
-            java.io.File file = openService.getVideoFile(filename);
+            java.io.File file = publicAssetService.getVideoFile(filename);
             long contentLength = file.length();
             String contentType = org.ganjp.blog.cms.util.CmsUtil.determineContentType(filename);
 
