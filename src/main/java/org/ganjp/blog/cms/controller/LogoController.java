@@ -40,10 +40,34 @@ public class LogoController {
     private static final String LOGO_NOT_FOUND_ERROR = "Logo not found: ";
 
     /**
+     * Flexible search logos by name, language, tags, and status
+     * GET /v1/logos/search?name=xxx&lang=EN&tags=xxx&isActive=true
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<LogoResponse>>> searchLogos(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Logo.Language lang,
+            @RequestParam(required = false) String tags,
+            @RequestParam(required = false) Boolean isActive) {
+        List<LogoResponse> logos = logoService.searchLogos(name, lang, tags, isActive);
+        return ResponseEntity.ok(ApiResponse.success(logos, "Logos retrieved successfully"));
+    }
+
+    /**
+     * Get all logos (including inactive)
+     * GET /v1/logos/all
+     */
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<LogoResponse>>> getAllLogos() {
+        List<LogoResponse> logos = logoService.getAllLogos();
+        return ResponseEntity.ok(ApiResponse.success(logos, "All logos retrieved successfully"));
+    }
+
+    /**
      * Create a new logo
      * POST /v1/logos
      */
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<LogoResponse>> createLogo(
             @Valid @ModelAttribute LogoCreateRequest request,
             HttpServletRequest httpRequest) {
@@ -159,40 +183,6 @@ public class LogoController {
             log.error("Error reading logo file: {}", filename, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
-
-    /**
-     * Get all active logos
-     * GET /v1/logos
-     */
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<LogoResponse>>> getAllActiveLogos() {
-        List<LogoResponse> logos = logoService.getAllActiveLogos();
-        return ResponseEntity.ok(ApiResponse.success(logos, "Active logos retrieved successfully"));
-    }
-
-    /**
-     * Get all logos (including inactive)
-     * GET /v1/logos/all
-     */
-    @GetMapping("/all")
-    public ResponseEntity<ApiResponse<List<LogoResponse>>> getAllLogos() {
-        List<LogoResponse> logos = logoService.getAllLogos();
-        return ResponseEntity.ok(ApiResponse.success(logos, "All logos retrieved successfully"));
-    }
-
-    /**
-     * Flexible search logos by name, language, tags, and status
-     * GET /v1/logos/search?name=xxx&lang=EN&tags=xxx&isActive=true
-     */
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<LogoResponse>>> searchLogos(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Logo.Language lang,
-            @RequestParam(required = false) String tags,
-            @RequestParam(required = false) Boolean isActive) {
-        List<LogoResponse> logos = logoService.searchLogos(name, lang, tags, isActive);
-        return ResponseEntity.ok(ApiResponse.success(logos, "Logos retrieved successfully"));
     }
 
     /**

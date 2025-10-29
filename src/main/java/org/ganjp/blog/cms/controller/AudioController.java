@@ -29,7 +29,34 @@ public class AudioController {
     private final AudioService audioService;
     private final JwtUtils jwtUtils;
 
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<AudioResponse>>> searchAudios(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Audio.Language lang,
+            @RequestParam(required = false) String tags,
+            @RequestParam(required = false) Boolean isActive
+    ) {
+        try {
+            List<AudioResponse> list = audioService.searchAudios(name, lang, tags, isActive);
+            return ResponseEntity.ok(ApiResponse.success(list, "Audios found"));
+        } catch (Exception e) {
+            log.error("Error searching audios", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching audios: " + e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<AudioResponse>>> listAudios() {
+        try {
+            List<AudioResponse> list = audioService.listAudios();
+            return ResponseEntity.ok(ApiResponse.success(list, "Audios listed"));
+        } catch (Exception e) {
+            log.error("Error listing audios", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing audios: " + e.getMessage(), null));
+        }
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<AudioResponse>> uploadAudio(@Valid @ModelAttribute AudioCreateRequest request, HttpServletRequest httpRequest) {
         try {
             String userId = jwtUtils.extractUserIdFromToken(httpRequest);
@@ -52,17 +79,6 @@ public class AudioController {
         } catch (Exception e) {
             log.error("Error fetching audio", e);
             return ResponseEntity.status(500).body(ApiResponse.error(500, "Error fetching audio: " + e.getMessage(), null));
-        }
-    }
-
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<AudioResponse>>> listAudios() {
-        try {
-            List<AudioResponse> list = audioService.listAudios();
-            return ResponseEntity.ok(ApiResponse.success(list, "Audios listed"));
-        } catch (Exception e) {
-            log.error("Error listing audios", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing audios: " + e.getMessage(), null));
         }
     }
 
@@ -102,22 +118,6 @@ public class AudioController {
         } catch (Exception e) {
             log.error("Error deleting audio", e);
             return ResponseEntity.status(500).body(ApiResponse.error(500, "Error deleting audio: " + e.getMessage(), null));
-        }
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<AudioResponse>>> searchAudios(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) Audio.Language lang,
-            @RequestParam(required = false) String tags,
-            @RequestParam(required = false) Boolean isActive
-    ) {
-        try {
-            List<AudioResponse> list = audioService.searchAudios(name, lang, tags, isActive);
-            return ResponseEntity.ok(ApiResponse.success(list, "Audios found"));
-        } catch (Exception e) {
-            log.error("Error searching audios", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching audios: " + e.getMessage(), null));
         }
     }
 

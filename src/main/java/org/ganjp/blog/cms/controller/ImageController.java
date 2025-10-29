@@ -31,11 +31,46 @@ public class ImageController {
     private final ImageService imageService;
     private final JwtUtils jwtUtils;
 
+    @GetMapping()
+    public ResponseEntity<ApiResponse<List<ImageResponse>>> searchImages(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Image.Language lang,
+            @RequestParam(required = false) String tags,
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) String keyword
+    ) {
+        try {
+            // backward compatibility: if keyword is provided use the old simple search
+            List<ImageResponse> images;
+            if (keyword != null && !keyword.isBlank()) {
+                images = imageService.searchImages(keyword);
+            } else {
+                images = imageService.searchImages(name, lang, tags, isActive);
+            }
+            return ResponseEntity.ok(ApiResponse.success(images, "Images found"));
+        } catch (Exception e) {
+            log.error("Error searching images", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching images: " + e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<ImageResponse>>> listImages() {
+        try {
+            List<ImageResponse> images = imageService.listImages();
+            return ResponseEntity.ok(ApiResponse.success(images, "Images listed"));
+        } catch (Exception e) {
+            log.error("Error listing images", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing images: " + e.getMessage(), null));
+        }
+    }
+
+
     /**
      * Create a new image from file upload
-     * POST /v1/images/upload
+     * POST /v1/images
      */
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ImageResponse>> createImage(
             @Valid @ModelAttribute ImageCreateRequest request,
             HttpServletRequest httpRequest) {
@@ -98,17 +133,6 @@ public class ImageController {
         }
     }
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<ImageResponse>>> listImages() {
-        try {
-            List<ImageResponse> images = imageService.listImages();
-            return ResponseEntity.ok(ApiResponse.success(images, "Images listed"));
-        } catch (Exception e) {
-            log.error("Error listing images", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing images: " + e.getMessage(), null));
-        }
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ImageResponse>> updateImage(
             @PathVariable String id,
@@ -168,29 +192,6 @@ public class ImageController {
         } catch (IOException e) {
             log.error("Error reading image file: {}", filename, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<ImageResponse>>> searchImages(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Image.Language lang,
-            @RequestParam(required = false) String tags,
-            @RequestParam(required = false) Boolean isActive,
-            @RequestParam(required = false) String keyword
-    ) {
-        try {
-            // backward compatibility: if keyword is provided use the old simple search
-            List<ImageResponse> images;
-            if (keyword != null && !keyword.isBlank()) {
-                images = imageService.searchImages(keyword);
-            } else {
-                images = imageService.searchImages(name, lang, tags, isActive);
-            }
-            return ResponseEntity.ok(ApiResponse.success(images, "Images found"));
-        } catch (Exception e) {
-            log.error("Error searching images", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching images: " + e.getMessage(), null));
         }
     }
 }

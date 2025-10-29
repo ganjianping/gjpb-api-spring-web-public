@@ -28,7 +28,34 @@ public class VideoController {
     private final VideoService videoService;
     private final JwtUtils jwtUtils;
 
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<VideoResponse>>> searchVideos(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Video.Language lang,
+            @RequestParam(required = false) String tags,
+            @RequestParam(required = false) Boolean isActive
+    ) {
+        try {
+            List<VideoResponse> list = videoService.searchVideos(name, lang, tags, isActive);
+            return ResponseEntity.ok(ApiResponse.success(list, "Videos found"));
+        } catch (Exception e) {
+            log.error("Error searching videos", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching videos: " + e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<VideoResponse>>> listVideos() {
+        try {
+            List<VideoResponse> list = videoService.listVideos();
+            return ResponseEntity.ok(ApiResponse.success(list, "Videos listed"));
+        } catch (Exception e) {
+            log.error("Error listing videos", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing videos: " + e.getMessage(), null));
+        }
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<VideoResponse>> uploadVideo(@Valid @ModelAttribute VideoCreateRequest request, HttpServletRequest httpRequest) {
         try {
             String userId = jwtUtils.extractUserIdFromToken(httpRequest);
@@ -53,17 +80,6 @@ public class VideoController {
         } catch (Exception e) {
             log.error("Error fetching video", e);
             return ResponseEntity.status(500).body(ApiResponse.error(500, "Error fetching video: " + e.getMessage(), null));
-        }
-    }
-
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<VideoResponse>>> listVideos() {
-        try {
-            List<VideoResponse> list = videoService.listVideos();
-            return ResponseEntity.ok(ApiResponse.success(list, "Videos listed"));
-        } catch (Exception e) {
-            log.error("Error listing videos", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing videos: " + e.getMessage(), null));
         }
     }
 
@@ -106,21 +122,7 @@ public class VideoController {
         }
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<VideoResponse>>> searchVideos(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Video.Language lang,
-            @RequestParam(required = false) String tags,
-            @RequestParam(required = false) Boolean isActive
-    ) {
-        try {
-            List<VideoResponse> list = videoService.searchVideos(name, lang, tags, isActive);
-            return ResponseEntity.ok(ApiResponse.success(list, "Videos found"));
-        } catch (Exception e) {
-            log.error("Error searching videos", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching videos: " + e.getMessage(), null));
-        }
-    }
+
 
     // Optional: serve file by filename
     @GetMapping("/view/{filename}")

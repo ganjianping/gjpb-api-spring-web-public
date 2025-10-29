@@ -27,6 +27,37 @@ public class FileController {
     private final FileService fileService;
     private final JwtUtils jwtUtils;
 
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<FileResponse>>> listFiles(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String lang,
+            @RequestParam(required = false) String tags,
+            @RequestParam(required = false) Boolean isActive) {
+        try {
+            File.Language langEnum = null;
+            if (lang != null && !lang.isBlank()) {
+                try {
+                    langEnum = File.Language.valueOf(lang.toUpperCase());
+                } catch (IllegalArgumentException ex) {
+                    return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid lang value", null));
+                }
+            }
+
+            List<FileResponse> list;
+            // if any search parameter provided, use search; otherwise return all
+            if (name != null || langEnum != null || tags != null || isActive != null) {
+                list = fileService.searchFiles(name, langEnum, tags, isActive);
+            } else {
+                list = fileService.listFiles();
+            }
+
+            return ResponseEntity.ok(ApiResponse.success(list, "Files listed"));
+        } catch (Exception e) {
+            log.error("Error listing files", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing files: " + e.getMessage(), null));
+        }
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<FileResponse>> createFile(@Valid @ModelAttribute FileCreateRequest request, HttpServletRequest httpRequest) {
         try {
@@ -64,37 +95,6 @@ public class FileController {
         } catch (Exception e) {
             log.error("Error fetching file", e);
             return ResponseEntity.status(500).body(ApiResponse.error(500, "Error fetching file: " + e.getMessage(), null));
-        }
-    }
-
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<FileResponse>>> listFiles(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String lang,
-            @RequestParam(required = false) String tags,
-            @RequestParam(required = false) Boolean isActive) {
-        try {
-            File.Language langEnum = null;
-            if (lang != null && !lang.isBlank()) {
-                try {
-                    langEnum = File.Language.valueOf(lang.toUpperCase());
-                } catch (IllegalArgumentException ex) {
-                    return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid lang value", null));
-                }
-            }
-
-            List<FileResponse> list;
-            // if any search parameter provided, use search; otherwise return all
-            if (name != null || langEnum != null || tags != null || isActive != null) {
-                list = fileService.searchFiles(name, langEnum, tags, isActive);
-            } else {
-                list = fileService.listFiles();
-            }
-
-            return ResponseEntity.ok(ApiResponse.success(list, "Files listed"));
-        } catch (Exception e) {
-            log.error("Error listing files", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing files: " + e.getMessage(), null));
         }
     }
 

@@ -3,6 +3,7 @@ package org.ganjp.blog.cms.controller;
 import lombok.RequiredArgsConstructor;
 import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.cms.model.dto.*;
+import org.ganjp.blog.cms.model.entity.Article;
 import org.ganjp.blog.cms.service.ArticleService;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.springframework.core.io.InputStreamResource;
@@ -27,6 +28,33 @@ import java.util.List;
 public class ArticleController {
     private final ArticleService articleService;
     private final JwtUtils jwtUtils;
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ArticleResponse>>> searchArticles(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Article.Language lang,
+            @RequestParam(required = false) String tags,
+            @RequestParam(required = false) Boolean isActive
+    ) {
+        try {
+            List<ArticleResponse> list = articleService.searchArticles(title, lang, tags, isActive);
+            return ResponseEntity.ok(ApiResponse.success(list, "Articles found"));
+        } catch (Exception e) {
+            log.error("Error searching articles", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching articles: " + e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<ArticleResponse>>> listArticles() {
+        try {
+            List<ArticleResponse> list = articleService.listArticles();
+            return ResponseEntity.ok(ApiResponse.success(list, "Articles listed"));
+        } catch (Exception e) {
+            log.error("Error listing articles", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing articles: " + e.getMessage(), null));
+        }
+    }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ArticleResponse>> createArticle(@Valid @ModelAttribute ArticleCreateRequest request, HttpServletRequest httpRequest) {
@@ -68,17 +96,6 @@ public class ArticleController {
         }
     }
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<ArticleResponse>>> listArticles() {
-        try {
-            List<ArticleResponse> list = articleService.listArticles();
-            return ResponseEntity.ok(ApiResponse.success(list, "Articles listed"));
-        } catch (Exception e) {
-            log.error("Error listing articles", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing articles: " + e.getMessage(), null));
-        }
-    }
-
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ArticleResponse>> updateArticle(@PathVariable String id, @Valid @ModelAttribute ArticleUpdateRequest request, HttpServletRequest httpRequest) {
         try {
@@ -115,22 +132,6 @@ public class ArticleController {
         } catch (Exception e) {
             log.error("Error deleting article", e);
             return ResponseEntity.status(500).body(ApiResponse.error(500, "Error deleting article: " + e.getMessage(), null));
-        }
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<ArticleResponse>>> searchArticles(
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Article.Language lang,
-            @RequestParam(required = false) String tags,
-            @RequestParam(required = false) Boolean isActive
-    ) {
-        try {
-            List<ArticleResponse> list = articleService.searchArticles(title, lang, tags, isActive);
-            return ResponseEntity.ok(ApiResponse.success(list, "Articles found"));
-        } catch (Exception e) {
-            log.error("Error searching articles", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching articles: " + e.getMessage(), null));
         }
     }
 
