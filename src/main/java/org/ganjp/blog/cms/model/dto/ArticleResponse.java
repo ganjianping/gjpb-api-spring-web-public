@@ -19,6 +19,7 @@ public class ArticleResponse {
     private String sourceName;
     private String coverImageFilename;
     private String coverImageOriginalUrl;
+    private String coverImageUrl;
     private String tags;
     private Article.Language lang;
     private Integer displayOrder;

@@ -30,6 +30,7 @@ logging:
 
 # Logo upload configuration
 logo:
+  base-url: http://localhost:8081/api/v1/public/logos
   upload:
     # Local directory for logo storage (relative to project root or absolute path)
     directory: /Users/ganjianping/Local/Logos
@@ -42,6 +43,7 @@ logo:
 
 # Image upload configuration
 image:
+  base-url: http://localhost:8081/api/v1/public/images
   upload:
     # Local directory for image storage (relative to project root or absolute path)
     directory: /Users/ganjianping/Local/Images
@@ -56,6 +58,7 @@ image:
 
 # Video upload configuration
 video:
+  base-url: http://localhost:8081/api/v1/public/videos
   upload:
     # Production directory for video storage
     directory: /Users/ganjianping/Local/Videos
@@ -66,6 +69,7 @@ video:
       max-size: 600
 # Audio upload configuration (mirrors video.upload)
 audio:
+  base-url: http://localhost:8081/api/v1/public/audios
   upload:
     directory: /Users/ganjianping/Local/Audios
     max-file-size: 1073741824
@@ -74,6 +78,7 @@ audio:
 
 # Article upload configuration
 article:
+  cover-image-base-url: http://localhost:8081/api/v1/public/articles/cover-images/
   upload:
     # Local directory for article-related assets (covers)
     directory: /Users/ganjianping/Local/Articles
@@ -83,6 +88,7 @@ article:
 
 # Generic file upload configuration (for cms_file)
 file:
+  base-url: http://localhost:8081/api/v1/public/files
   upload:
     # Local directory for generic file storage (documents, attachments)
     directory: /Users/ganjianping/Local/Files
