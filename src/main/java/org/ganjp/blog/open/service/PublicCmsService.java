@@ -12,6 +12,9 @@ import org.ganjp.blog.open.model.PublicLogoResponse;
 import org.ganjp.blog.open.model.PaginatedResponse;
 import org.ganjp.blog.open.model.PublicArticleDetailResponse;
 import org.ganjp.blog.open.model.PublicArticleResponse;
+import org.ganjp.blog.open.model.PublicVideoResponse;
+import org.ganjp.blog.open.model.PublicAudioResponse;
+import org.ganjp.blog.open.model.PublicFileResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -37,6 +40,12 @@ public class PublicCmsService {
     private String imageBaseUrl;
     @Value("${logo.base-url:}")
     private String logoBaseUrl;
+    @Value("${video.base-url:}")
+    private String videoBaseUrl;
+    @Value("${audio.base-url:}")
+    private String audioBaseUrl;
+    @Value("${file.base-url:}")
+    private String fileBaseUrl;
 
     public PaginatedResponse<org.ganjp.blog.cms.model.dto.WebsiteResponse> getWebsites(String name, Website.Language lang, String tags, Boolean isActive, int page, int size) {
         var pageable = PageRequest.of(Math.max(0, page), Math.max(1, size));
@@ -55,6 +64,45 @@ public class PublicCmsService {
         return PaginatedResponse.of(sub, p, s, total);
     }
 
+    /**
+     * Join a base URL and a path (filename). Returns null if path is empty.
+     * If base is blank and path is absolute (starts with http or /) returns path.
+     */
+    private String joinBaseAndPath(String base, String path) {
+        if (path == null || path.isBlank()) return null;
+        if (base != null && !base.isBlank()) {
+            String prefix = base;
+            String p = path;
+            if (!prefix.endsWith("/") && !p.startsWith("/")) prefix = prefix + "/";
+            else if (prefix.endsWith("/") && p.startsWith("/")) p = p.substring(1);
+            return prefix + p;
+        }
+        if (path.startsWith("http") || path.startsWith("/")) return path;
+        return null;
+    }
+
+    /**
+     * Join base + segment + path. Segment should not be null (e.g. "cover-images").
+     */
+    private String joinBasePathWithSegment(String base, String segment, String path) {
+        if (path == null || path.isBlank()) return null;
+        if (segment == null) segment = "";
+        // normalize
+        String seg = segment;
+        if (!seg.endsWith("/")) seg = seg + "/";
+        if (base != null && !base.isBlank()) {
+            String prefix = base;
+            if (!prefix.endsWith("/")) prefix = prefix + "/";
+            // avoid double slashes between prefix and seg
+            if (prefix.endsWith("/") && seg.startsWith("/")) seg = seg.substring(1);
+            String p = path.startsWith("/") ? path.substring(1) : path;
+            return prefix + seg + p;
+        }
+        // no base; if path is absolute return as-is, else return seg+path with leading '/'
+        if (path.startsWith("http") || path.startsWith("/")) return path;
+        return "/" + seg + (path.startsWith("/") ? path.substring(1) : path);
+    }
+
     public PaginatedResponse<org.ganjp.blog.open.model.PublicImageResponse> getImages(String name, Image.Language lang, String tags, Boolean isActive, int page, int size) {
         List<ImageResponse> all = imageService.searchImages(name, lang, tags, isActive);
 
@@ -71,28 +119,10 @@ public class PublicCmsService {
                 .updatedAt(r.getUpdatedAt());
 
             String fname = r.getFilename();
-            if (fname != null && !fname.isBlank()) {
-                if (imageBaseUrl != null && !imageBaseUrl.isBlank()) {
-                    String prefix = imageBaseUrl;
-                    if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
-                    else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
-                    b.url(prefix + fname);
-                } else if (fname.startsWith("http") || fname.startsWith("/")) {
-                    b.url(fname);
-                }
-            }
+            b.url(joinBaseAndPath(imageBaseUrl, fname));
 
             String tname = r.getThumbnailFilename();
-            if (tname != null && !tname.isBlank()) {
-                if (imageBaseUrl != null && !imageBaseUrl.isBlank()) {
-                    String prefix = imageBaseUrl;
-                    if (!prefix.endsWith("/") && !tname.startsWith("/")) prefix = prefix + "/";
-                    else if (prefix.endsWith("/") && tname.startsWith("/")) tname = tname.substring(1);
-                    b.thumbnailUrl(prefix + tname);
-                } else if (tname.startsWith("http") || tname.startsWith("/")) {
-                    b.thumbnailUrl(tname);
-                }
-            }
+            b.thumbnailUrl(joinBaseAndPath(imageBaseUrl, tname));
 
             return b.build();
         }).toList();
@@ -113,19 +143,9 @@ public class PublicCmsService {
                 .updatedAt(r.getUpdatedAt() == null ? null : r.getUpdatedAt().toString());
 
             String fname = r.getFilename();
-            if (fname != null && !fname.isBlank()) {
-                if (logoBaseUrl != null && !logoBaseUrl.isBlank()) {
-                    String prefix = logoBaseUrl;
-                    if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
-                    else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
-                    b.url(prefix + fname);
-                    // no separate thumbnail stored; reuse same URL for thumbnail by default
-                    b.thumbnailUrl(prefix + fname);
-                } else if (fname.startsWith("http") || fname.startsWith("/")) {
-                    b.url(fname);
-                    b.thumbnailUrl(fname);
-                }
-            }
+            String built = joinBaseAndPath(logoBaseUrl, fname);
+            b.url(built);
+            b.thumbnailUrl(built);
 
             return b.build();
         }).toList();
@@ -133,19 +153,77 @@ public class PublicCmsService {
         return paginateList(publicList, page, size);
     }
 
-    public PaginatedResponse<org.ganjp.blog.cms.model.dto.VideoResponse> getVideos(String name, org.ganjp.blog.cms.model.entity.Video.Language lang, String tags, Boolean isActive, int page, int size) {
+    public PaginatedResponse<PublicVideoResponse> getVideos(String name, org.ganjp.blog.cms.model.entity.Video.Language lang, String tags, Boolean isActive, int page, int size) {
         List<org.ganjp.blog.cms.model.dto.VideoResponse> all = videoService.searchVideos(name, lang, tags, isActive);
-        return paginateList(all, page, size);
+
+        List<PublicVideoResponse> publicList = all.stream().map(r -> {
+            PublicVideoResponse.PublicVideoResponseBuilder b = PublicVideoResponse.builder()
+                .id(r.getId())
+                .title(r.getName())
+                .description(r.getDescription())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt());
+
+            String fname = r.getFilename();
+            b.url(joinBaseAndPath(videoBaseUrl, fname));
+
+            String cimg = r.getCoverImageFilename();
+            b.coverImageUrl(joinBasePathWithSegment(videoBaseUrl, "cover-images", cimg));
+
+            return b.build();
+        }).toList();
+
+        return paginateList(publicList, page, size);
     }
 
-    public PaginatedResponse<org.ganjp.blog.cms.model.dto.FileResponse> getFiles(String name, org.ganjp.blog.cms.model.entity.File.Language lang, String tags, Boolean isActive, int page, int size) {
+    public PaginatedResponse<PublicFileResponse> getFiles(String name, org.ganjp.blog.cms.model.entity.File.Language lang, String tags, Boolean isActive, int page, int size) {
         List<org.ganjp.blog.cms.model.dto.FileResponse> all = fileService.searchFiles(name, lang, tags, isActive);
-        return paginateList(all, page, size);
+
+        List<PublicFileResponse> publicList = all.stream().map(r -> {
+            PublicFileResponse.PublicFileResponseBuilder b = PublicFileResponse.builder()
+                .id(r.getId())
+                .name(r.getName())
+                .description(null)
+                .originalUrl(r.getOriginalUrl())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt());
+
+            String fname = r.getFilename();
+            b.url(joinBaseAndPath(fileBaseUrl, fname));
+
+            return b.build();
+        }).toList();
+
+        return paginateList(publicList, page, size);
     }
 
-    public PaginatedResponse<org.ganjp.blog.cms.model.dto.AudioResponse> getAudios(String name, org.ganjp.blog.cms.model.entity.Audio.Language lang, String tags, Boolean isActive, int page, int size) {
+    public PaginatedResponse<PublicAudioResponse> getAudios(String name, org.ganjp.blog.cms.model.entity.Audio.Language lang, String tags, Boolean isActive, int page, int size) {
         List<org.ganjp.blog.cms.model.dto.AudioResponse> all = audioService.searchAudios(name, lang, tags, isActive);
-        return paginateList(all, page, size);
+
+        List<PublicAudioResponse> publicList = all.stream().map(r -> {
+            PublicAudioResponse.PublicAudioResponseBuilder b = PublicAudioResponse.builder()
+                .id(r.getId())
+                .title(r.getName())
+                .description(r.getDescription())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt());
+
+            String fname = r.getFilename();
+            b.url(joinBaseAndPath(audioBaseUrl, fname));
+
+            String cimg = r.getCoverImageFilename();
+            b.coverImageUrl(joinBasePathWithSegment(audioBaseUrl, "cover-images", cimg));
+
+            return b.build();
+        }).toList();
+
+        return paginateList(publicList, page, size);
     }
 
     public PaginatedResponse<PublicArticleResponse> getArticles(String title, org.ganjp.blog.cms.model.entity.Article.Language lang, String tags, Boolean isActive, int page, int size) {
@@ -166,16 +244,7 @@ public class PublicCmsService {
                 .updatedAt(r.getUpdatedAt());
 
             String cimg = r.getCoverImageFilename();
-            if (cimg != null && !cimg.isBlank()) {
-                if (articleCoverImageBaseUrl != null && !articleCoverImageBaseUrl.isBlank()) {
-                    String prefix = articleCoverImageBaseUrl;
-                    if (!prefix.endsWith("/") && !cimg.startsWith("/")) prefix = prefix + "/";
-                    else if (prefix.endsWith("/") && cimg.startsWith("/")) cimg = cimg.substring(1);
-                    b.coverImageUrl(prefix + cimg);
-                } else if (cimg.startsWith("http") || cimg.startsWith("/")) {
-                    b.coverImageUrl(cimg);
-                }
-            }
+            b.coverImageUrl(joinBaseAndPath(articleCoverImageBaseUrl, cimg));
 
             return b.build();
         }).toList();

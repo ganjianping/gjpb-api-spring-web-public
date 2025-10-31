@@ -65,65 +65,8 @@ public class PublicCmsController {
         if (lang != null && !lang.isBlank()) {
             try { l = Image.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
         }
-        var respRaw = publicCmsService.getImages(name, l, tags, isActive, page, size);
-        var resp = sanitizeImages(respRaw);
+        var resp = publicCmsService.getImages(name, l, tags, isActive, page, size);
         return ApiResponse.success(resp, "Images retrieved");
-    }
-    /**
-     * Sanitize images: create url and thumbnailUrl by prefixing imageBaseUrl to
-     * filename and thumbnailFilename when they are not absolute, then remove
-     * the original filename fields and other internal props.
-     */
-    private <T> PaginatedResponse<Map<String, Object>> sanitizeImages(PaginatedResponse<T> raw) {
-        List<Map<String, Object>> list = raw.getContent().stream()
-            .map(item -> objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {}))
-            .filter(m -> {
-                Object isActive = m.get("isActive");
-                return isActive == null || Boolean.TRUE.equals(isActive);
-            })
-            .map(m -> {
-                // Build full url from filename
-                Object fnameObj = m.get("filename");
-                if (fnameObj instanceof String) {
-                    String fname = (String) fnameObj;
-                    if (!fname.isBlank() && imageBaseUrl != null && !imageBaseUrl.isBlank()) {
-                        String prefix = imageBaseUrl;
-                        if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
-                        else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
-                        m.put("url", prefix + fname);
-                    } else if (!fname.isBlank() && (fname.startsWith("http") || fname.startsWith("/"))) {
-                        m.put("url", fname);
-                    }
-                }
-
-                // Build thumbnailUrl from thumbnailFilename
-                Object tnameObj = m.get("thumbnailFilename");
-                if (tnameObj instanceof String) {
-                    String tname = (String) tnameObj;
-                    if (!tname.isBlank() && imageBaseUrl != null && !imageBaseUrl.isBlank()) {
-                        String prefix = imageBaseUrl;
-                        if (!prefix.endsWith("/") && !tname.startsWith("/")) prefix = prefix + "/";
-                        else if (prefix.endsWith("/") && tname.startsWith("/")) tname = tname.substring(1);
-                        m.put("thumbnailUrl", prefix + tname);
-                    } else if (!tname.isBlank() && (tname.startsWith("http") || tname.startsWith("/"))) {
-                        m.put("thumbnailUrl", tname);
-                    }
-                }
-
-                // remove original filename keys and other internal props
-                m.remove("filename");
-                m.remove("thumbnailFilename");
-                m.remove("isActive");
-                m.remove("createdAt");
-                m.remove("createdBy");
-                m.remove("updatedBy");
-                m.remove("tagsArray");
-                m.remove("content");
-                return m;
-            })
-            .collect(Collectors.toList());
-
-        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), list.size());
     }
 
     @GetMapping("/logos")
@@ -133,13 +76,12 @@ public class PublicCmsController {
                                                       @RequestParam(required = false) Boolean isActive,
                                                       @RequestParam(defaultValue = "0") int page,
                                                       @RequestParam(defaultValue = "20") int size) {
-        Image.Language l = null;
+        Logo.Language l = null;
         if (lang != null && !lang.isBlank()) {
-            try { l = Image.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
+            try { l = Logo.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
         }
         var respRaw = publicCmsService.getLogos(name, l, tags, isActive, page, size);
-        var resp = sanitizeLogos(respRaw);
-        return ApiResponse.success(resp, "Logos retrieved");
+        return ApiResponse.success(respRaw, "Logos retrieved");
     }
 
     @GetMapping("/videos")
