@@ -13,7 +13,7 @@ import org.ganjp.blog.cms.model.entity.Image;
 public class PublicImageResponse {
     private String id;
     private String name;
-    private String description;
+    private String altText;
     private String url;
     private String thumbnailUrl;
     private String originalUrl;

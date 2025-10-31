@@ -6,6 +6,9 @@ import org.ganjp.blog.cms.model.dto.*;
 import org.ganjp.blog.cms.model.entity.Image;
 import org.ganjp.blog.cms.model.entity.Website;
 import org.ganjp.blog.cms.service.*;
+import org.ganjp.blog.cms.service.LogoService;
+import org.ganjp.blog.cms.model.dto.LogoResponse;
+import org.ganjp.blog.open.model.PublicLogoResponse;
 import org.ganjp.blog.open.model.PaginatedResponse;
 import org.ganjp.blog.open.model.PublicArticleDetailResponse;
 import org.ganjp.blog.open.model.PublicArticleResponse;
@@ -23,6 +26,7 @@ public class PublicCmsService {
     private final WebsiteService websiteService;
     private final ImageService imageService;
     private final LogoProcessingService logoProcessingService;
+    private final LogoService logoService;
     private final VideoService videoService;
     private final org.ganjp.blog.cms.service.FileService fileService;
     private final AudioService audioService;
@@ -31,6 +35,8 @@ public class PublicCmsService {
     private String articleCoverImageBaseUrl;
     @Value("${image.base-url:}")
     private String imageBaseUrl;
+    @Value("${logo.base-url:}")
+    private String logoBaseUrl;
 
     public PaginatedResponse<org.ganjp.blog.cms.model.dto.WebsiteResponse> getWebsites(String name, Website.Language lang, String tags, Boolean isActive, int page, int size) {
         var pageable = PageRequest.of(Math.max(0, page), Math.max(1, size));
@@ -58,6 +64,7 @@ public class PublicCmsService {
                 .id(r.getId())
                 .name(r.getName())
                 .originalUrl(r.getOriginalUrl())
+                .altText(r.getAltText())
                 .tags(r.getTags())
                 .lang(r.getLang())
                 .displayOrder(r.getDisplayOrder())
@@ -93,10 +100,37 @@ public class PublicCmsService {
         return paginateList(publicList, page, size);
     }
 
-    public PaginatedResponse<ImageResponse> getLogos(String name, org.ganjp.blog.cms.model.entity.Image.Language lang, String tags, Boolean isActive, int page, int size) {
-        // logos are images but processed differently; reuse imageService search for now
-        List<ImageResponse> all = imageService.searchImages(name, lang, tags, isActive);
-        return paginateList(all, page, size);
+    public PaginatedResponse<PublicLogoResponse> getLogos(String name, org.ganjp.blog.cms.model.entity.Logo.Language lang, String tags, Boolean isActive, int page, int size) {
+        List<LogoResponse> all = logoService.searchLogos(name, lang, tags, isActive);
+
+        List<PublicLogoResponse> publicList = all.stream().map(r -> {
+            PublicLogoResponse.PublicLogoResponseBuilder b = PublicLogoResponse.builder()
+                .id(r.getId())
+                .name(r.getName())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt() == null ? null : r.getUpdatedAt().toString());
+
+            String fname = r.getFilename();
+            if (fname != null && !fname.isBlank()) {
+                if (logoBaseUrl != null && !logoBaseUrl.isBlank()) {
+                    String prefix = logoBaseUrl;
+                    if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
+                    else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
+                    b.url(prefix + fname);
+                    // no separate thumbnail stored; reuse same URL for thumbnail by default
+                    b.thumbnailUrl(prefix + fname);
+                } else if (fname.startsWith("http") || fname.startsWith("/")) {
+                    b.url(fname);
+                    b.thumbnailUrl(fname);
+                }
+            }
+
+            return b.build();
+        }).toList();
+
+        return paginateList(publicList, page, size);
     }
 
     public PaginatedResponse<org.ganjp.blog.cms.model.dto.VideoResponse> getVideos(String name, org.ganjp.blog.cms.model.entity.Video.Language lang, String tags, Boolean isActive, int page, int size) {

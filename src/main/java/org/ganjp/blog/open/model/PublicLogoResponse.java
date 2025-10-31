@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.cms.model.entity.Image;
+import org.ganjp.blog.cms.model.entity.Logo;
 
 @Data
 @Builder
@@ -16,7 +16,7 @@ public class PublicLogoResponse {
     private String url;
     private String thumbnailUrl;
     private String tags;
-    private Image.Language lang;
+    private Logo.Language lang;
     private Integer displayOrder;
     private String updatedAt;
 }
