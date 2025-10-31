@@ -6,6 +6,9 @@ import org.ganjp.blog.cms.model.dto.*;
 import org.ganjp.blog.cms.model.entity.Website;
 import org.ganjp.blog.cms.service.*;
 import org.ganjp.blog.open.model.PaginatedResponse;
+import org.ganjp.blog.open.model.PublicArticleDetailResponse;
+import org.ganjp.blog.open.model.PublicArticleResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +26,8 @@ public class PublicCmsService {
     private final org.ganjp.blog.cms.service.FileService fileService;
     private final AudioService audioService;
     private final ArticleService articleService;
+    @Value("${article.cover-image-base-url:}")
+    private String articleCoverImageBaseUrl;
 
     public PaginatedResponse<org.ganjp.blog.cms.model.dto.WebsiteResponse> getWebsites(String name, Website.Language lang, String tags, Boolean isActive, int page, int size) {
         var pageable = PageRequest.of(Math.max(0, page), Math.max(1, size));
@@ -67,12 +72,71 @@ public class PublicCmsService {
         return paginateList(all, page, size);
     }
 
-    public PaginatedResponse<ArticleResponse> getArticles(String title, org.ganjp.blog.cms.model.entity.Article.Language lang, String tags, Boolean isActive, int page, int size) {
-        List<ArticleResponse> all = articleService.searchArticles(title, lang, tags, isActive);
-        return paginateList(all, page, size);
+    public PaginatedResponse<PublicArticleResponse> getArticles(String title, org.ganjp.blog.cms.model.entity.Article.Language lang, String tags, Boolean isActive, int page, int size) {
+        List<ArticleResponse> allInternal = articleService.searchArticles(title, lang, tags, isActive);
+
+        // Map internal ArticleResponse -> PublicArticleResponse and compute coverImageUrl
+        List<PublicArticleResponse> publicList = allInternal.stream().map(r -> {
+            PublicArticleResponse.PublicArticleResponseBuilder b = PublicArticleResponse.builder()
+                .id(r.getId())
+                .title(r.getTitle())
+                .summary(r.getSummary())
+                .originalUrl(r.getOriginalUrl())
+                .sourceName(r.getSourceName())
+                .coverImageOriginalUrl(r.getCoverImageOriginalUrl())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt());
+
+            String cimg = r.getCoverImageFilename();
+            if (cimg != null && !cimg.isBlank()) {
+                if (articleCoverImageBaseUrl != null && !articleCoverImageBaseUrl.isBlank()) {
+                    String prefix = articleCoverImageBaseUrl;
+                    if (!prefix.endsWith("/") && !cimg.startsWith("/")) prefix = prefix + "/";
+                    else if (prefix.endsWith("/") && cimg.startsWith("/")) cimg = cimg.substring(1);
+                    b.coverImageUrl(prefix + cimg);
+                } else if (cimg.startsWith("http") || cimg.startsWith("/")) {
+                    b.coverImageUrl(cimg);
+                }
+            }
+
+            return b.build();
+        }).toList();
+
+        return paginateList(publicList, page, size);
     }
 
-    public ArticleResponse getArticleById(String id) {
-        return articleService.getArticleById(id);
+    public PublicArticleDetailResponse getArticleById(String id) {
+        ArticleResponse r = articleService.getArticleById(id);
+        if (r == null) return null;
+
+        PublicArticleDetailResponse.PublicArticleDetailResponseBuilder b = PublicArticleDetailResponse.builder()
+            .id(r.getId())
+            .title(r.getTitle())
+            .summary(r.getSummary())
+            .content(r.getContent())
+            .originalUrl(r.getOriginalUrl())
+            .sourceName(r.getSourceName())
+            .coverImageOriginalUrl(r.getCoverImageOriginalUrl())
+            .tags(r.getTags())
+            .lang(r.getLang())
+            .displayOrder(r.getDisplayOrder())
+            .updatedAt(r.getUpdatedAt());
+
+        // Build coverImageUrl from coverImageFilename using configured base if available
+        String cimg = r.getCoverImageFilename();
+        if (cimg != null && !cimg.isBlank()) {
+            if (articleCoverImageBaseUrl != null && !articleCoverImageBaseUrl.isBlank()) {
+                String prefix = articleCoverImageBaseUrl;
+                if (!prefix.endsWith("/") && !cimg.startsWith("/")) prefix = prefix + "/";
+                else if (prefix.endsWith("/") && cimg.startsWith("/")) cimg = cimg.substring(1);
+                b.coverImageUrl(prefix + cimg);
+            } else if (cimg.startsWith("http") || cimg.startsWith("/")) {
+                b.coverImageUrl(cimg);
+            }
+        }
+
+        return b.build();
     }
 }

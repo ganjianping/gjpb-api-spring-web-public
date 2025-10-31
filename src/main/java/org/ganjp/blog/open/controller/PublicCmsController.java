@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.List;
 import org.ganjp.blog.open.service.PublicCmsService;
-import org.ganjp.blog.cms.model.dto.ArticleResponse;
+import org.ganjp.blog.open.model.PublicArticleDetailResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -236,37 +236,23 @@ public class PublicCmsController {
                                                          @RequestParam(required = false) Boolean isActive,
                                                          @RequestParam(defaultValue = "0") int page,
                                                          @RequestParam(defaultValue = "20") int size) {
-        org.ganjp.blog.cms.model.entity.Article.Language l = null;
+        Article.Language l = null;
         if (lang != null && !lang.isBlank()) {
-            try { l = org.ganjp.blog.cms.model.entity.Article.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
+            try {
+                l = Article.Language.valueOf(lang.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException ex) {
+                return ApiResponse.error(400, "Invalid lang", null);
+            }
         }
-        var respRaw = publicCmsService.getArticles(title, l, tags, isActive, page, size);
-        var resp = sanitizeArticles(respRaw);
+        var resp = publicCmsService.getArticles(title, l, tags, isActive, page, size);
         return ApiResponse.success(resp, "Articles retrieved");
     }
 
     @GetMapping("/articles/{id}")
-    public ApiResponse<ArticleResponse> getArticleById(@PathVariable String id) {
-        ArticleResponse r = publicCmsService.getArticleById(id);
-        if (r == null) return ApiResponse.error(404, "Article not found", null);
-
-        // Build coverImageUrl from coverImageFilename using configured base if needed
-        String cimg = r.getCoverImageFilename();
-        if (cimg != null && !cimg.isBlank()) {
-            if (articleCoverImageBaseUrl != null && !articleCoverImageBaseUrl.isBlank()) {
-                String prefix = articleCoverImageBaseUrl;
-                if (!prefix.endsWith("/") && !cimg.startsWith("/")) prefix = prefix + "/";
-                else if (prefix.endsWith("/") && cimg.startsWith("/")) cimg = cimg.substring(1);
-                r.setCoverImageUrl(prefix + cimg);
-            } else if (cimg.startsWith("http") || cimg.startsWith("/")) {
-                r.setCoverImageUrl(cimg);
-            }
-        }
-
-        // Remove filename from response
-        r.setCoverImageFilename(null);
-
-        return ApiResponse.success(r, "Article retrieved");
+    public ApiResponse<PublicArticleDetailResponse> getArticleById(@PathVariable String id) {
+        PublicArticleDetailResponse p = publicCmsService.getArticleById(id);
+        if (p == null) return ApiResponse.error(404, "Article not found", null);
+        return ApiResponse.success(p, "Article retrieved");
     }
 
     private <T> PaginatedResponse<Map<String, Object>> sanitizePaginated(PaginatedResponse<T> raw) {
