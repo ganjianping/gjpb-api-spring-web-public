@@ -61,9 +61,9 @@ public class PublicCmsController {
                                                        @RequestParam(required = false) Boolean isActive,
                                                        @RequestParam(defaultValue = "0") int page,
                                                        @RequestParam(defaultValue = "20") int size) {
-        org.ganjp.blog.cms.model.entity.Image.Language l = null;
+        Image.Language l = null;
         if (lang != null && !lang.isBlank()) {
-            try { l = org.ganjp.blog.cms.model.entity.Image.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
+            try { l = Image.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
         }
         var respRaw = publicCmsService.getImages(name, l, tags, isActive, page, size);
         var resp = sanitizeImages(respRaw);
@@ -133,9 +133,9 @@ public class PublicCmsController {
                                                       @RequestParam(required = false) Boolean isActive,
                                                       @RequestParam(defaultValue = "0") int page,
                                                       @RequestParam(defaultValue = "20") int size) {
-        org.ganjp.blog.cms.model.entity.Image.Language l = null;
+        Image.Language l = null;
         if (lang != null && !lang.isBlank()) {
-            try { l = org.ganjp.blog.cms.model.entity.Image.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
+            try { l = Image.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
         }
         var respRaw = publicCmsService.getLogos(name, l, tags, isActive, page, size);
         var resp = sanitizeLogos(respRaw);

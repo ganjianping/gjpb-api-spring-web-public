@@ -3,6 +3,7 @@ package org.ganjp.blog.open.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.cms.model.dto.*;
+import org.ganjp.blog.cms.model.entity.Image;
 import org.ganjp.blog.cms.model.entity.Website;
 import org.ganjp.blog.cms.service.*;
 import org.ganjp.blog.open.model.PaginatedResponse;
@@ -28,6 +29,8 @@ public class PublicCmsService {
     private final ArticleService articleService;
     @Value("${article.cover-image-base-url:}")
     private String articleCoverImageBaseUrl;
+    @Value("${image.base-url:}")
+    private String imageBaseUrl;
 
     public PaginatedResponse<org.ganjp.blog.cms.model.dto.WebsiteResponse> getWebsites(String name, Website.Language lang, String tags, Boolean isActive, int page, int size) {
         var pageable = PageRequest.of(Math.max(0, page), Math.max(1, size));
@@ -46,9 +49,48 @@ public class PublicCmsService {
         return PaginatedResponse.of(sub, p, s, total);
     }
 
-    public PaginatedResponse<ImageResponse> getImages(String name, org.ganjp.blog.cms.model.entity.Image.Language lang, String tags, Boolean isActive, int page, int size) {
+    public PaginatedResponse<org.ganjp.blog.open.model.PublicImageResponse> getImages(String name, Image.Language lang, String tags, Boolean isActive, int page, int size) {
         List<ImageResponse> all = imageService.searchImages(name, lang, tags, isActive);
-        return paginateList(all, page, size);
+
+        // Map internal ImageResponse -> PublicImageResponse and compute urls
+        List<org.ganjp.blog.open.model.PublicImageResponse> publicList = all.stream().map(r -> {
+            org.ganjp.blog.open.model.PublicImageResponse.PublicImageResponseBuilder b = org.ganjp.blog.open.model.PublicImageResponse.builder()
+                .id(r.getId())
+                .name(r.getName())
+                .originalUrl(r.getOriginalUrl())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt());
+
+            String fname = r.getFilename();
+            if (fname != null && !fname.isBlank()) {
+                if (imageBaseUrl != null && !imageBaseUrl.isBlank()) {
+                    String prefix = imageBaseUrl;
+                    if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
+                    else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
+                    b.url(prefix + fname);
+                } else if (fname.startsWith("http") || fname.startsWith("/")) {
+                    b.url(fname);
+                }
+            }
+
+            String tname = r.getThumbnailFilename();
+            if (tname != null && !tname.isBlank()) {
+                if (imageBaseUrl != null && !imageBaseUrl.isBlank()) {
+                    String prefix = imageBaseUrl;
+                    if (!prefix.endsWith("/") && !tname.startsWith("/")) prefix = prefix + "/";
+                    else if (prefix.endsWith("/") && tname.startsWith("/")) tname = tname.substring(1);
+                    b.thumbnailUrl(prefix + tname);
+                } else if (tname.startsWith("http") || tname.startsWith("/")) {
+                    b.thumbnailUrl(tname);
+                }
+            }
+
+            return b.build();
+        }).toList();
+
+        return paginateList(publicList, page, size);
     }
 
     public PaginatedResponse<ImageResponse> getLogos(String name, org.ganjp.blog.cms.model.entity.Image.Language lang, String tags, Boolean isActive, int page, int size) {
