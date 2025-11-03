@@ -236,10 +236,10 @@ public class AudioService {
         r.setFilename(a.getFilename());
         r.setSizeBytes(a.getSizeBytes());
         r.setCoverImageFilename(a.getCoverImageFilename());
-    r.setOriginalUrl(a.getOriginalUrl());
-    r.setSourceName(a.getSourceName());
-    r.setSubtitle(a.getSubtitle());
-    r.setDescription(a.getDescription());
+        r.setOriginalUrl(a.getOriginalUrl());
+        r.setSourceName(a.getSourceName());
+        r.setSubtitle(a.getSubtitle());
+        r.setDescription(a.getDescription());
         r.setTags(a.getTags());
         r.setLang(a.getLang());
         r.setDisplayOrder(a.getDisplayOrder());

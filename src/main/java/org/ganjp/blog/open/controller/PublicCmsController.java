@@ -162,9 +162,9 @@ public class PublicCmsController {
                                                        @RequestParam(required = false) Boolean isActive,
                                                        @RequestParam(defaultValue = "0") int page,
                                                        @RequestParam(defaultValue = "20") int size) {
-        org.ganjp.blog.cms.model.entity.Audio.Language l = null;
+        Audio.Language l = null;
         if (lang != null && !lang.isBlank()) {
-            try { l = org.ganjp.blog.cms.model.entity.Audio.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
+            try { l = Audio.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
         }
         var respRaw = publicCmsService.getAudios(name, l, tags, isActive, page, size);
         var resp = sanitizeAudios(respRaw);

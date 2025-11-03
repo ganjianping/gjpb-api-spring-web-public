@@ -209,6 +209,7 @@ public class PublicCmsService {
                 .id(r.getId())
                 .title(r.getName())
                 .description(r.getDescription())
+                .subtitle(r.getSubtitle())
                 .tags(r.getTags())
                 .lang(r.getLang())
                 .displayOrder(r.getDisplayOrder())
