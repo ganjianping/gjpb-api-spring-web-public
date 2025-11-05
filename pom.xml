@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.ganjp</groupId>
-	<artifactId>blog</artifactId>
+	<artifactId>gjpb-api</artifactId>
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
 	<name>GJPB</name>

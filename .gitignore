@@ -68,3 +68,19 @@ application-local.properties
 .env.local
 logs/
 tmp/
+
+### devops ###
+# Old inventory file (deprecated - now using ~/.ansible/)
+devops/ansible/inventory/hosts
+devops/login.sh
+
+# Ansible sensitive files (if accidentally created in project)
+devops/ansible/inventory/group_vars/*/vault.yml
+devops/ansible/inventory/group_vars/**/vault.yml
+devops/ansible/.vault_pass
+*.vault
+*vault*.yml
+.vault_password
+
+# Ansible retry files
+*.retry

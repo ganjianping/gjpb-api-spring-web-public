@@ -1,0 +1,10 @@
+# Example variables file for ubuntu_server group
+# Copy this to ~/.ansible/inventory/group_vars/ubuntu_server/vars.yml
+# and update with your actual values
+
+# Database configuration
+DB_URL: "jdbc:mysql://localhost:3306/gjpb_db?useSSL=false&serverTimezone=UTC"
+DB_USERNAME: "your_db_username"
+
+# Note: For security, store sensitive values in vault.yml instead
+# Use: ansible-vault create ~/.ansible/inventory/group_vars/ubuntu_server/vault.yml

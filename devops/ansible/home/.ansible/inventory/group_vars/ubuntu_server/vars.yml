@@ -1,0 +1,20 @@
+# Non-sensitive variables for ubuntu_server group
+# Location: ~/.ansible/inventory/group_vars/ubuntu_server/vars.yml
+
+# Application deployment settings
+jar_file_name: gjpb-public-1.0.0.jar
+remote_project_path: /home/ubuntu/jar
+log_file_name: gjpb.log
+
+# Database settings
+db_name: gjpb
+db_host: localhost
+
+# SQL files for database setup
+sql_files:
+  - 1.create.table.sql
+  - 2.insert.data.sql
+
+# List of databases to create
+databases:
+  - gjpb

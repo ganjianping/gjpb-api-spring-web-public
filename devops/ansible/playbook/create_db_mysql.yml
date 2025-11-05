@@ -1,0 +1,33 @@
+# sudo netstat -tap | grep mysql
+- name: setup Mysql with gjpb database and remote login
+  become: yes
+  hosts: all
+  vars:
+    # Use vault variables from ~/.ansible/inventory/group_vars/ubuntu_server/vault.yml
+    db_user: "{{ vault_db_user }}"
+    db_pass: "{{ vault_db_pass }}"
+    # databases variable comes from ~/.ansible/inventory/group_vars/ubuntu_server/vars.yml
+
+  tasks:
+    - name: creating databases
+      mysql_db:
+        name: "{{ item }}"
+        state: present
+        # Use explicit login parameters to avoid relying on implicit defaults
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_pass }}"
+        login_host: "{{ db_host | default('localhost') }}"
+      loop: "{{ databases }}"
+      register: create_db_results
+
+    - name: Report database creation status (created)
+      debug:
+        msg: "Database '{{ item.item }}' created."
+      loop: "{{ create_db_results.results }}"
+      when: item.changed is defined and item.changed
+
+    - name: Report database creation status (already exists)
+      debug:
+        msg: "Database '{{ item.item }}' already exists, skipping."
+      loop: "{{ create_db_results.results }}"
+      when: item.changed is defined and not item.changed

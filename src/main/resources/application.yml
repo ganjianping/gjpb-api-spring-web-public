@@ -1,13 +1,13 @@
 server:
-  port: 8081
+  port: 8082
   servlet:
-    context-path: /api/
+    context-path: /blog/
 
 spring:
   application:
     name: GJPB
   profiles:
-    active: dev # Change to 'prod' for production environment
+    active: prod # Change to 'prod' for production environment
   jackson:
     serialization:
       write-dates-as-timestamps: false

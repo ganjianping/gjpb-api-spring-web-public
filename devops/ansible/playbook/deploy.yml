@@ -1,0 +1,84 @@
+- name: Deploy Springboot (GJPB API)
+  hosts: ubuntu_server
+  become: yes  # This will run the tasks with sudo privileges
+
+  vars:
+    # local_project_path points to repository root from this playbook directory
+    local_project_path: "{{ playbook_dir }}/../../.."
+    # service name to register with systemd
+    service_name: gjpb-api-spring-web-public
+    # JAR file name (must match the artifact built by Maven)
+    jar_file_name: gjpb-api-1.0.0.jar
+    # Remote deployment directory
+    remote_project_path: /home/ubuntu/jar
+    # Log file name
+    log_file_name: gjpb-api.log
+ 
+  tasks:
+    - name: Ensure deployment directory exists
+      file:
+        path: "{{ remote_project_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Stop existing systemd service if present
+      ansible.builtin.systemd:
+        name: "{{ service_name }}"
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    - name: Kill any running java -jar for this JAR filename only (if present)
+      shell: |
+        # Find java processes whose command line contains the exact jar filename
+        # Use pgrep -f to match full command line; this avoids matching other jars
+        pids=$(pgrep -f "java .*{{ jar_file_name }}" ) || true
+        if [ -n "$pids" ]; then
+          echo "$pids" | xargs -r kill || true
+        fi
+      register: kill_cmd
+      changed_when: kill_cmd.stdout | length > 0
+      failed_when: false
+
+    - name: Upload JAR file to remote server (from controller)
+      copy:
+        src: "{{ local_project_path }}/target/{{ jar_file_name }}"
+        dest: "{{ remote_project_path }}/{{ jar_file_name }}"
+        mode: '0644'
+
+    - name: Create systemd unit for the application
+      copy:
+        dest: "/etc/systemd/system/{{ service_name }}.service"
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=GJPB API Spring Boot Application
+          After=network.target
+
+          [Service]
+          WorkingDirectory={{ remote_project_path }}
+          # Load environment variables set by setup_env_var.yml (/etc/environment)
+          EnvironmentFile=/etc/environment
+          # Run java directly (no shell). Use systemd to append stdout/stderr to the log file.
+          ExecStart=/usr/bin/java -jar {{ remote_project_path }}/{{ jar_file_name }}
+          StandardOutput=append:{{ remote_project_path }}/{{ log_file_name }}
+          StandardError=append:{{ remote_project_path }}/{{ log_file_name }}
+          SuccessExitStatus=143
+          Restart=on-failure
+          RestartSec=5
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd and ensure service is enabled & restarted
+      block:
+        - name: Reload systemd
+          ansible.builtin.command: systemctl daemon-reload
+
+        - name: Enable and start service
+          ansible.builtin.systemd:
+            name: "{{ service_name }}"
+            state: restarted
+            enabled: yes
+      become: yes
+      

@@ -1,0 +1,1 @@
+ansible ubuntu_server -m ping

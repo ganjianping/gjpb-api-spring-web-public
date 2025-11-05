@@ -1,0 +1,12 @@
+# Ansible Inventory File - Stored in User Account
+# Location: ~/.ansible/inventory/hosts
+
+[ubuntu_server]
+160.230.160.220
+
+[ubuntu_server:vars]
+ansible_ssh_user={user}
+ansible_ssh_private_key_file=~/.ssh/ubuntu_rsa
+ansible_python_interpreter=/usr/bin/python3
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no'

@@ -1,0 +1,74 @@
+- name: Install JRE 21 on Ubuntu
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install OpenJDK 21 JRE
+      apt:
+        name: openjdk-21-jre-headless
+        state: present
+
+    - name: Verify Java installation
+      command: java -version
+      register: java_version_output
+      changed_when: false
+
+    - name: Display installed Java version
+      debug:
+        msg: "{{ java_version_output.stderr_lines }}"
+
+    - name: Detect JAVA_HOME path using readlink
+      shell: |
+        if command -v java >/dev/null 2>&1; then
+          java_bin=$(readlink -f "$(command -v java)")
+          echo "${java_bin%/bin/java}"
+        else
+          echo ""
+        fi
+      register: java_home_detected
+      changed_when: false
+
+    - name: Display detected JAVA_HOME path
+      debug:
+        msg: "Detected JAVA_HOME: {{ java_home_detected.stdout }}"
+
+    - name: Fail if JAVA_HOME could not be detected
+      fail:
+        msg: "Failed to detect JAVA_HOME. Java may not be properly installed."
+      when: java_home_detected.stdout == ""
+
+    - name: Set JAVA_HOME in /etc/environment
+      lineinfile:
+        dest: /etc/environment
+        regexp: '^JAVA_HOME='
+        line: 'JAVA_HOME={{ java_home_detected.stdout }}'
+        create: yes
+        mode: '0644'
+
+    - name: Set JAVA_HOME in /etc/profile.d/java.sh
+      copy:
+        dest: /etc/profile.d/java.sh
+        mode: '0644'
+        content: |
+          # Java environment configuration
+          export JAVA_HOME={{ java_home_detected.stdout }}
+          export PATH=$JAVA_HOME/bin:$PATH
+
+    - name: Verify JAVA_HOME is set correctly
+      shell: |
+        source /etc/profile.d/java.sh
+        echo $JAVA_HOME
+      args:
+        executable: /bin/bash
+      register: verify_java_home
+      changed_when: false
+
+    - name: Display verification result
+      debug:
+        msg: "JAVA_HOME is set to: {{ verify_java_home.stdout }}"
