@@ -7,7 +7,8 @@ spring:
   application:
     name: GJPB
   profiles:
-    active: prod # Change to 'prod' for production environment
+    #  active: dev
+   active: prod
   jackson:
     serialization:
       write-dates-as-timestamps: false

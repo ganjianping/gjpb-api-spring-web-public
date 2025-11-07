@@ -28,10 +28,10 @@ logging:
 
 # Logo upload configuration
 logo:
-  base-url: https://www.ganjianping.com/api/v1/public/logos
+  base-url: https://www.ganjianping.com/resources/logos
   upload:
     # Production directory for logo storage (absolute path recommended)
-    directory: /var/www/gjpb/uploads/logos
+    directory: /var/www/gjpb/resources/logos
     # Maximum file size (in bytes) - 5MB
     max-file-size: 5242880
     # Image resize settings
@@ -41,10 +41,10 @@ logo:
 
 # Image upload configuration
 image:
-  base-url: https://www.ganjianping.com/api/v1/public/images
+  base-url: https://www.ganjianping.com/resources/images
   upload:
     # Production directory for image storage (absolute path recommended)
-    directory: /var/www/gjpb/uploads/images
+    directory: /var/www/gjpb/resources/images
     # Maximum file size (in bytes) - 10MB
     max-file-size: 10485760
     # Image resize settings
@@ -56,10 +56,10 @@ image:
 
 # Video upload configuration
 video:
-  base-url: https://www.ganjianping.com/api/v1/public/videos
+  base-url: https://www.ganjianping.com/resources/videos
   upload:
     # Production directory for video storage
-    directory: /var/www/gjpb/uploads/videos
+    directory: /var/www/gjpb/resources/videos
     # Maximum file size (in bytes) - 1GB
     max-file-size: 1073741824
     # Cover image resize settings for videos (cover images will be resized when uploaded)
@@ -68,28 +68,28 @@ video:
 
 # Audio upload configuration (mirrors video.upload)
 audio:
-  base-url: https://www.ganjianping.com/api/v1/public/audios
+  base-url: https://www.ganjianping.com/resources/audios
   upload:
-    directory: /var/www/gjpb/uploads/audios
+    directory: /var/www/gjpb/resources/audios
     max-file-size: 1073741824
     cover-image:
       max-size: 400
 
 # Article upload configuration
 article:
-  cover-image-base-url: https://www.ganjianping.com/api/v1/public/articles/cover-images/
+  cover-image-base-url: https://www.ganjianping.com/resources/articles/cover-images/
   upload:
     # Production directory for article-related assets (covers)
-    directory: /var/www/gjpb/uploads/articles
+    directory: /var/www/gjpb/resources/articles
     # Cover image resize settings for articles
     cover-image:
       max-size: 800
 
 # Generic file upload configuration (for cms_file)
 file:
-  base-url: https://www.ganjianping.com/api/v1/public/files
+  base-url: https://www.ganjianping.com/resources/files
   upload:
     # Production directory for generic file storage (documents, attachments)
-    directory: /var/www/gjpb/uploads/files
+    directory: /var/www/gjpb/resources/files
     # Maximum file size (in bytes) - 1GB
     max-file-size: 1073741824

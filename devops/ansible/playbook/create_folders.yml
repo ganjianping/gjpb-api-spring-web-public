@@ -1,0 +1,31 @@
+- name: Create folders
+  hosts: ubuntu_server
+  become: yes  # This will run the tasks with sudo privileges
+
+  vars:
+    # Sync these directories with production config in src/main/resources/application-prod.yml
+    folders:
+      - /var/www/gjpb/resources/logos
+      - /var/www/gjpb/resources/images
+      - /var/www/gjpb/resources/videos
+      - /var/www/gjpb/resources/audios
+      - /var/www/gjpb/resources/articles
+      - /var/www/gjpb/resources/files
+ 
+  tasks:
+    - name: Ensure parent /var/www/gjpb exists
+      file:
+        path: /var/www/gjpb
+        state: directory
+        mode: '0755'
+
+    - name: Create folders
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop: "{{ folders }}"
+      loop_control:
+        label: "{{ item }}"
+
+
