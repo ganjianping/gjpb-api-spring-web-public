@@ -52,6 +52,14 @@
         proto: tcp
         comment: 'Allow DNS zone transfers / fallbacks (TCP)'
 
+    - name: Allow inbound MySQL (port 3306)
+      community.general.ufw:
+        rule: allow
+        direction: in
+        port: '3306'
+        proto: tcp
+        comment: 'Allow inbound MySQL connections to remote DB servers'
+
     - name: Allow incoming SSH (port 22)
       community.general.ufw:
         rule: allow

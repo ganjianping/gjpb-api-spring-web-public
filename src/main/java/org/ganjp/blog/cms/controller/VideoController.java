@@ -6,6 +6,9 @@ import org.ganjp.blog.cms.model.dto.*;
 import org.ganjp.blog.cms.service.VideoService;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpRange;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
@@ -28,14 +31,36 @@ public class VideoController {
     private final VideoService videoService;
     private final JwtUtils jwtUtils;
 
+    /**
+     * Search videos with pagination and filtering
+     * GET /v1/videos?name=xxx&lang=EN&tags=yyy&isActive=true&page=0&size=20&sort=updatedAt&direction=desc
+     * 
+     * @param page Page number (0-based)
+     * @param size Page size
+     * @param sort Sort field (e.g., updatedAt, createdAt, name)
+     * @param direction Sort direction (asc or desc)
+     * @param name Optional name filter
+     * @param lang Optional language filter
+     * @param tags Optional tags filter
+     * @param isActive Optional active status filter
+     * @return List of videos
+     */
     @GetMapping
     public ResponseEntity<ApiResponse<List<VideoResponse>>> searchVideos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "updatedAt") String sort,
+            @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Video.Language lang,
             @RequestParam(required = false) String tags,
             @RequestParam(required = false) Boolean isActive
     ) {
         try {
+            Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+            
+            Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
             List<VideoResponse> list = videoService.searchVideos(name, lang, tags, isActive);
             return ResponseEntity.ok(ApiResponse.success(list, "Videos found"));
         } catch (Exception e) {

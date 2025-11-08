@@ -12,7 +12,9 @@ import org.ganjp.blog.cms.model.entity.Website;
 import org.ganjp.blog.cms.service.WebsiteService;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,16 +38,33 @@ public class WebsiteController {
      */
     /**
      * Flexible search websites by name, language, tags, and status
-     * GET /v1/websites?name=xxx&lang=EN&tags=yyy&isActive=true
+     * GET /v1/websites?name=xxx&lang=EN&tags=yyy&isActive=true&page=0&size=20&sort=updatedAt&direction=desc
+     * 
+     * @param page Page number (0-based)
+     * @param size Page size
+     * @param sort Sort field (e.g., updatedAt, createdAt, name, displayOrder)
+     * @param direction Sort direction (asc or desc)
+     * @param name Optional name filter
+     * @param lang Optional language filter
+     * @param tags Optional tags filter
+     * @param isActive Optional active status filter
+     * @return Paginated list of websites
      */
     @GetMapping
     public ResponseEntity<ApiResponse<Page<WebsiteResponse>>> getWebsites(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "updatedAt") String sort,
+            @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Website.Language lang,
             @RequestParam(required = false) String tags,
-            @RequestParam(required = false) Boolean isActive,
-            Pageable pageable
+            @RequestParam(required = false) Boolean isActive
     ) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
+            ? Sort.Direction.DESC : Sort.Direction.ASC;
+        
+        Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         Page<WebsiteResponse> websites = websiteService.getWebsites(name, lang, tags, isActive, pageable);
         return ResponseEntity.ok(ApiResponse.success(websites, "Websites retrieved successfully"));
     }

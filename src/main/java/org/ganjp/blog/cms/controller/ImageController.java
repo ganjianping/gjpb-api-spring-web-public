@@ -8,6 +8,9 @@ import org.ganjp.blog.cms.util.CmsUtil;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,8 +34,27 @@ public class ImageController {
     private final ImageService imageService;
     private final JwtUtils jwtUtils;
 
+    /**
+     * Search images with pagination and filtering
+     * GET /v1/images?name=xxx&lang=EN&tags=yyy&isActive=true&page=0&size=20&sort=updatedAt&direction=desc
+     * 
+     * @param page Page number (0-based)
+     * @param size Page size
+     * @param sort Sort field (e.g., updatedAt, createdAt, name)
+     * @param direction Sort direction (asc or desc)
+     * @param name Optional name filter
+     * @param lang Optional language filter
+     * @param tags Optional tags filter
+     * @param isActive Optional active status filter
+     * @param keyword Optional keyword for backward compatibility
+     * @return List of images
+     */
     @GetMapping()
     public ResponseEntity<ApiResponse<List<ImageResponse>>> searchImages(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "updatedAt") String sort,
+            @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Image.Language lang,
             @RequestParam(required = false) String tags,
@@ -40,6 +62,11 @@ public class ImageController {
             @RequestParam(required = false) String keyword
     ) {
         try {
+            Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+            
+            Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
+            
             // backward compatibility: if keyword is provided use the old simple search
             List<ImageResponse> images;
             if (keyword != null && !keyword.isBlank()) {

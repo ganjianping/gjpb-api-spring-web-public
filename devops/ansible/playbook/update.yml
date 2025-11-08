@@ -1,0 +1,21 @@
+- name: Installing Nginx on Ubuntu
+  hosts: all
+  become: yes
+  vars:
+    domains:
+      - www.ganjianping.com
+      
+  tasks:
+  
+    - name: Copy nginx conf files to the server
+      template:
+        src: ../file/nginx.conf
+        dest: /etc/nginx/sites-available/{{item}}.conf
+      with_items: "{{ domains }}"
+      notify: Restart Nginx
+
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted

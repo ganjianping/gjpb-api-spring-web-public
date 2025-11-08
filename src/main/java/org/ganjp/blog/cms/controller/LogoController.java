@@ -12,6 +12,9 @@ import org.ganjp.blog.cms.service.LogoService;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.ganjp.blog.cms.util.CmsUtil;
@@ -40,15 +43,33 @@ public class LogoController {
     private static final String LOGO_NOT_FOUND_ERROR = "Logo not found: ";
 
     /**
-     * Flexible search logos by name, language, tags, and status
-     * GET /v1/logos/search?name=xxx&lang=EN&tags=xxx&isActive=true
+     * Flexible search logos by name, language, tags, and status with pagination
+     * GET /v1/logos?name=xxx&lang=EN&tags=xxx&isActive=true&page=0&size=20&sort=updatedAt&direction=desc
+     * 
+     * @param page Page number (0-based)
+     * @param size Page size
+     * @param sort Sort field (e.g., updatedAt, createdAt, name)
+     * @param direction Sort direction (asc or desc)
+     * @param name Optional name filter
+     * @param lang Optional language filter
+     * @param tags Optional tags filter
+     * @param isActive Optional active status filter
+     * @return List of logos
      */
     @GetMapping
     public ResponseEntity<ApiResponse<List<LogoResponse>>> searchLogos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "updatedAt") String sort,
+            @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) org.ganjp.blog.cms.model.entity.Logo.Language lang,
             @RequestParam(required = false) String tags,
             @RequestParam(required = false) Boolean isActive) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
+            ? Sort.Direction.DESC : Sort.Direction.ASC;
+        
+        Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         List<LogoResponse> logos = logoService.searchLogos(name, lang, tags, isActive);
         return ResponseEntity.ok(ApiResponse.success(logos, "Logos retrieved successfully"));
     }

@@ -9,6 +9,9 @@ import org.ganjp.blog.cms.service.FileService;
 import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +30,36 @@ public class FileController {
     private final FileService fileService;
     private final JwtUtils jwtUtils;
 
+    /**
+     * List files with pagination and filtering
+     * GET /v1/files?name=xxx&lang=EN&tags=yyy&isActive=true&page=0&size=20&sort=updatedAt&direction=desc
+     * 
+     * @param page Page number (0-based)
+     * @param size Page size
+     * @param sort Sort field (e.g., updatedAt, createdAt, name)
+     * @param direction Sort direction (asc or desc)
+     * @param name Optional name filter
+     * @param lang Optional language filter
+     * @param tags Optional tags filter
+     * @param isActive Optional active status filter
+     * @return List of files
+     */
     @GetMapping
     public ResponseEntity<ApiResponse<List<FileResponse>>> listFiles(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "updatedAt") String sort,
+            @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String lang,
             @RequestParam(required = false) String tags,
             @RequestParam(required = false) Boolean isActive) {
         try {
+            Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+            
+            Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
+            
             File.Language langEnum = null;
             if (lang != null && !lang.isBlank()) {
                 try {
