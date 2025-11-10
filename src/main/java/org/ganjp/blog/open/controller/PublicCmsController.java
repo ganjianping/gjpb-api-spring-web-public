@@ -44,7 +44,9 @@ public class PublicCmsController {
                                                          @RequestParam(required = false) String tags,
                                                          @RequestParam(required = false) Boolean isActive,
                                                          @RequestParam(defaultValue = "0") int page,
-                                                         @RequestParam(defaultValue = "20") int size) {
+                                                         @RequestParam(defaultValue = "20") int size,
+                                                         @RequestParam(defaultValue = "displayOrder") String sort,
+                                                         @RequestParam(defaultValue = "asc") String direction) {
         Website.Language l = null;
         if (lang != null && !lang.isBlank()) {
             try { l = Website.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
@@ -60,7 +62,9 @@ public class PublicCmsController {
                                                        @RequestParam(required = false) String tags,
                                                        @RequestParam(required = false) Boolean isActive,
                                                        @RequestParam(defaultValue = "0") int page,
-                                                       @RequestParam(defaultValue = "20") int size) {
+                                                       @RequestParam(defaultValue = "20") int size,
+                                                       @RequestParam(defaultValue = "displayOrder") String sort,
+                                                       @RequestParam(defaultValue = "asc") String direction) {
         Image.Language l = null;
         if (lang != null && !lang.isBlank()) {
             try { l = Image.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
@@ -75,7 +79,9 @@ public class PublicCmsController {
                                                       @RequestParam(required = false) String tags,
                                                       @RequestParam(required = false) Boolean isActive,
                                                       @RequestParam(defaultValue = "0") int page,
-                                                      @RequestParam(defaultValue = "20") int size) {
+                                                      @RequestParam(defaultValue = "20") int size,
+                                                      @RequestParam(defaultValue = "displayOrder") String sort,
+                                                      @RequestParam(defaultValue = "asc") String direction) {
         Logo.Language l = null;
         if (lang != null && !lang.isBlank()) {
             try { l = Logo.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
@@ -90,7 +96,9 @@ public class PublicCmsController {
                                                        @RequestParam(required = false) String tags,
                                                        @RequestParam(required = false) Boolean isActive,
                                                        @RequestParam(defaultValue = "0") int page,
-                                                       @RequestParam(defaultValue = "20") int size) {
+                                                       @RequestParam(defaultValue = "20") int size,
+                                                       @RequestParam(defaultValue = "displayOrder") String sort,
+                                                       @RequestParam(defaultValue = "asc") String direction) {
         org.ganjp.blog.cms.model.entity.Video.Language l = null;
         if (lang != null && !lang.isBlank()) {
             try { l = org.ganjp.blog.cms.model.entity.Video.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
@@ -106,7 +114,9 @@ public class PublicCmsController {
                                                       @RequestParam(required = false) String tags,
                                                       @RequestParam(required = false) Boolean isActive,
                                                       @RequestParam(defaultValue = "0") int page,
-                                                      @RequestParam(defaultValue = "20") int size) {
+                                                      @RequestParam(defaultValue = "20") int size,
+                                                      @RequestParam(defaultValue = "displayOrder") String sort,
+                                                      @RequestParam(defaultValue = "asc") String direction) {
         org.ganjp.blog.cms.model.entity.File.Language l = null;
         if (lang != null && !lang.isBlank()) {
             try { l = org.ganjp.blog.cms.model.entity.File.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
@@ -152,7 +162,7 @@ public class PublicCmsController {
             })
             .collect(Collectors.toList());
 
-        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), list.size());
+        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
     }
 
     @GetMapping("/audios")
@@ -161,7 +171,9 @@ public class PublicCmsController {
                                                        @RequestParam(required = false) String tags,
                                                        @RequestParam(required = false) Boolean isActive,
                                                        @RequestParam(defaultValue = "0") int page,
-                                                       @RequestParam(defaultValue = "20") int size) {
+                                                       @RequestParam(defaultValue = "20") int size,
+                                                       @RequestParam(defaultValue = "displayOrder") String sort,
+                                                       @RequestParam(defaultValue = "asc") String direction) {
         Audio.Language l = null;
         if (lang != null && !lang.isBlank()) {
             try { l = Audio.Language.valueOf(lang.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { return ApiResponse.error(400, "Invalid lang", null); }
@@ -177,7 +189,9 @@ public class PublicCmsController {
                                                          @RequestParam(required = false) String tags,
                                                          @RequestParam(required = false) Boolean isActive,
                                                          @RequestParam(defaultValue = "0") int page,
-                                                         @RequestParam(defaultValue = "20") int size) {
+                                                         @RequestParam(defaultValue = "20") int size,
+                                                         @RequestParam(defaultValue = "displayOrder") String sort,
+                                                         @RequestParam(defaultValue = "asc") String direction) {
         Article.Language l = null;
         if (lang != null && !lang.isBlank()) {
             try {
@@ -215,7 +229,7 @@ public class PublicCmsController {
                 })
                 .collect(Collectors.toList());
 
-        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), list.size());
+        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
     }
 
     /**
@@ -253,7 +267,7 @@ public class PublicCmsController {
             })
             .collect(Collectors.toList());
 
-        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), list.size());
+        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
     }
 
     /**
@@ -311,7 +325,7 @@ public class PublicCmsController {
             })
             .collect(Collectors.toList());
 
-        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), list.size());
+        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
     }
 
     /**
@@ -373,7 +387,7 @@ public class PublicCmsController {
             })
             .collect(Collectors.toList());
 
-        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), list.size());
+        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
     }
 
     /**
@@ -434,7 +448,7 @@ public class PublicCmsController {
             })
             .collect(Collectors.toList());
 
-        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), list.size());
+        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
     }
 
     /**
@@ -474,6 +488,6 @@ public class PublicCmsController {
             })
             .collect(Collectors.toList());
 
-        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), list.size());
+        return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
     }
 }

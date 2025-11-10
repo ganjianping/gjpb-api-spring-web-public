@@ -49,6 +49,7 @@ public class PublicCmsService {
 
     public PaginatedResponse<org.ganjp.blog.cms.model.dto.WebsiteResponse> getWebsites(String name, Website.Language lang, String tags, Boolean isActive, int page, int size) {
         var pageable = PageRequest.of(Math.max(0, page), Math.max(1, size));
+
         var pageResult = websiteService.getWebsites(name, lang, tags, isActive, pageable);
         return PaginatedResponse.of(pageResult.getContent(), pageResult.getNumber(), pageResult.getSize(), pageResult.getTotalElements());
     }
