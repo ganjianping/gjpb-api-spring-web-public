@@ -156,6 +156,7 @@ CREATE TABLE `cms_audio` (
   `cover_image_filename` varchar(500) DEFAULT NULL COMMENT 'Cover image filename (stored in uploads)',
   `description` varchar(500) DEFAULT NULL COMMENT 'Audio description',
   `subtitle` text DEFAULT NULL COMMENT 'Subtitle or transcript',
+  `artist` varchar(255) DEFAULT NULL COMMENT 'Artist or creator name',
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
