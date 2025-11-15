@@ -20,6 +20,7 @@ public class AudioResponse {
     private String sourceName;
     private String subtitle;
     private String description;
+    private String artist;
     private String tags;
     private Audio.Language lang;
     private Integer displayOrder;

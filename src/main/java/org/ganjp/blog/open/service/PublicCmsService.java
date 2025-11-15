@@ -211,6 +211,7 @@ public class PublicCmsService {
                 .title(r.getName())
                 .description(r.getDescription())
                 .subtitle(r.getSubtitle())
+                .artist(r.getArtist())
                 .tags(r.getTags())
                 .lang(r.getLang())
                 .displayOrder(r.getDisplayOrder())

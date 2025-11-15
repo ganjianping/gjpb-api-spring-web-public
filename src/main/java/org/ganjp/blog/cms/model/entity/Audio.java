@@ -40,6 +40,9 @@ public class Audio {
     @Column(columnDefinition = "text")
     private String subtitle;
 
+    @Column(length = 255)
+    private String artist;
+
     @Column(length = 500)
     private String tags;
 

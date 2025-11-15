@@ -37,6 +37,7 @@ public class AudioService {
         if (request.getSourceName() != null) audio.setSourceName(request.getSourceName());
         audio.setDescription(request.getDescription());
         if (request.getSubtitle() != null) audio.setSubtitle(request.getSubtitle());
+        if (request.getArtist() != null) audio.setArtist(request.getArtist());
         audio.setTags(request.getTags());
         if (request.getLang() != null) audio.setLang(request.getLang());
         if (request.getDisplayOrder() != null) audio.setDisplayOrder(request.getDisplayOrder());
@@ -174,6 +175,7 @@ public class AudioService {
 
     if (request.getDescription() != null) audio.setDescription(request.getDescription());
     if (request.getSubtitle() != null) audio.setSubtitle(request.getSubtitle());
+        if (request.getArtist() != null) audio.setArtist(request.getArtist());
         if (request.getTags() != null) audio.setTags(request.getTags());
         if (request.getLang() != null) audio.setLang(request.getLang());
         if (request.getDisplayOrder() != null) audio.setDisplayOrder(request.getDisplayOrder());
@@ -240,6 +242,7 @@ public class AudioService {
         r.setSourceName(a.getSourceName());
         r.setSubtitle(a.getSubtitle());
         r.setDescription(a.getDescription());
+        r.setArtist(a.getArtist());
         r.setTags(a.getTags());
         r.setLang(a.getLang());
         r.setDisplayOrder(a.getDisplayOrder());

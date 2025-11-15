@@ -15,6 +15,7 @@ public class PublicAudioResponse {
     private String title;
     private String description;
     private String subtitle;
+    private String artist;
     private String url;
     private String coverImageUrl;
     private String tags;
