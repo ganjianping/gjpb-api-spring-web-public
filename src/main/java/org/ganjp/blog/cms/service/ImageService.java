@@ -23,6 +23,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.imageio.ImageIO;
+import net.sourceforge.pinyin4j.PinyinHelper;
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType;
+import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
 
 @Service
 @RequiredArgsConstructor
@@ -169,10 +175,10 @@ public class ImageService {
                 extension = "png";
             }
         }
-    BufferedImage resizedImage = resizeImageIfNeeded(originalImage, imageUploadProperties.getResize().getMaxSize());
-    BufferedImage thumbnailImage = resizeImageIfNeeded(originalImage, imageUploadProperties.getResize().getThumbnailSize());
-    String filename = generateFilename(request.getName(), extension, resizedImage.getWidth(), resizedImage.getHeight());
-    String thumbnailFilename = generateFilename(request.getName(), extension, thumbnailImage.getWidth(), thumbnailImage.getHeight());
+        BufferedImage resizedImage = resizeImageIfNeeded(originalImage, imageUploadProperties.getResize().getMaxSize());
+        BufferedImage thumbnailImage = resizeImageIfNeeded(originalImage, imageUploadProperties.getResize().getThumbnailSize());
+        String filename = generateFilename(request.getName(), extension, resizedImage.getWidth(), resizedImage.getHeight());
+        String thumbnailFilename = generateFilename(request.getName(), extension, thumbnailImage.getWidth(), thumbnailImage.getHeight());
 
         Path imagePath = Paths.get(imageUploadProperties.getDirectory(), filename);
         Path thumbPath = Paths.get(imageUploadProperties.getDirectory(), thumbnailFilename);
@@ -236,8 +242,52 @@ public class ImageService {
     }
 
     private String generateFilename(String name, String extension, int width, int height) {
-        String safeName = name.replaceAll("[^a-zA-Z0-9-_]", "_");
+        // Null-safe: if name is null or blank, fall back to 'img'
+        String safeName;
+        if (name == null || name.isBlank()) {
+            safeName = "img";
+        } else {
+            // Convert Chinese characters to pinyin; leave ASCII/Latin characters intact
+            String converted = convertToPinyin(name);
+            safeName = converted.replaceAll("[^a-zA-Z0-9-_]", "_");
+            if (safeName.isBlank()) safeName = "img";
+        }
         return safeName + "_" + width + "_" + height + "_" + System.currentTimeMillis() + "." + extension;
+    }
+
+    private static final HanyuPinyinOutputFormat PINYIN_FORMAT = new HanyuPinyinOutputFormat();
+    static {
+        PINYIN_FORMAT.setCaseType(HanyuPinyinCaseType.LOWERCASE);
+        PINYIN_FORMAT.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
+        PINYIN_FORMAT.setVCharType(HanyuPinyinVCharType.WITH_V);
+    }
+
+    /**
+     * Convert Chinese characters in the input string to pinyin. Non-Chinese characters are kept as-is.
+     * Uses the first pinyin reading when multiple exist.
+     */
+    private String convertToPinyin(String input) {
+        StringBuilder sb = new StringBuilder();
+        for (char ch : input.toCharArray()) {
+            if (isChinese(ch)) {
+                try {
+                    String[] pinyins = PinyinHelper.toHanyuPinyinStringArray(ch, PINYIN_FORMAT);
+                    if (pinyins != null && pinyins.length > 0) {
+                        sb.append(pinyins[0]);
+                    }
+                } catch (BadHanyuPinyinOutputFormatCombination e) {
+                    log.debug("Pinyin conversion failed for char {}", ch, e);
+                }
+            } else {
+                sb.append(ch);
+            }
+        }
+        return sb.toString();
+    }
+
+    private boolean isChinese(char ch) {
+        Character.UnicodeScript sc = Character.UnicodeScript.of(ch);
+        return sc == Character.UnicodeScript.HAN;
     }
 
     private ImageResponse toResponse(Image image) {
