@@ -166,8 +166,10 @@ public class ArticleService {
         if (request.getContent() != null) a.setContent(request.getContent());
         if (request.getOriginalUrl() != null) a.setOriginalUrl(request.getOriginalUrl());
         if (request.getSourceName() != null) a.setSourceName(request.getSourceName());
-    if (request.getCoverImageFilename() != null) a.setCoverImageFilename(request.getCoverImageFilename());
-    if (request.getCoverImageOriginalUrl() != null) a.setCoverImageOriginalUrl(request.getCoverImageOriginalUrl());
+        // capture existing cover image original URL to decide whether we need to re-download
+        String existingCoverOriginalUrl = a.getCoverImageOriginalUrl();
+        if (request.getCoverImageFilename() != null) a.setCoverImageFilename(request.getCoverImageFilename());
+        // do NOT set coverImageOriginalUrl here unconditionally — handle it only when the URL changes (to avoid re-downloading)
 
         try {
             String articleDir = uploadProperties.getDirectory();
@@ -218,66 +220,71 @@ public class ArticleService {
 
                 a.setCoverImageFilename(coverFilename);
             } else if (request.getCoverImageOriginalUrl() != null && !request.getCoverImageOriginalUrl().isBlank()) {
-                // download remote image and replace
+                // download remote image and replace only if the original URL changed
                 String url = request.getCoverImageOriginalUrl();
-                String coverFilename = request.getCoverImageFilename();
-                if (coverFilename == null || coverFilename.isBlank()) {
-                    try {
-                        java.net.URL u = new java.net.URL(url);
-                        String p = u.getPath();
-                        int last = p.lastIndexOf('/');
-                        String lastSeg = last >= 0 ? p.substring(last + 1) : p;
-                        if (lastSeg == null || lastSeg.isBlank()) lastSeg = System.currentTimeMillis() + "-cover";
-                        coverFilename = lastSeg.replaceAll("\\s+", "-");
-                    } catch (Exception ex) {
-                        coverFilename = System.currentTimeMillis() + "-cover";
-                    }
-                }
-
-                Path imagesDir = Path.of(articleDir, "cover-images");
-                Files.createDirectories(imagesDir);
-                Path coverTarget = imagesDir.resolve(coverFilename);
-
-                int suffix = 1;
-                String base = coverFilename;
-                String ext = "";
-                int dot = coverFilename.lastIndexOf('.');
-                if (dot > 0) {
-                    base = coverFilename.substring(0, dot);
-                    ext = coverFilename.substring(dot);
-                }
-                while (Files.exists(coverTarget)) {
-                    coverFilename = base + "-" + suffix + ext;
-                    coverTarget = imagesDir.resolve(coverFilename);
-                    suffix++;
-                }
-
-                if (a.getCoverImageFilename() != null) {
-                    try { Path old = imagesDir.resolve(a.getCoverImageFilename()); Files.deleteIfExists(old); } catch (IOException ignored) {}
-                }
-
-                try (java.io.InputStream is = new java.net.URL(url).openStream()) {
-                    try {
-                        byte[] data = is.readAllBytes();
-                        java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(data);
-                        BufferedImage original = ImageIO.read(bis);
-                        if (original != null) {
-                            BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
-                            String writeExt = "png";
-                            if (dot > 0 && dot < coverFilename.length() - 1) writeExt = coverFilename.substring(dot + 1).toLowerCase();
-                            ImageIO.write(resized, writeExt, coverTarget.toFile());
-                        } else {
-                            Files.write(coverTarget, data);
-                        }
-                    } catch (IOException ex) {
-                        try (java.io.InputStream is2 = new java.net.URL(url).openStream()) {
-                            Files.copy(is2, coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                // if the URL is identical to the existing one, skip downloading
+                if (url.equals(existingCoverOriginalUrl)) {
+                    // nothing to do — keep existing cover image file and filename
+                } else {
+                    String coverFilename = request.getCoverImageFilename();
+                    if (coverFilename == null || coverFilename.isBlank()) {
+                        try {
+                            java.net.URL u = new java.net.URL(url);
+                            String p = u.getPath();
+                            int last = p.lastIndexOf('/');
+                            String lastSeg = last >= 0 ? p.substring(last + 1) : p;
+                            if (lastSeg == null || lastSeg.isBlank()) lastSeg = System.currentTimeMillis() + "-cover";
+                            coverFilename = lastSeg.replaceAll("\\s+", "-");
+                        } catch (Exception ex) {
+                            coverFilename = System.currentTimeMillis() + "-cover";
                         }
                     }
-                }
 
-                a.setCoverImageFilename(coverFilename);
-                a.setCoverImageOriginalUrl(request.getCoverImageOriginalUrl());
+                    Path imagesDir = Path.of(articleDir, "cover-images");
+                    Files.createDirectories(imagesDir);
+                    Path coverTarget = imagesDir.resolve(coverFilename);
+
+                    int suffix = 1;
+                    String base = coverFilename;
+                    String ext = "";
+                    int dot = coverFilename.lastIndexOf('.');
+                    if (dot > 0) {
+                        base = coverFilename.substring(0, dot);
+                        ext = coverFilename.substring(dot);
+                    }
+                    while (Files.exists(coverTarget)) {
+                        coverFilename = base + "-" + suffix + ext;
+                        coverTarget = imagesDir.resolve(coverFilename);
+                        suffix++;
+                    }
+
+                    if (a.getCoverImageFilename() != null) {
+                        try { Path old = imagesDir.resolve(a.getCoverImageFilename()); Files.deleteIfExists(old); } catch (IOException ignored) {}
+                    }
+
+                    try (java.io.InputStream is = new java.net.URL(url).openStream()) {
+                        try {
+                            byte[] data = is.readAllBytes();
+                            java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(data);
+                            BufferedImage original = ImageIO.read(bis);
+                            if (original != null) {
+                                BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
+                                String writeExt = "png";
+                                if (dot > 0 && dot < coverFilename.length() - 1) writeExt = coverFilename.substring(dot + 1).toLowerCase();
+                                ImageIO.write(resized, writeExt, coverTarget.toFile());
+                            } else {
+                                Files.write(coverTarget, data);
+                            }
+                        } catch (IOException ex) {
+                            try (java.io.InputStream is2 = new java.net.URL(url).openStream()) {
+                                Files.copy(is2, coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                            }
+                        }
+                    }
+
+                    a.setCoverImageFilename(coverFilename);
+                    a.setCoverImageOriginalUrl(request.getCoverImageOriginalUrl());
+                }
             }
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to save cover image: " + e.getMessage());
