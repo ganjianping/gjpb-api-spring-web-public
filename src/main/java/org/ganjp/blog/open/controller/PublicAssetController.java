@@ -166,6 +166,29 @@ public class PublicAssetController {
         }
     }
 
+    @GetMapping("/articles/content-images/{filename}")
+    public ResponseEntity<Resource> viewArticleContentImage(@PathVariable String filename) {
+        try {
+            File imageFile = publicAssetService.getArticleContentImageFile(filename);
+            if (imageFile == null || !imageFile.exists()) {
+                log.error("Article content image not found: {}", filename);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            Resource resource = new FileSystemResource(imageFile);
+            String contentType = org.ganjp.blog.cms.util.CmsUtil.determineContentType(filename);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (IllegalArgumentException e) {
+            log.error("Article content image not found: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            log.error("Error reading article content image: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     /**
      * Public download of a generic CMS file
      * GET /v1/open/files/{filename}

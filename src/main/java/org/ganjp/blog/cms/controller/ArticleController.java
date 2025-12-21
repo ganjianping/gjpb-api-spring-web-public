@@ -62,7 +62,7 @@ public class ArticleController {
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
             
             Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-            List<ArticleResponse> list = articleService.searchArticles(title, lang, tags, isActive);
+            List<ArticleResponse> list = articleService.searchArticles(title, lang, tags, isActive, pageable);
             return ResponseEntity.ok(ApiResponse.success(list, "Articles found"));
         } catch (Exception e) {
             log.error("Error searching articles", e);

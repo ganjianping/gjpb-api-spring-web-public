@@ -7,6 +7,8 @@ import org.ganjp.blog.cms.model.dto.ArticleResponse;
 import org.ganjp.blog.cms.model.dto.ArticleUpdateRequest;
 import org.ganjp.blog.cms.model.entity.Article;
 import org.ganjp.blog.cms.repository.ArticleRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -334,6 +336,11 @@ public class ArticleService {
     public List<ArticleResponse> searchArticles(String title, org.ganjp.blog.cms.model.entity.Article.Language lang, String tags, Boolean isActive) {
         List<Article> list = articleRepository.searchArticles(title, lang, tags, isActive);
         return list.stream().map(this::toResponse).toList();
+    }
+
+    public List<ArticleResponse> searchArticles(String title, org.ganjp.blog.cms.model.entity.Article.Language lang, String tags, Boolean isActive, Pageable pageable) {
+        Page<Article> page = articleRepository.findArticlesByCriteria(title, lang, tags, isActive, pageable);
+        return page.map(this::toResponse).getContent();
     }
 
     private ArticleResponse toResponse(Article a) {

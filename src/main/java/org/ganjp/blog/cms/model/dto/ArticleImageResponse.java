@@ -15,6 +15,7 @@ public class ArticleImageResponse {
     private String articleId;
     private String articleTitle;
     private String filename;
+    private String fileUrl;
     private String originalUrl;
     private Integer width;
     private Integer height;

@@ -38,6 +38,8 @@ public class PublicAssetService {
     private final org.ganjp.blog.cms.service.AudioService audioService;
     private final org.ganjp.blog.cms.repository.ArticleRepository articleRepository;
     private final org.ganjp.blog.cms.service.ArticleService articleService;
+    private final org.ganjp.blog.cms.repository.ArticleImageRepository articleImageRepository;
+    private final org.ganjp.blog.cms.service.ArticleImageService articleImageService;
     private final org.ganjp.blog.cms.repository.FileRepository fileRepository;
     private final org.ganjp.blog.cms.service.FileService fileService;
     /**
@@ -139,6 +141,17 @@ public class PublicAssetService {
             throw new IllegalArgumentException("Article cover image not found or not active with filename: " + filename);
         }
         return articleService.getCoverImageFileByFilename(filename);
+    }
+
+    /**
+     * Get article content image file by filename for public viewing
+     */
+    public File getArticleContentImageFile(String filename) throws IOException {
+        log.debug("Fetching public article content image file: {}", filename);
+        if (!articleImageRepository.existsByFilename(filename)) {
+            throw new IllegalArgumentException("Article content image not found or not active with filename: " + filename);
+        }
+        return articleImageService.getImageFile(filename);
     }
 
     /**

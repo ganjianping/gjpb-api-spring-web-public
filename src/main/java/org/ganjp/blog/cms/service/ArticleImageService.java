@@ -46,6 +46,12 @@ public class ArticleImageService {
         }
     }
 
+    public java.io.File getImageFile(String filename) {
+        Path uploadPath = Paths.get(articleProperties.getContentImage().getUpload().getDirectory());
+        Path filePath = uploadPath.resolve(filename);
+        return filePath.toFile();
+    }
+
     public ArticleImageResponse getArticleImageById(String id) {
         Optional<ArticleImage> imageOpt = articleImageRepository.findByIdAndIsActiveTrue(id);
         return imageOpt.map(this::toResponse).orElse(null);
@@ -206,11 +212,16 @@ public class ArticleImageService {
     }
 
     private ArticleImageResponse toResponse(ArticleImage image) {
+        String fileUrl = null;
+        if (image.getFilename() != null) {
+            fileUrl = articleProperties.getContentImage().getBaseUrl() + "/" + image.getFilename();
+        }
         return ArticleImageResponse.builder()
                 .id(image.getId())
                 .articleId(image.getArticleId())
                 .articleTitle(image.getArticleTitle())
                 .filename(image.getFilename())
+                .fileUrl(fileUrl)
                 .originalUrl(image.getOriginalUrl())
                 .width(image.getWidth())
                 .height(image.getHeight())
