@@ -47,7 +47,9 @@ public class AudioService {
             MultipartFile file = request.getFile();
             String originalFilename = file.getOriginalFilename();
             String filename;
-            if (originalFilename == null || originalFilename.isBlank()) {
+            if (request.getFilename() != null && !request.getFilename().isBlank() && request.getFilename().lastIndexOf(".") > 0) {
+                filename = request.getFilename();
+            } else if (originalFilename == null || originalFilename.isBlank()) {
                 filename = System.currentTimeMillis() + "-audio";
             } else {
                 filename = originalFilename.replaceAll("\\s+", "-");
@@ -72,7 +74,9 @@ public class AudioService {
             MultipartFile cover = request.getCoverImageFile();
             String coverOriginal = cover.getOriginalFilename();
             String coverFilename;
-            if (coverOriginal == null || coverOriginal.isBlank()) {
+            if (request.getCoverImageFilename() != null && !request.getCoverImageFilename().isBlank() && request.getCoverImageFilename().lastIndexOf(".") > 0) {
+                coverFilename = request.getCoverImageFilename();
+            } else if (coverOriginal == null || coverOriginal.isBlank()) {
                 coverFilename = System.currentTimeMillis() + "-cover";
             } else {
                 coverFilename = coverOriginal.replaceAll("\\s+", "-");
@@ -117,7 +121,6 @@ public class AudioService {
         if (opt.isEmpty()) return null;
         Audio audio = opt.get();
         if (request.getName() != null) audio.setName(request.getName());
-        if (request.getFilename() != null) audio.setFilename(request.getFilename());
         if (request.getOriginalUrl() != null) audio.setOriginalUrl(request.getOriginalUrl());
         if (request.getSourceName() != null) audio.setSourceName(request.getSourceName());
         if (request.getCoverImageFilename() != null) audio.setCoverImageFilename(request.getCoverImageFilename());
@@ -169,12 +172,51 @@ public class AudioService {
                 }
                 audio.setCoverImageFilename(coverFilename);
             }
+
+            // handle cover image filename change only (rename existing file)
+            if (request.getCoverImageFilename() != null &&
+                    request.getCoverImageFilename().lastIndexOf('.') > 0 &&
+                    !request.getCoverImageFilename().equals(audio.getCoverImageFilename())) {
+                // change the image file name in local storage only (no re-download), implying a rename
+                Path coverImagesDir = Path.of(uploadProperties.getDirectory(), "cover-images");
+                Path oldPath = coverImagesDir.resolve(audio.getCoverImageFilename());
+                Path newPath = coverImagesDir.resolve(request.getCoverImageFilename());
+                // if newPath exists, it will not be overwritten
+                if (Files.exists(newPath)) {
+                    throw new IllegalArgumentException("Cover image file with name " + request.getCoverImageFilename() + " already exists");
+                }
+                
+                if (Files.exists(oldPath)) {
+                    Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                }
+
+                audio.setCoverImageFilename(request.getCoverImageFilename());
+            }
+
+            // handle audio filename change (rename existing file)
+            if (request.getFilename() != null && 
+                    request.getFilename().lastIndexOf('.') > 0 &&
+                    !request.getFilename().equals(audio.getFilename())) {
+                Path audioDir = Path.of(uploadProperties.getDirectory());
+                Path oldPath = audioDir.resolve(audio.getFilename());
+                Path newPath = audioDir.resolve(request.getFilename());
+                // if newPath exists, it will not be overwritten
+                if (Files.exists(newPath)) {
+                    throw new IllegalArgumentException("Audio file with name " + request.getFilename() + " already exists");
+                }
+
+                if (Files.exists(oldPath)) {
+                    Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                }
+
+                audio.setFilename(request.getFilename());
+            }
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to save cover image: " + e.getMessage());
         }
 
-    if (request.getDescription() != null) audio.setDescription(request.getDescription());
-    if (request.getSubtitle() != null) audio.setSubtitle(request.getSubtitle());
+        if (request.getDescription() != null) audio.setDescription(request.getDescription());
+        if (request.getSubtitle() != null) audio.setSubtitle(request.getSubtitle());
         if (request.getArtist() != null) audio.setArtist(request.getArtist());
         if (request.getTags() != null) audio.setTags(request.getTags());
         if (request.getLang() != null) audio.setLang(request.getLang());

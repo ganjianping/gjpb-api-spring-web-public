@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 public class AudioCreateRequest {
     private String name;
+    private String filename;
     private MultipartFile file;
     private String originalUrl;
     private String sourceName;

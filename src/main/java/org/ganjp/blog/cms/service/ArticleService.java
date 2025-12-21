@@ -306,7 +306,7 @@ public class ArticleService {
                 }
             }
 
-                // request.getCoverImageFilename() has extension — rename existing file if needed
+            // handle cover image filename change only (rename existing file)
             if (request.getCoverImageFilename() != null &&
                     request.getCoverImageFilename().lastIndexOf('.') > 0 &&
                     !request.getCoverImageFilename().equals(a.getCoverImageFilename())) {
