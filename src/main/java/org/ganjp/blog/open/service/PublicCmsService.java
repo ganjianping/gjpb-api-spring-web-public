@@ -34,8 +34,7 @@ public class PublicCmsService {
     private final org.ganjp.blog.cms.service.FileService fileService;
     private final AudioService audioService;
     private final ArticleService articleService;
-    @Value("${article.cover-image-base-url:}")
-    private String articleCoverImageBaseUrl;
+    private final org.ganjp.blog.cms.config.ArticleProperties articleProperties;
     @Value("${image.base-url:}")
     private String imageBaseUrl;
     @Value("${logo.base-url:}")
@@ -247,7 +246,7 @@ public class PublicCmsService {
                 .updatedAt(r.getUpdatedAt());
 
             String cimg = r.getCoverImageFilename();
-            b.coverImageUrl(joinBaseAndPath(articleCoverImageBaseUrl, cimg));
+            b.coverImageUrl(joinBaseAndPath(articleProperties.getCoverImage().getBaseUrl(), cimg));
 
             return b.build();
         }).toList();
@@ -275,16 +274,11 @@ public class PublicCmsService {
         // Build coverImageUrl from coverImageFilename using configured base if available
         String cimg = r.getCoverImageFilename();
         if (cimg != null && !cimg.isBlank()) {
-            if (articleCoverImageBaseUrl != null && !articleCoverImageBaseUrl.isBlank()) {
-                String prefix = articleCoverImageBaseUrl;
-                if (!prefix.endsWith("/") && !cimg.startsWith("/")) prefix = prefix + "/";
-                else if (prefix.endsWith("/") && cimg.startsWith("/")) cimg = cimg.substring(1);
-                b.coverImageUrl(prefix + cimg);
-            } else if (cimg.startsWith("http") || cimg.startsWith("/")) {
-                b.coverImageUrl(cimg);
-            }
+            b.coverImageUrl(joinBaseAndPath(articleProperties.getCoverImage().getBaseUrl(), cimg));
         }
 
         return b.build();
     }
+
+
 }

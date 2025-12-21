@@ -1,7 +1,7 @@
 package org.ganjp.blog.cms.service;
 
 import lombok.RequiredArgsConstructor;
-import org.ganjp.blog.cms.config.ArticleUploadProperties;
+import org.ganjp.blog.cms.config.ArticleProperties;
 import org.ganjp.blog.cms.model.dto.ArticleCreateRequest;
 import org.ganjp.blog.cms.model.dto.ArticleResponse;
 import org.ganjp.blog.cms.model.dto.ArticleUpdateRequest;
@@ -25,7 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ArticleService {
     private final ArticleRepository articleRepository;
-    private final ArticleUploadProperties uploadProperties; // article-specific upload config
+    private final ArticleProperties articleProperties;
 
     public ArticleResponse createArticle(ArticleCreateRequest request, String userId) {
         Article a = new Article();
@@ -43,8 +43,8 @@ public class ArticleService {
         if (request.getCoverImageOriginalUrl() != null) a.setCoverImageOriginalUrl(request.getCoverImageOriginalUrl());
         // cover image
         try {
-            // determine article upload directory (from article.upload.directory)
-            String articleDir = uploadProperties.getDirectory();
+            // determine article upload directory (from article.cover-image.upload.directory)
+            String articleDir = articleProperties.getCoverImage().getUpload().getDirectory();
 
             if (request.getCoverImageFile() != null && !request.getCoverImageFile().isEmpty()) {
                 MultipartFile cover = request.getCoverImageFile();
@@ -66,7 +66,7 @@ public class ArticleService {
                 try {
                     BufferedImage original = ImageIO.read(cover.getInputStream());
                     if (original != null) {
-                        BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
+                        BufferedImage resized = resizeImageIfNeeded(original, articleProperties.getCoverImage().getUpload().getResize().getMaxSize());
                         String ext = "png";
                         int dot = coverFilename.lastIndexOf('.');
                         if (dot > 0 && dot < coverFilename.length() - 1) ext = coverFilename.substring(dot + 1).toLowerCase();
@@ -122,7 +122,7 @@ public class ArticleService {
                         java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(data);
                         BufferedImage original = ImageIO.read(bis);
                         if (original != null) {
-                            BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
+                            BufferedImage resized = resizeImageIfNeeded(original, articleProperties.getCoverImage().getUpload().getResize().getMaxSize());
                             String writeExt = "png";
                             if (dot > 0 && dot < coverFilename.length() - 1) writeExt = coverFilename.substring(dot + 1).toLowerCase();
                             ImageIO.write(resized, writeExt, coverTarget.toFile());
@@ -172,7 +172,7 @@ public class ArticleService {
         // do NOT set coverImageOriginalUrl here unconditionally — handle it only when the URL changes (to avoid re-downloading)
 
         try {
-            String articleDir = uploadProperties.getDirectory();
+            String articleDir = articleProperties.getCoverImage().getUpload().getDirectory();
             if (request.getCoverImageFile() != null && !request.getCoverImageFile().isEmpty()) {
                 MultipartFile cover = request.getCoverImageFile();
                 String coverOriginal = cover.getOriginalFilename();
@@ -207,7 +207,7 @@ public class ArticleService {
                 try {
                     BufferedImage original = ImageIO.read(cover.getInputStream());
                     if (original != null) {
-                        BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
+                        BufferedImage resized = resizeImageIfNeeded(original, articleProperties.getCoverImage().getUpload().getResize().getMaxSize());
                         String writeExt = "png";
                         if (dot > 0 && dot < coverFilename.length() - 1) writeExt = coverFilename.substring(dot + 1).toLowerCase();
                         ImageIO.write(resized, writeExt, coverTarget.toFile());
@@ -268,7 +268,7 @@ public class ArticleService {
                             java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(data);
                             BufferedImage original = ImageIO.read(bis);
                             if (original != null) {
-                                BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
+                                BufferedImage resized = resizeImageIfNeeded(original, articleProperties.getCoverImage().getUpload().getResize().getMaxSize());
                                 String writeExt = "png";
                                 if (dot > 0 && dot < coverFilename.length() - 1) writeExt = coverFilename.substring(dot + 1).toLowerCase();
                                 ImageIO.write(resized, writeExt, coverTarget.toFile());
@@ -324,7 +324,7 @@ public class ArticleService {
 
     public java.io.File getCoverImageFileByFilename(String filename) {
         if (filename == null) throw new IllegalArgumentException("filename is null");
-        Path coverPath = Path.of(uploadProperties.getDirectory(), "cover-images", filename);
+        Path coverPath = Path.of(articleProperties.getCoverImage().getUpload().getDirectory(), "", filename);
         if (!Files.exists(coverPath)) {
             throw new IllegalArgumentException("Cover image file not found: " + filename);
         }

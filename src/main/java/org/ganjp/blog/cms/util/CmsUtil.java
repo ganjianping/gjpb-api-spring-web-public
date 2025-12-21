@@ -3,6 +3,20 @@ package org.ganjp.blog.cms.util;
 public class CmsUtil {
     private CmsUtil() {}
     /**
+     * Get file extension from filename
+     * @param filename The filename
+     * @return The extension (without dot) or empty string
+     */
+    public static String getFileExtension(String filename) {
+        if (filename == null) return "";
+        int dotIndex = filename.lastIndexOf('.');
+        if (dotIndex >= 0 && dotIndex < filename.length() - 1) {
+            return filename.substring(dotIndex + 1);
+        }
+        return "";
+    }
+
+    /**
      * Determine content type based on file extension
      * @param filename The filename to check
      * @return Content type string (e.g., "image/png", "image/svg+xml")

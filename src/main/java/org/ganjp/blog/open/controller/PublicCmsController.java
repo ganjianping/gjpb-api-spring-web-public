@@ -24,6 +24,7 @@ import java.util.Locale;
 public class PublicCmsController {
     private final PublicCmsService publicCmsService;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    private final org.ganjp.blog.cms.config.ArticleProperties articleProperties;
     @Value("${logo.base-url:}")
     private String logoBaseUrl;
     @Value("${image.base-url:}")
@@ -32,8 +33,6 @@ public class PublicCmsController {
     private String videoBaseUrl;
     @Value("${audio.base-url:}")
     private String audioBaseUrl;
-    @Value("${article.cover-image-base-url:}")
-    private String articleCoverImageBaseUrl;
     @Value("${file.base-url:}")
     private String fileBaseUrl;
 
@@ -452,7 +451,7 @@ public class PublicCmsController {
     }
 
     /**
-     * Sanitize articles: create coverImageUrl by prefixing articleCoverImageBaseUrl to
+     * Sanitize articles: create coverImageUrl by prefixing articleProperties.coverImage.baseUrl to
      * coverImageFilename when it is not absolute, then remove the original
      * coverImageFilename field and other internal props.
      */
@@ -467,10 +466,11 @@ public class PublicCmsController {
                 Object cimgObj = m.get("coverImageFilename");
                 if (cimgObj instanceof String) {
                     String cimg = (String) cimgObj;
-                    if (!cimg.isBlank() && articleCoverImageBaseUrl != null && !articleCoverImageBaseUrl.isBlank()) {
-                        String prefix = articleCoverImageBaseUrl;
-                        if (!prefix.endsWith("/") && !cimg.startsWith("/")) prefix = prefix + "/";
-                        else if (prefix.endsWith("/") && cimg.startsWith("/")) cimg = cimg.substring(1);
+                    String baseUrl = articleProperties.getCoverImage().getBaseUrl();
+                    if (!cimg.isBlank() && baseUrl != null && !baseUrl.isBlank()) {
+                        String prefix = baseUrl;
+                        if (!prefix.endsWith("/")) prefix = prefix + "/";
+                        if (cimg.startsWith("/")) cimg = cimg.substring(1);
                         m.put("coverImageUrl", prefix + cimg);
                     } else if (!cimg.isBlank() && (cimg.startsWith("http") || cimg.startsWith("/"))) {
                         m.put("coverImageUrl", cimg);
