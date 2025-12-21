@@ -50,7 +50,9 @@ public class VideoService {
             String originalFilename = file.getOriginalFilename();
             // prefer original filename; if missing, fall back to timestamp-based name
             String filename;
-            if (originalFilename == null || originalFilename.isBlank()) {
+            if (request.getFilename() != null && !request.getFilename().isBlank()) {
+                filename = request.getFilename();
+            } else if (originalFilename == null || originalFilename.isBlank()) {
                 filename = System.currentTimeMillis() + "-video";
             } else {
                 filename = originalFilename.replaceAll("\\s+", "-");
@@ -76,7 +78,9 @@ public class VideoService {
             MultipartFile cover = request.getCoverImageFile();
             String coverOriginal = cover.getOriginalFilename();
             String coverFilename;
-            if (coverOriginal == null || coverOriginal.isBlank()) {
+            if (request.getCoverImageFilename() != null && !request.getCoverImageFilename().isBlank() && request.getCoverImageFilename().lastIndexOf(".") > 0) {
+                coverFilename = request.getCoverImageFilename();
+            } else if (coverOriginal == null || coverOriginal.isBlank()) {
                 coverFilename = System.currentTimeMillis() + "-cover";
             } else {
                 coverFilename = coverOriginal.replaceAll("\\s+", "-");
@@ -125,14 +129,10 @@ public class VideoService {
         if (opt.isEmpty()) return null;
         Video video = opt.get();
         if (request.getName() != null) video.setName(request.getName());
-    // originalUrl and sourceName removed
-    if (request.getFilename() != null) video.setFilename(request.getFilename());
-    if (request.getOriginalUrl() != null) video.setOriginalUrl(request.getOriginalUrl());
-    if (request.getSourceName() != null) video.setSourceName(request.getSourceName());
-        // handle explicit cover filename update
-        if (request.getCoverImageFilename() != null) {
-            video.setCoverImageFilename(request.getCoverImageFilename());
-        }
+        // originalUrl and sourceName removed
+        if (request.getOriginalUrl() != null) video.setOriginalUrl(request.getOriginalUrl());
+        if (request.getSourceName() != null) video.setSourceName(request.getSourceName());
+
         // handle uploaded cover image replacement
         try {
             if (request.getCoverImageFile() != null && !request.getCoverImageFile().isEmpty()) {
@@ -186,6 +186,45 @@ public class VideoService {
                     Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
                 }
                 video.setCoverImageFilename(coverFilename);
+            }
+
+            // handle cover image filename change only (rename existing file)
+            if (request.getCoverImageFilename() != null &&
+                    request.getCoverImageFilename().lastIndexOf('.') > 0 &&
+                    !request.getCoverImageFilename().equals(video.getCoverImageFilename())) {
+                // change the image file name in local storage only (no re-download), implying a rename
+                Path coverImagesDir = Path.of(uploadProperties.getDirectory(), "cover-images");
+                Path oldPath = coverImagesDir.resolve(video.getCoverImageFilename());
+                Path newPath = coverImagesDir.resolve(request.getCoverImageFilename());
+                // if newPath exists, it will not be overwritten
+                if (Files.exists(newPath)) {
+                    throw new IllegalArgumentException("Cover image file with name " + request.getCoverImageFilename() + " already exists");
+                }
+                
+                if (Files.exists(oldPath)) {
+                    Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                }
+
+                video.setCoverImageFilename(request.getCoverImageFilename());
+            }
+
+            // handle video filename change (rename existing file)
+            if (request.getFilename() != null && 
+                    request.getFilename().lastIndexOf('.') > 0 &&
+                    !request.getFilename().equals(video.getFilename())) {
+                Path videoDir = Path.of(uploadProperties.getDirectory());
+                Path oldPath = videoDir.resolve(video.getFilename());
+                Path newPath = videoDir.resolve(request.getFilename());
+                // if newPath exists, it will not be overwritten
+                if (Files.exists(newPath)) {
+                    throw new IllegalArgumentException("Audio file with name " + request.getFilename() + " already exists");
+                }
+
+                if (Files.exists(oldPath)) {
+                    Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                }
+
+                video.setFilename(request.getFilename());
             }
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to save cover image: " + e.getMessage());

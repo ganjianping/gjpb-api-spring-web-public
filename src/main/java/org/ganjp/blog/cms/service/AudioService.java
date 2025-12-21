@@ -123,7 +123,6 @@ public class AudioService {
         if (request.getName() != null) audio.setName(request.getName());
         if (request.getOriginalUrl() != null) audio.setOriginalUrl(request.getOriginalUrl());
         if (request.getSourceName() != null) audio.setSourceName(request.getSourceName());
-        if (request.getCoverImageFilename() != null) audio.setCoverImageFilename(request.getCoverImageFilename());
 
         try {
             if (request.getCoverImageFile() != null && !request.getCoverImageFile().isEmpty()) {
