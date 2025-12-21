@@ -46,7 +46,7 @@ public class ArticleService {
         // cover image
         try {
             // determine article upload directory (from article.cover-image.upload.directory)
-            String articleDir = articleProperties.getCoverImage().getUpload().getDirectory();
+            String articleCoverImageDir = articleProperties.getCoverImage().getUpload().getDirectory();
 
             if (request.getCoverImageFile() != null && !request.getCoverImageFile().isEmpty()) {
                 MultipartFile cover = request.getCoverImageFile();
@@ -57,7 +57,7 @@ public class ArticleService {
                 } else {
                     coverFilename = coverOriginal.replaceAll("\\s+", "-");
                 }
-                Path imagesDir = Path.of(articleDir, "cover-images");
+                Path imagesDir = Path.of(articleCoverImageDir);
                 Files.createDirectories(imagesDir);
                 Path coverTarget = imagesDir.resolve(coverFilename);
 
@@ -98,7 +98,7 @@ public class ArticleService {
                     }
                 }
 
-                Path imagesDir = Path.of(articleDir, "cover-images");
+                Path imagesDir = Path.of(articleCoverImageDir);
                 Files.createDirectories(imagesDir);
                 Path coverTarget = imagesDir.resolve(coverFilename);
 
@@ -163,28 +163,45 @@ public class ArticleService {
         Optional<Article> opt = articleRepository.findById(id);
         if (opt.isEmpty()) return null;
         Article a = opt.get();
+
+        if ("null".equals(request.getOriginalUrl())) {
+            a.setOriginalUrl(null);
+            request.setOriginalUrl(null);
+        }
+        if ("null".equals(request.getSourceName())) {
+            a.setSourceName(null);
+            request.setSourceName(null);
+        }
+        if ("null".equals(request.getCoverImageOriginalUrl())) {
+            a.setCoverImageOriginalUrl(null);
+            request.setCoverImageOriginalUrl(null);
+        }
+        if ("null".equals(request.getCoverImageFilename())) {
+            a.setCoverImageFilename(null);
+            request.setCoverImageFilename(null);
+        }
+
         if (request.getTitle() != null) a.setTitle(request.getTitle());
         if (request.getSummary() != null) a.setSummary(request.getSummary());
         if (request.getContent() != null) a.setContent(request.getContent());
         if (request.getOriginalUrl() != null) a.setOriginalUrl(request.getOriginalUrl());
         if (request.getSourceName() != null) a.setSourceName(request.getSourceName());
-        // capture existing cover image original URL to decide whether we need to re-download
+        // capture existing cover imgage original URL to decide whether we need to re-download
         String existingCoverOriginalUrl = a.getCoverImageOriginalUrl();
-        if (request.getCoverImageFilename() != null) a.setCoverImageFilename(request.getCoverImageFilename());
         // do NOT set coverImageOriginalUrl here unconditionally — handle it only when the URL changes (to avoid re-downloading)
 
         try {
-            String articleDir = articleProperties.getCoverImage().getUpload().getDirectory();
+            String articleCoverImageDir = articleProperties.getCoverImage().getUpload().getDirectory();
             if (request.getCoverImageFile() != null && !request.getCoverImageFile().isEmpty()) {
-                MultipartFile cover = request.getCoverImageFile();
-                String coverOriginal = cover.getOriginalFilename();
+                MultipartFile coverFile = request.getCoverImageFile();
+                String coverOriginalFilename = coverFile.getOriginalFilename();
                 String coverFilename;
-                if (coverOriginal == null || coverOriginal.isBlank()) {
+                if (coverOriginalFilename == null || coverOriginalFilename.isBlank()) {
                     coverFilename = System.currentTimeMillis() + "-cover";
                 } else {
-                    coverFilename = coverOriginal.replaceAll("\\s+", "-");
+                    coverFilename = coverOriginalFilename.replaceAll("\\s+", "-");
                 }
-                Path imagesDir = Path.of(articleDir, "cover-images");
+                Path imagesDir = Path.of(articleCoverImageDir);
                 Files.createDirectories(imagesDir);
                 Path coverTarget = imagesDir.resolve(coverFilename);
 
@@ -207,17 +224,17 @@ public class ArticleService {
                 }
 
                 try {
-                    BufferedImage original = ImageIO.read(cover.getInputStream());
+                    BufferedImage original = ImageIO.read(coverFile.getInputStream());
                     if (original != null) {
                         BufferedImage resized = resizeImageIfNeeded(original, articleProperties.getCoverImage().getUpload().getResize().getMaxSize());
                         String writeExt = "png";
                         if (dot > 0 && dot < coverFilename.length() - 1) writeExt = coverFilename.substring(dot + 1).toLowerCase();
                         ImageIO.write(resized, writeExt, coverTarget.toFile());
                     } else {
-                        Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                        Files.copy(coverFile.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
                     }
                 } catch (IOException e) {
-                    Files.copy(cover.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(coverFile.getInputStream(), coverTarget, StandardCopyOption.REPLACE_EXISTING);
                 }
 
                 a.setCoverImageFilename(coverFilename);
@@ -242,7 +259,7 @@ public class ArticleService {
                         }
                     }
 
-                    Path imagesDir = Path.of(articleDir, "cover-images");
+                    Path imagesDir = Path.of(articleCoverImageDir);
                     Files.createDirectories(imagesDir);
                     Path coverTarget = imagesDir.resolve(coverFilename);
 
@@ -287,6 +304,26 @@ public class ArticleService {
                     a.setCoverImageFilename(coverFilename);
                     a.setCoverImageOriginalUrl(request.getCoverImageOriginalUrl());
                 }
+            }
+
+                // request.getCoverImageFilename() has extension — rename existing file if needed
+            if (request.getCoverImageFilename() != null &&
+                    request.getCoverImageFilename().lastIndexOf('.') > 0 &&
+                    !request.getCoverImageFilename().equals(a.getCoverImageFilename())) {
+                // change the image file name in local storage only (no re-download), implying a rename
+                Path imagesDir = Path.of(articleProperties.getCoverImage().getUpload().getDirectory());
+                Path oldPath = imagesDir.resolve(a.getCoverImageFilename());
+                Path newPath = imagesDir.resolve(request.getCoverImageFilename());
+                // if newPath exists, it will not be overwritten
+                if (Files.exists(newPath)) {
+                    throw new IllegalArgumentException("Cover image file with name " + request.getCoverImageFilename() + " already exists");
+                }
+                
+                if (Files.exists(oldPath)) {
+                    Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                }
+
+                a.setCoverImageFilename(request.getCoverImageFilename());
             }
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to save cover image: " + e.getMessage());

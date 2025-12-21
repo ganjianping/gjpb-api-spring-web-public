@@ -71,7 +71,7 @@ article:
     base-url: https://www.ganjianping.com/resources/articles/cover-images
     upload:
       # Production directory for article-related assets (covers)
-      directory: /var/www/gjpb/resources/articles
+      directory: /var/www/gjpb/resources/articles/cover-images
       # Cover image resize settings for articles
       resize:
         max-size: 800
