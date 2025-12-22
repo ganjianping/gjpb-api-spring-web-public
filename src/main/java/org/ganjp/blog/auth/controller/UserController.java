@@ -10,7 +10,9 @@ import org.ganjp.blog.auth.model.dto.response.UserResponse;
 import org.ganjp.blog.auth.model.enums.AccountStatus;
 import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.auth.service.UserService;
+import org.ganjp.blog.common.audit.model.entity.AuditLog;
 import org.ganjp.blog.common.model.ApiResponse;
+import org.ganjp.blog.common.model.PaginatedResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,7 +51,7 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<UserResponse>>> getAllUsers(
+    public ResponseEntity<ApiResponse<PaginatedResponse<UserResponse>>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "username") String sort,
@@ -97,7 +99,8 @@ public class UserController {
             users = userService.getAllUsers(pageable);
         }
         
-        return ResponseEntity.ok(ApiResponse.success(users, "Users retrieved successfully"));
+        PaginatedResponse<UserResponse> response = PaginatedResponse.of(users.getContent(), users.getNumber(), users.getSize(), users.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(response, "Users found"));
     }
     
     /**

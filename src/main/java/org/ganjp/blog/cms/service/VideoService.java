@@ -8,6 +8,8 @@ import org.ganjp.blog.cms.model.dto.VideoUpdateRequest;
 import org.ganjp.blog.cms.model.entity.Video;
 import org.ganjp.blog.cms.repository.VideoRepository;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -294,6 +296,10 @@ public class VideoService {
     public List<VideoResponse> searchVideos(String name, Video.Language lang, String tags, Boolean isActive) {
     List<Video> list = videoRepository.searchVideos(name, lang, tags, isActive);
     return list.stream().map(this::toResponse).toList();
+    }
+
+    public Page<VideoResponse> searchVideos(String name, Video.Language lang, String tags, Boolean isActive, Pageable pageable) {
+        return videoRepository.searchVideos(name, lang, tags, isActive, pageable).map(this::toResponse);
     }
 
     private VideoResponse toResponse(Video v) {

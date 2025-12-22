@@ -7,6 +7,8 @@ import org.ganjp.blog.cms.model.dto.FileResponse;
 import org.ganjp.blog.cms.model.dto.FileUpdateRequest;
 import org.ganjp.blog.cms.model.entity.File;
 import org.ganjp.blog.cms.repository.FileRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -170,6 +172,10 @@ public class FileService {
     public java.util.List<FileResponse> searchFiles(String name, File.Language lang, String tags, Boolean isActive) {
         List<File> list = fileRepository.searchFiles(name, lang, tags, isActive);
         return list.stream().map(this::toResponse).toList();
+    }
+
+    public Page<FileResponse> searchFiles(String name, File.Language lang, String tags, Boolean isActive, Pageable pageable) {
+        return fileRepository.searchFiles(name, lang, tags, isActive, pageable).map(this::toResponse);
     }
 
     public boolean deleteFile(String id, String userId) {

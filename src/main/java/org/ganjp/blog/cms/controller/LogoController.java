@@ -5,13 +5,16 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.auth.security.JwtUtils;
+import org.ganjp.blog.cms.model.dto.FileResponse;
 import org.ganjp.blog.cms.model.dto.LogoCreateRequest;
 import org.ganjp.blog.cms.model.dto.LogoResponse;
 import org.ganjp.blog.cms.model.dto.LogoUpdateRequest;
 import org.ganjp.blog.cms.service.LogoService;
 import org.ganjp.blog.common.model.ApiResponse;
+import org.ganjp.blog.common.model.PaginatedResponse;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -57,7 +60,7 @@ public class LogoController {
      * @return List of logos
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<LogoResponse>>> searchLogos(
+    public ResponseEntity<ApiResponse<PaginatedResponse<LogoResponse>>> searchLogos(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "updatedAt") String sort,
@@ -70,8 +73,10 @@ public class LogoController {
             ? Sort.Direction.DESC : Sort.Direction.ASC;
         
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-        List<LogoResponse> logos = logoService.searchLogos(name, lang, tags, isActive);
-        return ResponseEntity.ok(ApiResponse.success(logos, "Logos retrieved successfully"));
+        Page<LogoResponse> logos = logoService.searchLogos(name, lang, tags, isActive, pageable);
+
+        PaginatedResponse<LogoResponse> response = PaginatedResponse.of(logos.getContent(), logos.getNumber(), logos.getSize(), logos.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(response, "Logos found"));
     }
 
     /**

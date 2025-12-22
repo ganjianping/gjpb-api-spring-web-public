@@ -6,7 +6,9 @@ import org.ganjp.blog.cms.model.dto.*;
 import org.ganjp.blog.cms.model.entity.Audio;
 import org.ganjp.blog.cms.service.AudioService;
 import org.ganjp.blog.common.model.ApiResponse;
+import org.ganjp.blog.common.model.PaginatedResponse;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -47,7 +49,7 @@ public class AudioController {
      * @return List of audios
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AudioResponse>>> searchAudios(
+    public ResponseEntity<ApiResponse<PaginatedResponse<AudioResponse>>> searchAudios(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "updatedAt") String sort,
@@ -62,8 +64,10 @@ public class AudioController {
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
             
             Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-            List<AudioResponse> list = audioService.searchAudios(name, lang, tags, isActive);
-            return ResponseEntity.ok(ApiResponse.success(list, "Audios found"));
+            Page<AudioResponse> list = audioService.searchAudios(name, lang, tags, isActive, pageable);
+
+            PaginatedResponse<AudioResponse> response = PaginatedResponse.of(list.getContent(), list.getNumber(), list.getSize(), list.getTotalElements());
+            return ResponseEntity.ok(ApiResponse.success(response, "Audios found"));
         } catch (Exception e) {
             log.error("Error searching audios", e);
             return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching audios: " + e.getMessage(), null));

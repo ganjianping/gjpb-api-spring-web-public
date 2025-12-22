@@ -5,7 +5,9 @@ import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.cms.model.dto.*;
 import org.ganjp.blog.cms.service.VideoService;
 import org.ganjp.blog.common.model.ApiResponse;
+import org.ganjp.blog.common.model.PaginatedResponse;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -46,7 +48,7 @@ public class VideoController {
      * @return List of videos
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<VideoResponse>>> searchVideos(
+    public ResponseEntity<ApiResponse<PaginatedResponse<VideoResponse>>> searchVideos(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "updatedAt") String sort,
@@ -61,8 +63,10 @@ public class VideoController {
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
             
             Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-            List<VideoResponse> list = videoService.searchVideos(name, lang, tags, isActive);
-            return ResponseEntity.ok(ApiResponse.success(list, "Videos found"));
+            Page<VideoResponse> list = videoService.searchVideos(name, lang, tags, isActive, pageable);
+            
+            PaginatedResponse<VideoResponse> response = PaginatedResponse.of(list.getContent(), list.getNumber(), list.getSize(), list.getTotalElements());
+            return ResponseEntity.ok(ApiResponse.success(response, "Videos found"));
         } catch (Exception e) {
             log.error("Error searching videos", e);
             return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching videos: " + e.getMessage(), null));

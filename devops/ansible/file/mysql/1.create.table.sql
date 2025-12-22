@@ -473,6 +473,33 @@ CREATE TABLE `cms_article` (
    FULLTEXT KEY `idx_fulltext_search` (`title`, `summary`, `content`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='CMS Article Management';
 
+CREATE TABLE `cms_article_image` (
+  `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
+  `article_id` char(36) NOT NULL COMMENT 'Associated article ID',
+  `article_title` varchar(500) DEFAULT NULL COMMENT 'Associated article title (for quick reference)',
+  `filename` varchar(255) NOT NULL COMMENT 'Stored filename',
+  `original_url` varchar(500) DEFAULT NULL COMMENT 'Original source URL',
+  `width` smallint UNSIGNED DEFAULT NULL COMMENT 'Image width in pixels',
+  `height` smallint UNSIGNED DEFAULT NULL COMMENT 'Image height in pixels',
+  `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
+  `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+  `created_by` char(36) DEFAULT NULL COMMENT 'Created by user ID',
+  `updated_by` char(36) DEFAULT NULL COMMENT 'Last updated by user ID',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Active status flag',
+
+  PRIMARY KEY (`id`),
+  INDEX `idx_article_id` (`article_id`),
+  INDEX `idx_article_title` (`article_title`),
+  INDEX `idx_filename` (`filename`),
+  INDEX `idx_article_lang` (`lang`),
+  INDEX `idx_active_lang_order` (`is_active`, `lang`, `display_order`),
+  INDEX `idx_created_at` (`created_at`),
+  INDEX `idx_created_by` (`created_by`),
+  INDEX `idx_updated_by` (`updated_by`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='CMS Article Images';
+
 CREATE TABLE `cms_file` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
   `name` varchar(255) NOT NULL COMMENT 'File display name',

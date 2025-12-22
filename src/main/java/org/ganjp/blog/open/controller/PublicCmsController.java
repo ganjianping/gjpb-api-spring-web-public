@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.cms.model.entity.*;
 import org.ganjp.blog.common.model.ApiResponse;
-import org.ganjp.blog.open.model.PaginatedResponse;
+import org.ganjp.blog.common.model.PaginatedResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.util.Map;

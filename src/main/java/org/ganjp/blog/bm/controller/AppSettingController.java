@@ -3,6 +3,8 @@ package org.ganjp.blog.bm.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.ganjp.blog.auth.model.dto.response.UserResponse;
 import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.bm.model.dto.AppSettingResponse;
 import org.ganjp.blog.bm.model.dto.CreateAppSettingRequest;
@@ -10,6 +12,7 @@ import org.ganjp.blog.bm.model.dto.UpdateAppSettingRequest;
 import org.ganjp.blog.bm.model.entity.AppSetting;
 import org.ganjp.blog.bm.service.AppSettingService;
 import org.ganjp.blog.common.model.ApiResponse;
+import org.ganjp.blog.common.model.PaginatedResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -36,7 +39,7 @@ public class AppSettingController {
      */
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<ApiResponse<Page<AppSettingResponse>>> getSettings(
+    public ResponseEntity<ApiResponse<PaginatedResponse<AppSettingResponse>>> getSettings(
             @RequestParam(required = false) String searchTerm,
             @RequestParam(required = false) AppSetting.Language lang,
             @RequestParam(required = false) Boolean isPublic,
@@ -44,7 +47,10 @@ public class AppSettingController {
             Pageable pageable) {
 
         Page<AppSettingResponse> settings = appSettingService.getSettings(searchTerm, lang, isPublic, isSystem, pageable);
-        return ResponseEntity.ok(ApiResponse.success(settings, "App settings retrieved successfully"));
+
+        
+        PaginatedResponse<AppSettingResponse> response = PaginatedResponse.of(settings.getContent(), settings.getNumber(), settings.getSize(), settings.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(response, "App settings found"));
     }
 
     /**

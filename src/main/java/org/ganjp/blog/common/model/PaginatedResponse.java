@@ -1,4 +1,4 @@
-package org.ganjp.blog.open.model;
+package org.ganjp.blog.common.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

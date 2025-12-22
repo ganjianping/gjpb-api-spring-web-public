@@ -8,6 +8,8 @@ import org.ganjp.blog.cms.model.dto.AudioUpdateRequest;
 import org.ganjp.blog.cms.model.entity.Audio;
 import org.ganjp.blog.cms.repository.AudioRepository;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -267,9 +269,9 @@ public class AudioService {
         return true;
     }
 
-    public List<AudioResponse> searchAudios(String name, Audio.Language lang, String tags, Boolean isActive) {
-        List<Audio> list = audioRepository.searchAudios(name, lang, tags, isActive);
-        return list.stream().map(this::toResponse).toList();
+    public Page<AudioResponse> searchAudios(String name, Audio.Language lang, String tags, Boolean isActive, Pageable pageable) {
+        Page<Audio> page = audioRepository.searchAudios(name, lang, tags, isActive, pageable);
+        return page.map(this::toResponse);
     }
 
     private AudioResponse toResponse(Audio a) {

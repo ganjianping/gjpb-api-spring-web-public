@@ -6,8 +6,10 @@ import org.ganjp.blog.cms.model.dto.*;
 import org.ganjp.blog.cms.service.ImageService;
 import org.ganjp.blog.cms.util.CmsUtil;
 import org.ganjp.blog.common.model.ApiResponse;
+import org.ganjp.blog.common.model.PaginatedResponse;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -50,7 +52,7 @@ public class ImageController {
      * @return List of images
      */
     @GetMapping()
-    public ResponseEntity<ApiResponse<List<ImageResponse>>> searchImages(
+    public ResponseEntity<ApiResponse<PaginatedResponse<ImageResponse>>> searchImages(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "updatedAt") String sort,
@@ -68,13 +70,15 @@ public class ImageController {
             Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
             
             // backward compatibility: if keyword is provided use the old simple search
-            List<ImageResponse> images;
+            Page<ImageResponse> images;
             if (keyword != null && !keyword.isBlank()) {
-                images = imageService.searchImages(keyword);
+                images = imageService.searchImages(keyword, pageable);
             } else {
-                images = imageService.searchImages(name, lang, tags, isActive);
+                images = imageService.searchImages(name, lang, tags, isActive, pageable);
             }
-            return ResponseEntity.ok(ApiResponse.success(images, "Images found"));
+
+            PaginatedResponse<ImageResponse> response = PaginatedResponse.of(images.getContent(), images.getNumber(), images.getSize(), images.getTotalElements());
+            return ResponseEntity.ok(ApiResponse.success(response, "Images found"));
         } catch (Exception e) {
             log.error("Error searching images", e);
             return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching images: " + e.getMessage(), null));

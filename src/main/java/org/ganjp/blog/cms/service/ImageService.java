@@ -9,6 +9,8 @@ import org.ganjp.blog.cms.model.dto.ImageResponse;
 import org.ganjp.blog.cms.model.entity.Image;
 import org.ganjp.blog.cms.repository.ImageRepository;
 import org.ganjp.blog.cms.util.CmsUtil;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -134,14 +136,14 @@ public class ImageService {
         return true;
     }
 
-    public List<ImageResponse> searchImages(String keyword) {
-        List<Image> images = imageRepository.searchByNameContaining(keyword);
-        return images.stream().map(this::toResponse).toList();
+    public Page<ImageResponse> searchImages(String keyword, Pageable pageable) {
+        Page<Image> images = imageRepository.searchByNameContaining(keyword, pageable);
+        return images.map(this::toResponse);
     }
 
-    public List<ImageResponse> searchImages(String name, Image.Language lang, String tags, Boolean isActive) {
-        List<Image> images = imageRepository.searchImages(name, lang, tags, isActive);
-        return images.stream().map(this::toResponse).toList();
+    public Page<ImageResponse> searchImages(String name, Image.Language lang, String tags, Boolean isActive, Pageable pageable) {
+        Page<Image> images = imageRepository.searchImages(name, lang, tags, isActive, pageable);
+        return images.map(this::toResponse);
     }
 
     public ImageResponse createImage(ImageCreateRequest request, String userId) throws IOException {

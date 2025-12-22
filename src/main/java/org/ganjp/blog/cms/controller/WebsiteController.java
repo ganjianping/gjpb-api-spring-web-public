@@ -5,12 +5,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.ganjp.blog.auth.security.JwtUtils;
 
+import org.ganjp.blog.cms.model.dto.ArticleResponse;
 import org.ganjp.blog.cms.model.dto.CreateWebsiteRequest;
 import org.ganjp.blog.cms.model.dto.UpdateWebsiteRequest;
 import org.ganjp.blog.cms.model.dto.WebsiteResponse;
 import org.ganjp.blog.cms.model.entity.Website;
 import org.ganjp.blog.cms.service.WebsiteService;
 import org.ganjp.blog.common.model.ApiResponse;
+import org.ganjp.blog.common.model.PaginatedResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -51,7 +53,7 @@ public class WebsiteController {
      * @return Paginated list of websites
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<WebsiteResponse>>> getWebsites(
+    public ResponseEntity<ApiResponse<PaginatedResponse<WebsiteResponse>>> getWebsites(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "updatedAt") String sort,
@@ -61,12 +63,18 @@ public class WebsiteController {
             @RequestParam(required = false) String tags,
             @RequestParam(required = false) Boolean isActive
     ) {
-        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
-            ? Sort.Direction.DESC : Sort.Direction.ASC;
-        
-        Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-        Page<WebsiteResponse> websites = websiteService.getWebsites(name, lang, tags, isActive, pageable);
-        return ResponseEntity.ok(ApiResponse.success(websites, "Websites retrieved successfully"));
+        try {
+            Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction)
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+            Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
+            Page<WebsiteResponse> websites = websiteService.getWebsites(name, lang, tags, isActive, pageable);
+
+            PaginatedResponse<WebsiteResponse> response = PaginatedResponse.of(websites.getContent(), websites.getNumber(), websites.getSize(), websites.getTotalElements());
+            return ResponseEntity.ok(ApiResponse.success(response, "Websites found"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching websites: " + e.getMessage(), null));
+        }
     }
 
     /**

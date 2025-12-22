@@ -9,6 +9,8 @@ import org.ganjp.blog.cms.model.dto.LogoResponse;
 import org.ganjp.blog.cms.model.dto.LogoUpdateRequest;
 import org.ganjp.blog.cms.model.entity.Logo;
 import org.ganjp.blog.cms.repository.LogoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,14 @@ public class LogoService {
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Flexible search for logos by name, language, tags, and status with pagination
+     */
+    public Page<LogoResponse> searchLogos(String name, Logo.Language lang, String tags, Boolean isActive, Pageable pageable) {
+        return logoRepository.searchLogos(name, lang, tags, isActive, pageable)
+                .map(this::toResponse);
     }
 
     /**

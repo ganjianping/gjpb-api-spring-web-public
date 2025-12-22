@@ -370,14 +370,9 @@ public class ArticleService {
         return coverPath.toFile();
     }
 
-    public List<ArticleResponse> searchArticles(String title, org.ganjp.blog.cms.model.entity.Article.Language lang, String tags, Boolean isActive) {
-        List<Article> list = articleRepository.searchArticles(title, lang, tags, isActive);
-        return list.stream().map(this::toResponse).toList();
-    }
-
-    public List<ArticleResponse> searchArticles(String title, org.ganjp.blog.cms.model.entity.Article.Language lang, String tags, Boolean isActive, Pageable pageable) {
-        Page<Article> page = articleRepository.findArticlesByCriteria(title, lang, tags, isActive, pageable);
-        return page.map(this::toResponse).getContent();
+    public Page<ArticleResponse> searchArticles(String title, org.ganjp.blog.cms.model.entity.Article.Language lang, String tags, Boolean isActive, Pageable pageable) {
+        Page<Article> page = articleRepository.searchArticles(title, lang, tags, isActive, pageable);
+        return page.map(this::toResponse);
     }
 
     private ArticleResponse toResponse(Article a) {

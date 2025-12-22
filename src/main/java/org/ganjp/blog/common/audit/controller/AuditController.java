@@ -1,9 +1,12 @@
 package org.ganjp.blog.common.audit.controller;
 
 import lombok.RequiredArgsConstructor;
+
+import org.ganjp.blog.cms.model.dto.ArticleResponse;
 import org.ganjp.blog.common.audit.model.entity.AuditLog;
 import org.ganjp.blog.common.audit.service.AuditQueryService;
 import org.ganjp.blog.common.model.ApiResponse;
+import org.ganjp.blog.common.model.PaginatedResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -33,7 +36,7 @@ public class AuditController {
      * Get audit logs with pagination and filtering
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<AuditLog>>> getAuditLogs(
+    public ResponseEntity<ApiResponse<PaginatedResponse<AuditLog>>> getAuditLogs(
             @RequestParam(required = false) String userId,
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String httpMethod,
@@ -79,40 +82,41 @@ public class AuditController {
                     userId, httpMethod, resultPattern, endpointPattern, effectiveStartTime, effectiveEndTime, pageable);
         }
 
-        return ResponseEntity.ok(ApiResponse.success(auditLogs, "Audit logs retrieved successfully"));
+        PaginatedResponse<AuditLog> response = PaginatedResponse.of(auditLogs.getContent(), auditLogs.getNumber(), auditLogs.getSize(), auditLogs.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.success(response, "Audit logs found"));
     }
 
     /**
      * Get audit logs for a specific user
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<Page<AuditLog>>> getUserAuditLogs(
+    public ResponseEntity<ApiResponse<PaginatedResponse<AuditLog>>> getUserAuditLogs(
             @PathVariable String userId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
             Pageable pageable) {
 
         Page<AuditLog> auditLogs = auditQueryService.findUserAuditLogs(userId, startTime, endTime, pageable);
-        return ResponseEntity.ok(ApiResponse.success(auditLogs, "User audit logs retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(PaginatedResponse.of(auditLogs), "User audit logs retrieved successfully"));
     }
 
     /**
      * Get failed operations for a specific user
      */
     @GetMapping("/user/{userId}/failures")
-    public ResponseEntity<ApiResponse<Page<AuditLog>>> getUserFailedOperations(
+    public ResponseEntity<ApiResponse<PaginatedResponse<AuditLog>>> getUserFailedOperations(
             @PathVariable String userId,
             Pageable pageable) {
 
         Page<AuditLog> failedOperations = auditQueryService.findFailedOperationsByUser(userId, pageable);
-        return ResponseEntity.ok(ApiResponse.success(failedOperations, "Failed operations retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(PaginatedResponse.of(failedOperations), "Failed operations retrieved successfully"));
     }
 
     /**
      * Get audit logs for a specific resource
      */
     @GetMapping("/resource/{resourceType}/{resourceId}")
-    public ResponseEntity<ApiResponse<Page<AuditLog>>> getResourceAuditLogs(
+    public ResponseEntity<ApiResponse<PaginatedResponse<AuditLog>>> getResourceAuditLogs(
             @PathVariable String resourceType,
             @PathVariable String resourceId,
             Pageable pageable) {
@@ -121,19 +125,19 @@ public class AuditController {
         String endpointPattern = "/" + resourceType + "/" + resourceId;
         Page<AuditLog> auditLogs = auditQueryService.findAuditLogs(
                 null, null, null, endpointPattern, null, null, pageable);
-        return ResponseEntity.ok(ApiResponse.success(auditLogs, "Resource audit logs retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(PaginatedResponse.of(auditLogs), "Resource audit logs retrieved successfully"));
     }
 
     /**
      * Get audit logs by IP address
      */
     @GetMapping("/ip/{ipAddress}")
-    public ResponseEntity<ApiResponse<Page<AuditLog>>> getAuditLogsByIp(
+    public ResponseEntity<ApiResponse<PaginatedResponse<AuditLog>>> getAuditLogsByIp(
             @PathVariable String ipAddress,
             Pageable pageable) {
 
         Page<AuditLog> auditLogs = auditQueryService.findAuditLogsByIpAddress(ipAddress, pageable);
-        return ResponseEntity.ok(ApiResponse.success(auditLogs, "IP audit logs retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(PaginatedResponse.of(auditLogs), "IP audit logs retrieved successfully"));
     }
 
     /**

@@ -6,7 +6,9 @@ import org.ganjp.blog.cms.model.dto.*;
 import org.ganjp.blog.cms.model.entity.Article;
 import org.ganjp.blog.cms.service.ArticleService;
 import org.ganjp.blog.common.model.ApiResponse;
+import org.ganjp.blog.common.model.PaginatedResponse;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -47,7 +49,7 @@ public class ArticleController {
      * @return List of articles
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ArticleResponse>>> searchArticles(
+    public ResponseEntity<ApiResponse<PaginatedResponse<ArticleResponse>>> searchArticles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "updatedAt") String sort,
@@ -62,8 +64,9 @@ public class ArticleController {
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
             
             Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
-            List<ArticleResponse> list = articleService.searchArticles(title, lang, tags, isActive, pageable);
-            return ResponseEntity.ok(ApiResponse.success(list, "Articles found"));
+            Page<ArticleResponse> list = articleService.searchArticles(title, lang, tags, isActive, pageable);
+            PaginatedResponse<ArticleResponse> response = PaginatedResponse.of(list.getContent(), list.getNumber(), list.getSize(), list.getTotalElements());
+            return ResponseEntity.ok(ApiResponse.success(response, "Articles found"));
         } catch (Exception e) {
             log.error("Error searching articles", e);
             return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching articles: " + e.getMessage(), null));
