@@ -21,6 +21,12 @@ public class ImageUpdateRequest {
     @Size(max = 255)
     private String sourceName;
 
+    @Size(max = 255)
+    private String filename;
+
+    @Size(max = 255)
+    private String thumbnailFilename;
+
     @Size(max = 10)
     private String extension;
 

@@ -67,8 +67,8 @@ public class ImageService {
                 Path oldImagePath = uploadDir.resolve(oldFilename);
                 Path oldThumbPath = uploadDir.resolve(oldThumbnail);
 
-                String newFilename = replaceExtension(oldFilename, newExt);
-                String newThumbnail = replaceExtension(oldThumbnail, newExt);
+                String newFilename = request.getFilename() != null ? request.getFilename() : replaceExtension(oldFilename, newExt);
+                String newThumbnail = request.getThumbnailFilename() != null ? request.getThumbnailFilename() : replaceExtension(oldThumbnail, newExt);
                 Path newImagePath = uploadDir.resolve(newFilename);
                 Path newThumbPath = uploadDir.resolve(newThumbnail);
 
@@ -111,8 +111,33 @@ public class ImageService {
                 log.error("Failed to convert image files to new extension {} for image {}", request.getExtension(), id, e);
                 throw new RuntimeException("Failed to convert image files to new extension: " + e.getMessage(), e);
             }
-        } else if (request.getExtension() != null) {
-            image.setExtension(request.getExtension());
+        } else {
+            // Extension not changed, but filename might have
+            if (request.getFilename() != null && !request.getFilename().equals(oldFilename)) {
+                try {
+                    Path uploadDir = Paths.get(imageUploadProperties.getDirectory());
+                    Path oldPath = uploadDir.resolve(oldFilename);
+                    Path newPath = uploadDir.resolve(request.getFilename());
+                    Files.move(oldPath, newPath);
+                    image.setFilename(request.getFilename());
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to rename image file: " + e.getMessage(), e);
+                }
+            }
+            if (request.getThumbnailFilename() != null && !request.getThumbnailFilename().equals(oldThumbnail)) {
+                try {
+                    Path uploadDir = Paths.get(imageUploadProperties.getDirectory());
+                    Path oldPath = uploadDir.resolve(oldThumbnail);
+                    Path newPath = uploadDir.resolve(request.getThumbnailFilename());
+                    Files.move(oldPath, newPath);
+                    image.setThumbnailFilename(request.getThumbnailFilename());
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to rename thumbnail file: " + e.getMessage(), e);
+                }
+            }
+            if (request.getExtension() != null) {
+                image.setExtension(request.getExtension());
+            }
         }
         if (request.getMimeType() != null) image.setMimeType(request.getMimeType());
         if (request.getAltText() != null) image.setAltText(request.getAltText());
