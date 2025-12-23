@@ -51,10 +51,10 @@ image:
     max-file-size: 10485760
         # Image resize settings
     resize:
-      # Max size for images (width or height will be 1024, maintaining aspect ratio)
-      max-size: 1024
-      # Thumbnail size (width or height will be 256, maintaining aspect ratio)
-      thumbnail-size: 256
+      # Max size for images (width or height will be 1920, maintaining aspect ratio)
+      max-size: 1920
+      # Thumbnail size (width or height will be 600, maintaining aspect ratio)
+      thumbnail-size: 600
 
 # Article upload configuration
 article:

@@ -141,7 +141,7 @@ public class ImageController {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid request: " + e.getMessage(), null));
         }
     }
-        /**
+    /**
      * Extract user ID from JWT token in the Authorization header
      * @param request HttpServletRequest containing the Authorization header
      * @return User ID extracted from token

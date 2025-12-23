@@ -50,7 +50,7 @@ public class ImageService {
     }
 
     public ImageResponse updateImage(String id, ImageUpdateRequest request, String userId) {
-        Optional<Image> imageOpt = imageRepository.findByIdAndIsActiveTrue(id);
+        Optional<Image> imageOpt = imageRepository.findById(id);
         if (imageOpt.isEmpty()) return null;
         Image image = imageOpt.get();
         String oldExtension = image.getExtension();
@@ -144,6 +144,7 @@ public class ImageService {
         if (request.getTags() != null) image.setTags(request.getTags());
         if (request.getLang() != null) image.setLang(request.getLang());
         if (request.getDisplayOrder() != null) image.setDisplayOrder(request.getDisplayOrder());
+        if (request.getIsActive() != null) image.setIsActive(request.getIsActive());
         image.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         image.setUpdatedBy(userId);
         imageRepository.save(image);
@@ -183,9 +184,13 @@ public class ImageService {
             java.net.URL url = new java.net.URL(request.getOriginalUrl());
             try (var inputStream = url.openStream()) {
                 originalImage = ImageIO.read(inputStream);
-                String urlPath = url.getPath();
-                int dotIdx = urlPath.lastIndexOf('.');
-                extension = (dotIdx > 0 && dotIdx < urlPath.length() - 1) ? urlPath.substring(dotIdx + 1).toLowerCase() : "png";
+                if (request.getFilename() != null && request.getFilename().lastIndexOf('.') != -1) {
+                    extension = request.getFilename().substring(request.getFilename().lastIndexOf('.') + 1).toLowerCase();
+                } else {
+                    String urlPath = url.getPath();
+                    int dotIdx = urlPath.lastIndexOf('.');
+                    extension = (dotIdx > 0 && dotIdx < urlPath.length() - 1) ? urlPath.substring(dotIdx + 1).toLowerCase() : "png";
+                }
             }
         } else {
             originalImage = ImageIO.read(file.getInputStream());
@@ -204,8 +209,22 @@ public class ImageService {
         }
         BufferedImage resizedImage = resizeImageIfNeeded(originalImage, imageUploadProperties.getResize().getMaxSize());
         BufferedImage thumbnailImage = resizeImageIfNeeded(originalImage, imageUploadProperties.getResize().getThumbnailSize());
-        String filename = generateFilename(request.getName(), extension, resizedImage.getWidth(), resizedImage.getHeight());
-        String thumbnailFilename = generateFilename(request.getName(), extension, thumbnailImage.getWidth(), thumbnailImage.getHeight());
+        
+        String filename;
+        String thumbnailFilename;
+        
+        if (request.getFilename() != null && !request.getFilename().isBlank()) {
+            filename = request.getFilename();
+            String onlyFilename = filename;
+            if (filename.lastIndexOf('.') != -1) {
+                onlyFilename = filename.substring(0, filename.lastIndexOf('.'));
+            }
+            filename = generateFilename(onlyFilename, extension, resizedImage.getWidth(), resizedImage.getHeight());
+            thumbnailFilename = generateFilename(onlyFilename, extension, thumbnailImage.getWidth(), thumbnailImage.getHeight());
+        } else {
+            filename = generateFilename(request.getName(), extension, resizedImage.getWidth(), resizedImage.getHeight());
+            thumbnailFilename = generateFilename(request.getName(), extension, thumbnailImage.getWidth(), thumbnailImage.getHeight());
+        }
 
         Path imagePath = Paths.get(imageUploadProperties.getDirectory(), filename);
         Path thumbPath = Paths.get(imageUploadProperties.getDirectory(), thumbnailFilename);
@@ -276,10 +295,11 @@ public class ImageService {
         } else {
             // Convert Chinese characters to pinyin; leave ASCII/Latin characters intact
             String converted = convertToPinyin(name);
-            safeName = converted.replaceAll("[^a-zA-Z0-9-_]", "_");
+            safeName = converted.replaceAll("[^a-zA-Z0-9-_]", "-");
             if (safeName.isBlank()) safeName = "img";
         }
-        return safeName + "_" + width + "_" + height + "_" + System.currentTimeMillis() + "." + extension;
+        String timestamp = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+        return safeName + "-" + width + "-" + height + "-" + timestamp + "." + extension;
     }
 
     private static final HanyuPinyinOutputFormat PINYIN_FORMAT = new HanyuPinyinOutputFormat();

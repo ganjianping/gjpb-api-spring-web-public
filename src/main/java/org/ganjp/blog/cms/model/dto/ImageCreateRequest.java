@@ -27,6 +27,9 @@ public class ImageCreateRequest {
     @Size(max = 255)
     private String sourceName;
 
+    @Size(max = 255)
+    private String filename;
+
     private MultipartFile file;
 
     @Size(max = 500)
