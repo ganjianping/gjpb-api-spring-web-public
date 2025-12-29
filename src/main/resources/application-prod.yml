@@ -50,7 +50,7 @@ image:
     # Image resize settings
     resize:
       # Max size for images (width or height will be 1920, maintaining aspect ratio)
-      max-size: 1920
+      max-size: 2500
       # Thumbnail size (width or height will be 600, maintaining aspect ratio)
       thumbnail-size: 600
 

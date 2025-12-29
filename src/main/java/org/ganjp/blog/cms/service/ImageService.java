@@ -282,8 +282,18 @@ public class ImageService {
         float scale = Math.min((float) maxSize / width, (float) maxSize / height);
         int newWidth = Math.round(width * scale);
         int newHeight = Math.round(height * scale);
-        BufferedImage resized = new BufferedImage(newWidth, newHeight, image.getType());
-        resized.getGraphics().drawImage(image, 0, 0, newWidth, newHeight, null);
+        
+        int type = image.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : image.getType();
+        BufferedImage resized = new BufferedImage(newWidth, newHeight, type);
+        java.awt.Graphics2D g2d = resized.createGraphics();
+        try {
+            g2d.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g2d.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING, java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+            g2d.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.drawImage(image, 0, 0, newWidth, newHeight, null);
+        } finally {
+            g2d.dispose();
+        }
         return resized;
     }
 
@@ -298,7 +308,7 @@ public class ImageService {
             safeName = converted.replaceAll("[^a-zA-Z0-9-_]", "-");
             if (safeName.isBlank()) safeName = "img";
         }
-        String timestamp = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+        String timestamp = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         return safeName + "-" + width + "-" + height + "-" + timestamp + "." + extension;
     }
 

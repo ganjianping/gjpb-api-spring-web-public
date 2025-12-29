@@ -262,3 +262,29 @@ CREATE TABLE `cms_article_image` (
   INDEX `idx_updated_by` (`updated_by`),
   FULLTEXT INDEX `ftx_alt_text` (`alt_text`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='CMS Article Images';
+
+CREATE TABLE `cms_question` (
+  `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
+  `question` varchar(255) NOT NULL COMMENT 'Question title',
+  `answer` varchar(2000) DEFAULT NULL COMMENT 'Detailed answer content',
+  `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
+  `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
+  `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+  `created_by` char(36) DEFAULT NULL COMMENT 'Created by user ID',
+  `updated_by` char(36) DEFAULT NULL COMMENT 'Last updated by user ID',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Active status flag',
+
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_question_lang` (`question`, `lang`),
+  KEY `idx_tags` (`tags`),
+  KEY `idx_lang_active` (`lang`, `is_active`),
+  KEY `idx_display_order` (`display_order`),
+  KEY `idx_created_at` (`created_at`),
+  KEY `idx_created_by` (`created_by`),
+  KEY `idx_updated_by` (`updated_by`),
+  KEY `idx_is_active` (`is_active`),
+  KEY `idx_active_order` (`is_active`, `display_order`),
+  KEY `idx_lang_active_order` (`lang`, `is_active`, `display_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='CMS Question and Answer Management';
