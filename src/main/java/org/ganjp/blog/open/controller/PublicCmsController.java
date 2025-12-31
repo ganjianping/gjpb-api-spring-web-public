@@ -210,6 +210,28 @@ public class PublicCmsController {
         return ApiResponse.success(p, "Article retrieved");
     }
 
+    @GetMapping("/questions")
+    public ApiResponse<PaginatedResponse<?>> getQuestions(@RequestParam(required = false) String question,
+                                                          @RequestParam(required = false) String lang,
+                                                          @RequestParam(required = false) String tags,
+                                                          @RequestParam(required = false) Boolean isActive,
+                                                          @RequestParam(defaultValue = "0") int page,
+                                                          @RequestParam(defaultValue = "20") int size,
+                                                          @RequestParam(defaultValue = "displayOrder") String sort,
+                                                          @RequestParam(defaultValue = "asc") String direction) {
+        Question.Language l = null;
+        if (lang != null && !lang.isBlank()) {
+            try {
+                l = Question.Language.valueOf(lang.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException ex) {
+                return ApiResponse.error(400, "Invalid lang", null);
+            }
+        }
+        var respRaw = publicCmsService.getQuestions(question, l, tags, isActive, page, size);
+        var resp = sanitizePaginated(respRaw);
+        return ApiResponse.success(resp, "Questions retrieved");
+    }
+
     private <T> PaginatedResponse<Map<String, Object>> sanitizePaginated(PaginatedResponse<T> raw) {
     List<Map<String, Object>> list = raw.getContent().stream()
         .map(item -> objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {}))

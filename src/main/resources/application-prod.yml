@@ -103,3 +103,13 @@ file:
     directory: /var/www/gjpb/resources/files
     # Maximum file size (in bytes) - 1GB
     max-file-size: 1073741824
+
+# Rubi upload configuration
+rubi:
+  vocabulary:
+    base-url: https://www.ganjianping.com/resources/rubi/vocabularies
+    image:
+      directory: /var/www/gjpb/resources/rubi/vocabularies/images
+      max-size: 800
+    audio:
+      directory: /var/www/gjpb/resources/rubi/vocabularies/audios

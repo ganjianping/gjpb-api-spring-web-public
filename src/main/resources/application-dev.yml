@@ -104,3 +104,13 @@ file:
     directory: /Users/ganjianping/Local/Files
     # Maximum file size (in bytes) - 100MB
     max-file-size: 104857600
+
+# Rubi upload configuration
+rubi:
+  vocabulary:
+    base-url: http://localhost:8081/api/v1/public/rubi/vocabularies
+    image:
+      directory: /Users/ganjianping/Local/Rubi/vocabularies/images
+      max-size: 800
+    audio:
+      directory: /Users/ganjianping/Local/Rubi/vocabularies/audios

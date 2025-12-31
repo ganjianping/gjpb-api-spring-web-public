@@ -6,6 +6,7 @@ import org.ganjp.blog.cms.config.ArticleProperties;
 import org.ganjp.blog.cms.model.dto.*;
 import org.ganjp.blog.cms.model.entity.Image;
 import org.ganjp.blog.cms.model.entity.Website;
+import org.ganjp.blog.cms.model.entity.Question;
 import org.ganjp.blog.cms.service.*;
 import org.ganjp.blog.cms.service.LogoService;
 import org.ganjp.blog.cms.model.dto.LogoResponse;
@@ -38,6 +39,7 @@ public class PublicCmsService {
     private final org.ganjp.blog.cms.service.FileService fileService;
     private final AudioService audioService;
     private final ArticleService articleService;
+    private final QuestionService questionService;
     private final org.ganjp.blog.cms.config.ArticleProperties articleProperties;
     @Value("${image.base-url:}")
     private String imageBaseUrl;
@@ -287,5 +289,9 @@ public class PublicCmsService {
         return b.build();
     }
 
-
+    public PaginatedResponse<org.ganjp.blog.cms.model.dto.QuestionResponse> getQuestions(String question, Question.Language lang, String tags, Boolean isActive, int page, int size) {
+        var pageable = PageRequest.of(Math.max(0, page), Math.max(1, size));
+        var pageResult = questionService.getQuestions(question, lang, tags, isActive, pageable);
+        return PaginatedResponse.of(pageResult.getContent(), pageResult.getNumber(), pageResult.getSize(), pageResult.getTotalElements());
+    }
 }
