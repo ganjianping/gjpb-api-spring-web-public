@@ -66,6 +66,9 @@ public class Vocabulary extends BaseEntity {
     @Column(name = "example", length = 2000)
     private String example;
 
+    @Column(name = "dictionary_url", length = 500)
+    private String dictionaryUrl;
+
     @Column(name = "tags", length = 500)
     private String tags;
 

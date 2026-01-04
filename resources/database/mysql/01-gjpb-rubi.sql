@@ -19,6 +19,7 @@ CREATE TABLE `rubi_vocabulary` (
   `part_of_speech` varchar(50) DEFAULT NULL COMMENT 'Part of speech (noun, verb, etc.)',
   `definition` varchar(2000) NOT NULL COMMENT 'Definition of the word',
   `example` varchar(2000) DEFAULT NULL COMMENT 'Example sentence using the word',
+  `dictionary_url` varchar(500) DEFAULT NULL COMMENT 'Link to an online dictionary entry',
   
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',

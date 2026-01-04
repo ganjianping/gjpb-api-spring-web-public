@@ -39,6 +39,7 @@ public class CreateVocabularyRequest {
     private String definition;
 
     private String example;
+    private String dictionaryUrl;
     private String tags;
 
     @NotNull(message = "Language is required")

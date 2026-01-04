@@ -48,7 +48,7 @@ public class VocabularyService {
             throw new BusinessException("Vocabulary word already exists for this language: " + request.getWord());
         }
 
-        Vocabulary vocabulary = Vocabulary.builder()
+        Vocabulary dbVocabulary = Vocabulary.builder()
                 .id(UUID.randomUUID().toString())
                 .word(request.getWord())
                 .simplePastTense(request.getSimplePastTense())
@@ -60,6 +60,7 @@ public class VocabularyService {
                 .partOfSpeech(request.getPartOfSpeech())
                 .definition(request.getDefinition())
                 .example(request.getExample())
+                .dictionaryUrl(request.getDictionaryUrl())
                 .tags(request.getTags())
                 .lang(request.getLang())
                 .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
@@ -67,15 +68,15 @@ public class VocabularyService {
                 .build();
 
         // Handle Image Upload
-        handleImageUpload(vocabulary, request.getWordImageFile(), request.getWordImageOriginalUrl(), request.getWordImageFilename());
+        handleImageUpload(dbVocabulary, request.getWordImageFile(), request.getWordImageOriginalUrl(), request.getWordImageFilename());
 
         // Handle Audio Upload
-        handleAudioUpload(vocabulary, request.getPhoneticAudioFile(), request.getPhoneticAudioOriginalUrl(), request.getPhoneticAudioFilename());
+        handleAudioUpload(dbVocabulary, request.getPhoneticAudioFile(), request.getPhoneticAudioOriginalUrl(), request.getPhoneticAudioFilename());
 
-        vocabulary.setCreatedBy(createdBy);
-        vocabulary.setUpdatedBy(createdBy);
+        dbVocabulary.setCreatedBy(createdBy);
+        dbVocabulary.setUpdatedBy(createdBy);
 
-        Vocabulary savedVocabulary = vocabularyRepository.save(vocabulary);
+        Vocabulary savedVocabulary = vocabularyRepository.save(dbVocabulary);
         return VocabularyResponse.fromEntity(savedVocabulary);
     }
 
@@ -84,48 +85,49 @@ public class VocabularyService {
      */
     @Transactional
     public VocabularyResponse updateVocabulary(String id, UpdateVocabularyRequest request, String updatedBy) {
-        Vocabulary vocabulary = vocabularyRepository.findById(id)
+        Vocabulary dbVocabulary = vocabularyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found with id: " + id));
 
-        if (request.getWord() != null && !request.getWord().equals(vocabulary.getWord())) {
+        if (request.getWord() != null && !request.getWord().equals(dbVocabulary.getWord())) {
             if (vocabularyRepository.existsByWordAndLang(request.getWord(), 
-                    request.getLang() != null ? request.getLang() : vocabulary.getLang())) {
+                    request.getLang() != null ? request.getLang() : dbVocabulary.getLang())) {
                 throw new BusinessException("Vocabulary word already exists: " + request.getWord());
             }
-            vocabulary.setWord(request.getWord());
+            dbVocabulary.setWord(request.getWord());
         }
 
         // Handle Image Upload/Update
         if (request.getWordImageFile() != null || request.getWordImageOriginalUrl() != null) {
-             handleImageUpload(vocabulary, request.getWordImageFile(), request.getWordImageOriginalUrl(), request.getWordImageFilename());
+             handleImageUpload(dbVocabulary, request.getWordImageFile(), request.getWordImageOriginalUrl(), request.getWordImageFilename());
         } else if (request.getWordImageFilename() != null) {
-            vocabulary.setWordImageFilename(request.getWordImageFilename());
+            dbVocabulary.setWordImageFilename(request.getWordImageFilename());
         }
 
         // Handle Audio Upload/Update
         if (request.getPhoneticAudioFile() != null || request.getPhoneticAudioOriginalUrl() != null) {
-            handleAudioUpload(vocabulary, request.getPhoneticAudioFile(), request.getPhoneticAudioOriginalUrl(), request.getPhoneticAudioFilename());
+            handleAudioUpload(dbVocabulary, request.getPhoneticAudioFile(), request.getPhoneticAudioOriginalUrl(), request.getPhoneticAudioFilename());
         } else if (request.getPhoneticAudioFilename() != null) {
-            vocabulary.setPhoneticAudioFilename(request.getPhoneticAudioFilename());
+            dbVocabulary.setPhoneticAudioFilename(request.getPhoneticAudioFilename());
         }
 
-        if (request.getSimplePastTense() != null) vocabulary.setSimplePastTense(request.getSimplePastTense());
-        if (request.getPastPerfectTense() != null) vocabulary.setPastPerfectTense(request.getPastPerfectTense());
-        if (request.getTranslation() != null) vocabulary.setTranslation(request.getTranslation());
-        if (request.getSynonyms() != null) vocabulary.setSynonyms(request.getSynonyms());
-        if (request.getPluralForm() != null) vocabulary.setPluralForm(request.getPluralForm());
-        if (request.getPhonetic() != null) vocabulary.setPhonetic(request.getPhonetic());
-        if (request.getPartOfSpeech() != null) vocabulary.setPartOfSpeech(request.getPartOfSpeech());
-        if (request.getDefinition() != null) vocabulary.setDefinition(request.getDefinition());
-        if (request.getExample() != null) vocabulary.setExample(request.getExample());
-        if (request.getTags() != null) vocabulary.setTags(request.getTags());
-        if (request.getLang() != null) vocabulary.setLang(request.getLang());
-        if (request.getDisplayOrder() != null) vocabulary.setDisplayOrder(request.getDisplayOrder());
-        if (request.getIsActive() != null) vocabulary.setIsActive(request.getIsActive());
+        if (request.getSimplePastTense() != null) dbVocabulary.setSimplePastTense(request.getSimplePastTense());
+        if (request.getPastPerfectTense() != null) dbVocabulary.setPastPerfectTense(request.getPastPerfectTense());
+        if (request.getTranslation() != null) dbVocabulary.setTranslation(request.getTranslation());
+        if (request.getSynonyms() != null) dbVocabulary.setSynonyms(request.getSynonyms());
+        if (request.getPluralForm() != null) dbVocabulary.setPluralForm(request.getPluralForm());
+        if (request.getPhonetic() != null) dbVocabulary.setPhonetic(request.getPhonetic());
+        if (request.getPartOfSpeech() != null) dbVocabulary.setPartOfSpeech(request.getPartOfSpeech());
+        if (request.getDefinition() != null) dbVocabulary.setDefinition(request.getDefinition());
+        if (request.getExample() != null) dbVocabulary.setExample(request.getExample());
+        if (request.getDictionaryUrl() != null) dbVocabulary.setDictionaryUrl(request.getDictionaryUrl());
+        if (request.getTags() != null) dbVocabulary.setTags(request.getTags());
+        if (request.getLang() != null) dbVocabulary.setLang(request.getLang());
+        if (request.getDisplayOrder() != null) dbVocabulary.setDisplayOrder(request.getDisplayOrder());
+        if (request.getIsActive() != null) dbVocabulary.setIsActive(request.getIsActive());
 
-        vocabulary.setUpdatedBy(updatedBy);
+        dbVocabulary.setUpdatedBy(updatedBy);
 
-        Vocabulary updatedVocabulary = vocabularyRepository.save(vocabulary);
+        Vocabulary updatedVocabulary = vocabularyRepository.save(dbVocabulary);
         return VocabularyResponse.fromEntity(updatedVocabulary);
     }
 
@@ -139,7 +141,7 @@ public class VocabularyService {
         if (file != null && !file.isEmpty()) {
             String ext = getFileExtension(file.getOriginalFilename());
             if (!StringUtils.hasText(ext)) ext = "png";
-            String filename = baseName + "." + ext;
+            String filename = baseName.endsWith("." + ext) ? baseName : baseName + "." + ext;
 
             Path targetPath = Path.of(imageDir).resolve(filename);
             try {
@@ -157,13 +159,15 @@ public class VocabularyService {
                 throw new BusinessException("Failed to save image file: " + e.getMessage());
             }
         } else if (StringUtils.hasText(originalUrl)) {
+            boolean isUrlChanged = !originalUrl.equals(vocabulary.getWordImageOriginalUrl());
             vocabulary.setWordImageOriginalUrl(originalUrl);
-            if (originalUrl.toLowerCase().startsWith("http")) {
+
+            if (isUrlChanged && originalUrl.toLowerCase().startsWith("http")) {
                 try {
                     java.net.URL url = new java.net.URL(originalUrl);
                     String ext = getFileExtension(url.getPath());
                     if (!StringUtils.hasText(ext)) ext = "jpg";
-                    String filename = baseName + "." + ext;
+                    String filename = baseName.endsWith("." + ext) ? baseName : baseName + "." + ext;
                     Path targetPath = Path.of(imageDir).resolve(filename);
                     Files.createDirectories(targetPath.getParent());
 
@@ -182,51 +186,89 @@ public class VocabularyService {
                 } catch (Exception e) {
                     log.error("Failed to download image from URL: {}", originalUrl, e);
                 }
-            } else if (StringUtils.hasText(providedFilename)) {
-                vocabulary.setWordImageFilename(providedFilename);
+            } else {
+                String currentFilename = vocabulary.getWordImageFilename();
+                if (StringUtils.hasText(currentFilename)) {
+                    String ext = getFileExtension(currentFilename);
+                    String newFilename = baseName.endsWith("." + ext) ? baseName : baseName + "." + ext;
+                    if (!newFilename.equals(currentFilename)) {
+                        Path oldPath = Path.of(imageDir).resolve(currentFilename);
+                        Path newPath = Path.of(imageDir).resolve(newFilename);
+                        try {
+                            if (Files.exists(oldPath)) {
+                                Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                                vocabulary.setWordImageFilename(newFilename);
+                            }
+                        } catch (IOException e) {
+                            log.error("Failed to rename image file from {} to {}", currentFilename, newFilename, e);
+                        }
+                    }
+                } else if (StringUtils.hasText(providedFilename)) {
+                    vocabulary.setWordImageFilename(providedFilename);
+                }
             }
         }
     }
 
-    private void handleAudioUpload(Vocabulary vocabulary, MultipartFile file, String originalUrl, String providedFilename) {
+    private void handleAudioUpload(Vocabulary dbVocabulary, MultipartFile newFile, String newOriginalUrl, String newProvidedFilename) {
         String audioDir = rubiProperties.getVocabulary().getAudio().getDirectory();
 
-        String baseName = StringUtils.hasText(providedFilename) ? providedFilename : vocabulary.getWord();
+        String baseName = StringUtils.hasText(newProvidedFilename) ? newProvidedFilename : dbVocabulary.getWord();
         baseName = baseName.trim().replaceAll("\\s+", "-").toLowerCase();
 
-        if (file != null && !file.isEmpty()) {
-            String ext = getFileExtension(file.getOriginalFilename());
+        if (newFile != null && !newFile.isEmpty()) {
+            String ext = getFileExtension(newFile.getOriginalFilename());
             if (!StringUtils.hasText(ext)) ext = "mp3";
-            String filename = baseName + "." + ext;
+            String filename = baseName.endsWith("." + ext) ? baseName : baseName + "." + ext;
 
             Path targetPath = Path.of(audioDir).resolve(filename);
             try {
                 Files.createDirectories(targetPath.getParent());
-                Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-                vocabulary.setPhoneticAudioFilename(filename);
+                Files.copy(newFile.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+                dbVocabulary.setPhoneticAudioFilename(filename);
             } catch (IOException e) {
                 throw new BusinessException("Failed to save audio file: " + e.getMessage());
             }
-        } else if (StringUtils.hasText(originalUrl)) {
-            vocabulary.setPhoneticAudioOriginalUrl(originalUrl);
-            if (originalUrl.toLowerCase().startsWith("http")) {
+        } else if (StringUtils.hasText(newOriginalUrl)) {
+            boolean isUrlChanged = !newOriginalUrl.equals(dbVocabulary.getPhoneticAudioOriginalUrl());
+            dbVocabulary.setPhoneticAudioOriginalUrl(newOriginalUrl);
+
+            if (isUrlChanged && newOriginalUrl.toLowerCase().startsWith("http")) {
                 try {
-                    java.net.URL url = new java.net.URL(originalUrl);
+                    java.net.URL url = new java.net.URL(newOriginalUrl);
                     String ext = getFileExtension(url.getPath());
                     if (!StringUtils.hasText(ext)) ext = "mp3";
-                    String filename = baseName + "." + ext;
+                    String filename = baseName.endsWith("." + ext) ? baseName : baseName + "." + ext;
                     Path targetPath = Path.of(audioDir).resolve(filename);
                     Files.createDirectories(targetPath.getParent());
 
                     try (java.io.InputStream in = url.openStream()) {
                         Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
                     }
-                    vocabulary.setPhoneticAudioFilename(filename);
+                    dbVocabulary.setPhoneticAudioFilename(filename);
                 } catch (Exception e) {
-                    log.error("Failed to download audio from URL: {}", originalUrl, e);
+                    log.error("Failed to download audio from URL: {}", newOriginalUrl, e);
                 }
-            } else if (StringUtils.hasText(providedFilename)) {
-                vocabulary.setPhoneticAudioFilename(providedFilename);
+            } else {
+                String currentFilename = dbVocabulary.getPhoneticAudioFilename();
+                if (StringUtils.hasText(currentFilename)) {
+                    String ext = getFileExtension(currentFilename);
+                    String newFilename = baseName.endsWith("." + ext) ? baseName : baseName + "." + ext;
+                    if (!newFilename.equals(currentFilename)) {
+                        Path oldPath = Path.of(audioDir).resolve(currentFilename);
+                        Path newPath = Path.of(audioDir).resolve(newFilename);
+                        try {
+                            if (Files.exists(oldPath)) {
+                                Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                                dbVocabulary.setPhoneticAudioFilename(newFilename);
+                            }
+                        } catch (IOException e) {
+                            log.error("Failed to rename audio file from {} to {}", currentFilename, newFilename, e);
+                        }
+                    }
+                } else if (StringUtils.hasText(newProvidedFilename)) {
+                    dbVocabulary.setPhoneticAudioFilename(newProvidedFilename);
+                }
             }
         }
     }

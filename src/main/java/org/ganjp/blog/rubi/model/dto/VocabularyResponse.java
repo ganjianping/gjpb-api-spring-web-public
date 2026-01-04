@@ -29,6 +29,7 @@ public class VocabularyResponse {
     private String partOfSpeech;
     private String definition;
     private String example;
+    private String dictionaryUrl;
     private String tags;
     private Vocabulary.Language lang;
     private Integer displayOrder;
@@ -58,6 +59,7 @@ public class VocabularyResponse {
                 .partOfSpeech(vocabulary.getPartOfSpeech())
                 .definition(vocabulary.getDefinition())
                 .example(vocabulary.getExample())
+                .dictionaryUrl(vocabulary.getDictionaryUrl())
                 .tags(vocabulary.getTags())
                 .lang(vocabulary.getLang())
                 .displayOrder(vocabulary.getDisplayOrder())

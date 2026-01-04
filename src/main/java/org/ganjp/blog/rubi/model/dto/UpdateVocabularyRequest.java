@@ -32,6 +32,7 @@ public class UpdateVocabularyRequest {
     private String partOfSpeech;
     private String definition;
     private String example;
+    private String dictionaryUrl;
     private String tags;
     private Vocabulary.Language lang;
     private Integer displayOrder;
