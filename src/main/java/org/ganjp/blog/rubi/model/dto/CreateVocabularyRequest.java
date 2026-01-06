@@ -35,7 +35,6 @@ public class CreateVocabularyRequest {
 
     private String partOfSpeech;
 
-    @NotBlank(message = "Definition is required")
     private String definition;
 
     private String example;

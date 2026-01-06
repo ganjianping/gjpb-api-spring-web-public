@@ -4,22 +4,21 @@ USE gjpb;
 CREATE TABLE `rubi_vocabulary` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
   `word` varchar(100) NOT NULL COMMENT 'The vocabulary word',
-  `word_image_filename` varchar(100) DEFAULT NULL COMMENT 'Word image file path',
-  `word_image_original_url` varchar(500) DEFAULT NULL COMMENT 'Word image original URL',
-  `simple_past_tense` varchar(100) DEFAULT NULL COMMENT 'Past tense form (for verbs)',
-  `past_perfect_tense` varchar(100) DEFAULT NULL COMMENT 'Past perfect tense form (for verbs)',
-  `translation` varchar(500) DEFAULT NULL COMMENT 'translation of the word',
-  `synonyms` varchar(200) DEFAULT NULL COMMENT 'Comma-separated synonyms',
-  `plural_form` varchar(100) DEFAULT NULL COMMENT 'Plural form (for nouns)',
-
   `phonetic` varchar(100) DEFAULT NULL COMMENT 'Phonetic transcription',
-  `phonetic_audio_filename` varchar(100) DEFAULT NULL COMMENT 'Phonetic audio file path',
-  `phonetic_audio_original_url` varchar(500) DEFAULT NULL COMMENT 'Phonetic audio original URL',
 
   `part_of_speech` varchar(50) DEFAULT NULL COMMENT 'Part of speech (noun, verb, etc.)',
-  `definition` varchar(2000) NOT NULL COMMENT 'Definition of the word',
+  `simple_past_tense` varchar(100) DEFAULT NULL COMMENT 'Past tense form (for verbs)',
+  `past_perfect_tense` varchar(100) DEFAULT NULL COMMENT 'Past perfect tense form (for verbs)',
+  `plural_form` varchar(100) DEFAULT NULL COMMENT 'Plural form (for nouns)',
+  `translation` varchar(500) DEFAULT NULL COMMENT 'translation of the word',
+  `synonyms` varchar(200) DEFAULT NULL COMMENT 'Comma-separated synonyms',
+  `definition` varchar(2000) DEFAULT NULL COMMENT 'Definition of the word',
   `example` varchar(2000) DEFAULT NULL COMMENT 'Example sentence using the word',
   `dictionary_url` varchar(500) DEFAULT NULL COMMENT 'Link to an online dictionary entry',
+  `word_image_filename` varchar(100) DEFAULT NULL COMMENT 'Word image file path',
+  `word_image_original_url` varchar(500) DEFAULT NULL COMMENT 'Word image original URL',
+  `phonetic_audio_filename` varchar(100) DEFAULT NULL COMMENT 'Phonetic audio file path',
+  `phonetic_audio_original_url` varchar(500) DEFAULT NULL COMMENT 'Phonetic audio original URL',
   
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',
@@ -35,6 +34,7 @@ CREATE TABLE `rubi_vocabulary` (
   `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Active status flag',
   
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_rubi_vocab_word_lang` (`word`, `lang`),
 
   -- Indexes
   KEY `idx_rubi_vocab_word` (`word`),
@@ -47,3 +47,7 @@ CREATE TABLE `rubi_vocabulary` (
   CONSTRAINT `fk_rubi_vocab_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Vocabulary words for language learning';
+
+// create unique key to avoid duplicate word entries in the same language
+ALTER TABLE `rubi_vocabulary`
+ADD CONSTRAINT `uniq_rubi_vocab_word_lang` UNIQUE (`word`, `lang`);
