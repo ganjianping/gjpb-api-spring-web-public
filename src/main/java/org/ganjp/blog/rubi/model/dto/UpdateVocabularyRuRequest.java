@@ -4,14 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.rubi.model.entity.Vocabulary;
+import org.ganjp.blog.rubi.model.entity.VocabularyRu;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateVocabularyRequest {
+public class UpdateVocabularyRuRequest {
 
     private String word;
     private String wordImageFilename;
@@ -34,7 +34,7 @@ public class UpdateVocabularyRequest {
     private String example;
     private String dictionaryUrl;
     private String tags;
-    private Vocabulary.Language lang;
+    private VocabularyRu.Language lang;
     private Integer displayOrder;
     private Boolean isActive;
 }

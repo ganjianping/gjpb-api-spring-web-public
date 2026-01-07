@@ -6,13 +6,13 @@ import lombok.*;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "rubi_question_answser_image")
+@Table(name = "rubi_question_image")
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionAnswerImage {
+public class QuestionImageRu {
     @Id
     @Column(length = 36, nullable = false)
     private String id;

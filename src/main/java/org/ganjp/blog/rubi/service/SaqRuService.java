@@ -4,11 +4,11 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.common.exception.ResourceNotFoundException;
-import org.ganjp.blog.rubi.model.dto.CreateSaqRequest;
-import org.ganjp.blog.rubi.model.dto.SaqResponse;
-import org.ganjp.blog.rubi.model.dto.UpdateSaqRequest;
-import org.ganjp.blog.rubi.model.entity.Saq;
-import org.ganjp.blog.rubi.repository.SaqRepository;
+import org.ganjp.blog.rubi.model.dto.CreateSaqRuRequest;
+import org.ganjp.blog.rubi.model.dto.SaqRuResponse;
+import org.ganjp.blog.rubi.model.dto.UpdateSaqRuRequest;
+import org.ganjp.blog.rubi.model.entity.SaqRu;
+import org.ganjp.blog.rubi.repository.SaqRuRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -24,16 +24,16 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SaqService {
+public class SaqRuService {
 
-    private final SaqRepository saqRepository;
+    private final SaqRuRepository saqRuRepository;
 
     /**
      * Create a new SAQ
      */
     @Transactional
-    public SaqResponse createSaq(CreateSaqRequest request, String createdBy) {
-        Saq saq = Saq.builder()
+    public SaqRuResponse createSaq(CreateSaqRuRequest request, String createdBy) {
+        SaqRu saq = SaqRu.builder()
                 .id(UUID.randomUUID().toString())
                 .question(request.getQuestion())
                 .correctAnswer(request.getCorrectAnswer())
@@ -45,7 +45,7 @@ public class SaqService {
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
 
-        Saq savedSaq = saqRepository.save(saq);
+        SaqRu savedSaq = saqRuRepository.save(saq);
         log.info("Created SAQ with id: {}", savedSaq.getId());
 
         return mapToResponse(savedSaq);
@@ -54,8 +54,8 @@ public class SaqService {
     /**
      * Get SAQ by ID
      */
-    public SaqResponse getSaqById(String id) {
-        Saq saq = saqRepository.findById(id)
+    public SaqRuResponse getSaqById(String id) {
+        SaqRu saq = saqRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SAQ not found with id: " + id));
         return mapToResponse(saq);
     }
@@ -63,9 +63,9 @@ public class SaqService {
     /**
      * Get all SAQs with pagination and filtering
      */
-    public Page<SaqResponse> getAllSaqs(Pageable pageable, String lang, String difficultyLevel, String tags, Boolean isActive) {
-        Specification<Saq> spec = buildSpecification(lang, difficultyLevel, tags, isActive);
-        Page<Saq> saqs = saqRepository.findAll(spec, pageable);
+    public Page<SaqRuResponse> getAllSaqs(Pageable pageable, String lang, String difficultyLevel, String tags, Boolean isActive) {
+        Specification<SaqRu> spec = buildSpecification(lang, difficultyLevel, tags, isActive);
+        Page<SaqRu> saqs = saqRuRepository.findAll(spec, pageable);
         return saqs.map(this::mapToResponse);
     }
 
@@ -73,8 +73,8 @@ public class SaqService {
      * Update SAQ
      */
     @Transactional
-    public SaqResponse updateSaq(String id, UpdateSaqRequest request, String updatedBy) {
-        Saq saq = saqRepository.findById(id)
+    public SaqRuResponse updateSaq(String id, UpdateSaqRuRequest request, String updatedBy) {
+        SaqRu saq = saqRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SAQ not found with id: " + id));
 
         if (StringUtils.hasText(request.getQuestion())) {
@@ -104,7 +104,7 @@ public class SaqService {
 
         saq.setUpdatedBy(updatedBy);
 
-        Saq updatedSaq = saqRepository.save(saq);
+        SaqRu updatedSaq = saqRuRepository.save(saq);
         log.info("Updated SAQ with id: {}", updatedSaq.getId());
 
         return mapToResponse(updatedSaq);
@@ -115,12 +115,12 @@ public class SaqService {
      */
     @Transactional
     public void deleteSaq(String id, String deletedBy) {
-        Saq saq = saqRepository.findById(id)
+        SaqRu saq = saqRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SAQ not found with id: " + id));
 
         saq.setIsActive(false);
         saq.setUpdatedBy(deletedBy);
-        saqRepository.save(saq);
+        saqRuRepository.save(saq);
 
         log.info("Soft deleted SAQ with id: {}", id);
     }
@@ -128,8 +128,8 @@ public class SaqService {
     /**
      * Get active SAQs by language
      */
-    public List<SaqResponse> getActiveSaqsByLang(Saq.Language lang) {
-        List<Saq> saqs = saqRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang);
+    public List<SaqRuResponse> getActiveSaqsByLang(SaqRu.Language lang) {
+        List<SaqRu> saqs = saqRuRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang);
         return saqs.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -138,12 +138,12 @@ public class SaqService {
     /**
      * Build specification for filtering
      */
-    private Specification<Saq> buildSpecification(String lang, String difficultyLevel, String tags, Boolean isActive) {
+    private Specification<SaqRu> buildSpecification(String lang, String difficultyLevel, String tags, Boolean isActive) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (StringUtils.hasText(lang)) {
-                predicates.add(criteriaBuilder.equal(root.get("lang"), Saq.Language.valueOf(lang.toUpperCase())));
+                predicates.add(criteriaBuilder.equal(root.get("lang"), SaqRu.Language.valueOf(lang.toUpperCase())));
             }
 
             if (StringUtils.hasText(difficultyLevel)) {
@@ -165,8 +165,8 @@ public class SaqService {
     /**
      * Map entity to response DTO
      */
-    private SaqResponse mapToResponse(Saq saq) {
-        return SaqResponse.builder()
+    private SaqRuResponse mapToResponse(SaqRu saq) {
+        return SaqRuResponse.builder()
                 .id(saq.getId())
                 .question(saq.getQuestion())
                 .correctAnswer(saq.getCorrectAnswer())

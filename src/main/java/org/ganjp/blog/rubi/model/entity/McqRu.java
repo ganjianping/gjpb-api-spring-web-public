@@ -18,7 +18,7 @@ import org.ganjp.blog.common.model.entity.BaseEntity;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Mcq extends BaseEntity {
+public class McqRu extends BaseEntity {
 
     @Id
     @Column(name = "id", length = 36)

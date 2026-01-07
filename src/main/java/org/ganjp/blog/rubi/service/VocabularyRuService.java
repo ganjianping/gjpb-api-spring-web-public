@@ -6,11 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.common.exception.BusinessException;
 import org.ganjp.blog.common.exception.ResourceNotFoundException;
 import org.ganjp.blog.rubi.config.RubiProperties;
-import org.ganjp.blog.rubi.model.dto.CreateVocabularyRequest;
-import org.ganjp.blog.rubi.model.dto.UpdateVocabularyRequest;
-import org.ganjp.blog.rubi.model.dto.VocabularyResponse;
-import org.ganjp.blog.rubi.model.entity.Vocabulary;
-import org.ganjp.blog.rubi.repository.VocabularyRepository;
+import org.ganjp.blog.rubi.model.dto.CreateVocabularyRuRequest;
+import org.ganjp.blog.rubi.model.dto.UpdateVocabularyRuRequest;
+import org.ganjp.blog.rubi.model.dto.VocabularyRuResponse;
+import org.ganjp.blog.rubi.model.entity.VocabularyRu;
+import org.ganjp.blog.rubi.repository.VocabularyRuRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -34,21 +34,21 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class VocabularyService {
+public class VocabularyRuService {
 
-    private final VocabularyRepository vocabularyRepository;
+    private final VocabularyRuRepository vocabularyRepository;
     private final RubiProperties rubiProperties;
 
     /**
      * Create a new vocabulary
      */
     @Transactional
-    public VocabularyResponse createVocabulary(CreateVocabularyRequest request, String createdBy) {
+    public VocabularyRuResponse createVocabulary(CreateVocabularyRuRequest request, String createdBy) {
         if (vocabularyRepository.existsByWordAndLang(request.getWord(), request.getLang())) {
             throw new BusinessException("Vocabulary word already exists for this language: " + request.getWord());
         }
 
-        Vocabulary dbVocabulary = Vocabulary.builder()
+        VocabularyRu dbVocabulary = VocabularyRu.builder()
                 .id(UUID.randomUUID().toString())
                 .word(request.getWord())
                 .simplePastTense(request.getSimplePastTense())
@@ -76,16 +76,16 @@ public class VocabularyService {
         dbVocabulary.setCreatedBy(createdBy);
         dbVocabulary.setUpdatedBy(createdBy);
 
-        Vocabulary savedVocabulary = vocabularyRepository.save(dbVocabulary);
-        return VocabularyResponse.fromEntity(savedVocabulary);
+        VocabularyRu savedVocabulary = vocabularyRepository.save(dbVocabulary);
+        return VocabularyRuResponse.fromEntity(savedVocabulary);
     }
 
     /**
      * Update an existing vocabulary
      */
     @Transactional
-    public VocabularyResponse updateVocabulary(String id, UpdateVocabularyRequest request, String updatedBy) {
-        Vocabulary dbVocabulary = vocabularyRepository.findById(id)
+    public VocabularyRuResponse updateVocabulary(String id, UpdateVocabularyRuRequest request, String updatedBy) {
+        VocabularyRu dbVocabulary = vocabularyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found with id: " + id));
 
         if (request.getWord() != null && !request.getWord().equals(dbVocabulary.getWord())) {
@@ -127,11 +127,11 @@ public class VocabularyService {
 
         dbVocabulary.setUpdatedBy(updatedBy);
 
-        Vocabulary updatedVocabulary = vocabularyRepository.save(dbVocabulary);
-        return VocabularyResponse.fromEntity(updatedVocabulary);
+        VocabularyRu updatedVocabulary = vocabularyRepository.save(dbVocabulary);
+        return VocabularyRuResponse.fromEntity(updatedVocabulary);
     }
 
-    private void handleImageUpload(Vocabulary vocabulary, MultipartFile file, String originalUrl, String providedFilename) {
+    private void handleImageUpload(VocabularyRu vocabulary, MultipartFile file, String originalUrl, String providedFilename) {
         String imageDir = rubiProperties.getVocabulary().getImage().getDirectory();
         Long maxSize = rubiProperties.getVocabulary().getImage().getMaxSize();
 
@@ -210,7 +210,7 @@ public class VocabularyService {
         }
     }
 
-    private void handleAudioUpload(Vocabulary dbVocabulary, MultipartFile newFile, String newOriginalUrl, String newProvidedFilename) {
+    private void handleAudioUpload(VocabularyRu dbVocabulary, MultipartFile newFile, String newOriginalUrl, String newProvidedFilename) {
         String audioDir = rubiProperties.getVocabulary().getAudio().getDirectory();
 
         String baseName = StringUtils.hasText(newProvidedFilename) ? newProvidedFilename : dbVocabulary.getWord();
@@ -310,10 +310,10 @@ public class VocabularyService {
     /**
      * Get vocabulary by ID
      */
-    public VocabularyResponse getVocabularyById(String id) {
-        Vocabulary vocabulary = vocabularyRepository.findById(id)
+    public VocabularyRuResponse getVocabularyById(String id) {
+        VocabularyRu vocabulary = vocabularyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found with id: " + id));
-        return VocabularyResponse.fromEntity(vocabulary);
+        return VocabularyRuResponse.fromEntity(vocabulary);
     }
 
     /**
@@ -321,7 +321,7 @@ public class VocabularyService {
      */
     @Transactional
     public void deleteVocabulary(String id, String updatedBy) {
-        Vocabulary vocabulary = vocabularyRepository.findById(id)
+        VocabularyRu vocabulary = vocabularyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found with id: " + id));
         
         vocabulary.setIsActive(false);
@@ -332,8 +332,8 @@ public class VocabularyService {
     /**
      * Get vocabularies with filtering
      */
-    public Page<VocabularyResponse> getVocabularies(String word, Vocabulary.Language lang, String tags, Boolean isActive, Pageable pageable) {
-        Specification<Vocabulary> spec = (root, query, cb) -> {
+    public Page<VocabularyRuResponse> getVocabularies(String word, VocabularyRu.Language lang, String tags, Boolean isActive, Pageable pageable) {
+        Specification<VocabularyRu> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (StringUtils.hasText(word)) {
@@ -355,16 +355,16 @@ public class VocabularyService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        return vocabularyRepository.findAll(spec, pageable).map(VocabularyResponse::fromEntity);
+        return vocabularyRepository.findAll(spec, pageable).map(VocabularyRuResponse::fromEntity);
     }
     
     /**
      * Get active vocabularies by language
      */
-    public List<VocabularyResponse> getVocabulariesByLanguage(Vocabulary.Language lang) {
+    public List<VocabularyRuResponse> getVocabulariesByLanguage(VocabularyRu.Language lang) {
         return vocabularyRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang)
                 .stream()
-                .map(VocabularyResponse::fromEntity)
+                .map(VocabularyRuResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 }

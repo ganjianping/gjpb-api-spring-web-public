@@ -6,11 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.ganjp.blog.common.model.PaginatedResponse;
-import org.ganjp.blog.rubi.model.dto.CreateSaqRequest;
-import org.ganjp.blog.rubi.model.dto.SaqResponse;
-import org.ganjp.blog.rubi.model.dto.UpdateSaqRequest;
-import org.ganjp.blog.rubi.model.entity.Saq;
-import org.ganjp.blog.rubi.service.SaqService;
+import org.ganjp.blog.rubi.model.dto.CreateMcqRuRequest;
+import org.ganjp.blog.rubi.model.dto.McqRuResponse;
+import org.ganjp.blog.rubi.model.dto.UpdateMcqRuRequest;
+import org.ganjp.blog.rubi.model.entity.McqRu;
+import org.ganjp.blog.rubi.service.McqRuService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,30 +22,30 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/rubi/saqs")
+@RequestMapping("/v1/ru/mcqs")
 @RequiredArgsConstructor
-public class SaqController {
+public class McqRuController {
 
-    private final SaqService saqService;
+    private final McqRuService mcqRuService;
     private final JwtUtils jwtUtils;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<SaqResponse>> createSaq(
-            @Valid @RequestBody CreateSaqRequest request,
+    public ResponseEntity<ApiResponse<McqRuResponse>> createMcq(
+            @Valid @RequestBody CreateMcqRuRequest request,
             HttpServletRequest httpRequest) {
         String createdBy = extractUserIdFromRequest(httpRequest);
-        SaqResponse response = saqService.createSaq(request, createdBy);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "SAQ created successfully"));
+        McqRuResponse response = mcqRuService.createMcq(request, createdBy);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "MCQ created successfully"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SaqResponse>> getSaqById(@PathVariable String id) {
-        SaqResponse response = saqService.getSaqById(id);
-        return ResponseEntity.ok(ApiResponse.success(response, "SAQ retrieved successfully"));
+    public ResponseEntity<ApiResponse<McqRuResponse>> getMcqById(@PathVariable String id) {
+        McqRuResponse response = mcqRuService.getMcqById(id);
+        return ResponseEntity.ok(ApiResponse.success(response, "MCQ retrieved successfully"));
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PaginatedResponse<SaqResponse>>> getAllSaqs(
+    public ResponseEntity<ApiResponse<PaginatedResponse<McqRuResponse>>> getAllMcqs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -58,41 +58,41 @@ public class SaqController {
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<SaqResponse> saqPage = saqService.getAllSaqs(pageable, lang, difficultyLevel, tags, isActive);
+        Page<McqRuResponse> mcqPage = mcqRuService.getAllMcqs(pageable, lang, difficultyLevel, tags, isActive);
 
-        PaginatedResponse<SaqResponse> paginatedResponse = PaginatedResponse.of(saqPage);
+        PaginatedResponse<McqRuResponse> paginatedResponse = PaginatedResponse.of(mcqPage);
 
-        return ResponseEntity.ok(ApiResponse.success(paginatedResponse, "SAQs retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(paginatedResponse, "MCQs retrieved successfully"));
     }
 
     @GetMapping("/active/{lang}")
-    public ResponseEntity<ApiResponse<List<SaqResponse>>> getActiveSaqsByLang(@PathVariable String lang) {
+    public ResponseEntity<ApiResponse<List<McqRuResponse>>> getActiveMcqsByLang(@PathVariable String lang) {
         try {
-            Saq.Language language = Saq.Language.valueOf(lang.toUpperCase());
-            List<SaqResponse> responses = saqService.getActiveSaqsByLang(language);
-            return ResponseEntity.ok(ApiResponse.success(responses, "SAQs retrieved successfully"));
+            McqRu.Language language = McqRu.Language.valueOf(lang.toUpperCase());
+            List<McqRuResponse> responses = mcqRuService.getActiveMcqsByLang(language);
+            return ResponseEntity.ok(ApiResponse.success(responses, "MCQs retrieved successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid language: " + lang, null));
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SaqResponse>> updateSaq(
+    public ResponseEntity<ApiResponse<McqRuResponse>> updateMcq(
             @PathVariable String id,
-            @Valid @RequestBody UpdateSaqRequest request,
+            @Valid @RequestBody UpdateMcqRuRequest request,
             HttpServletRequest httpRequest) {
         String updatedBy = extractUserIdFromRequest(httpRequest);
-        SaqResponse response = saqService.updateSaq(id, request, updatedBy);
-        return ResponseEntity.ok(ApiResponse.success(response, "SAQ updated successfully"));
+        McqRuResponse response = mcqRuService.updateMcq(id, request, updatedBy);
+        return ResponseEntity.ok(ApiResponse.success(response, "MCQ updated successfully"));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteSaq(
+    public ResponseEntity<ApiResponse<Void>> deleteMcq(
             @PathVariable String id,
             HttpServletRequest httpRequest) {
         String deletedBy = extractUserIdFromRequest(httpRequest);
-        saqService.deleteSaq(id, deletedBy);
-        return ResponseEntity.ok(ApiResponse.success(null, "SAQ deleted successfully"));
+        mcqRuService.deleteMcq(id, deletedBy);
+        return ResponseEntity.ok(ApiResponse.success(null, "MCQ deleted successfully"));
     }
 
     private String extractUserIdFromRequest(HttpServletRequest request) {

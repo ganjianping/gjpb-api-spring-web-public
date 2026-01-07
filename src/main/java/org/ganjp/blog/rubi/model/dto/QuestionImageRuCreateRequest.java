@@ -8,14 +8,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.rubi.model.entity.QuestionAnswerImage.Language;
+import org.ganjp.blog.rubi.model.entity.QuestionImageRu.Language;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionAnswerImageCreateRequest {
+public class QuestionImageRuCreateRequest {
     @Size(max = 36, message = "MCQ ID must not exceed 36 characters")
     private String mcqId;
 

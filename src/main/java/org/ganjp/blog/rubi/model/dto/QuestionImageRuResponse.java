@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.rubi.model.entity.QuestionAnswerImage.Language;
+import org.ganjp.blog.rubi.model.entity.QuestionImageRu.Language;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionAnswerImageResponse {
+public class QuestionImageRuResponse {
     private String id;
     private String mcqId;
     private String saqId;

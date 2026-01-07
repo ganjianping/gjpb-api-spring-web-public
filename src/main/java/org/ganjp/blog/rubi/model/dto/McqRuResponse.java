@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.rubi.model.entity.Mcq;
+import org.ganjp.blog.rubi.model.entity.McqRu;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class McqResponse {
+public class McqRuResponse {
 
     private String id;
     private String question;
@@ -27,7 +27,7 @@ public class McqResponse {
     private Integer failCount;
     private Integer successCount;
     private String tags;
-    private Mcq.Language lang;
+    private McqRu.Language lang;
     private Integer displayOrder;
     private Boolean isActive;
     private LocalDateTime createdAt;

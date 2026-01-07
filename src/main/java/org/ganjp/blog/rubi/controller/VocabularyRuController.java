@@ -6,11 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.ganjp.blog.common.model.PaginatedResponse;
-import org.ganjp.blog.rubi.model.dto.CreateVocabularyRequest;
-import org.ganjp.blog.rubi.model.dto.UpdateVocabularyRequest;
-import org.ganjp.blog.rubi.model.dto.VocabularyResponse;
-import org.ganjp.blog.rubi.model.entity.Vocabulary;
-import org.ganjp.blog.rubi.service.VocabularyService;
+import org.ganjp.blog.rubi.model.dto.CreateVocabularyRuRequest;
+import org.ganjp.blog.rubi.model.dto.UpdateVocabularyRuRequest;
+import org.ganjp.blog.rubi.model.dto.VocabularyRuResponse;
+import org.ganjp.blog.rubi.model.entity.VocabularyRu;
+import org.ganjp.blog.rubi.service.VocabularyRuService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,54 +23,54 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/vocabularies")
+@RequestMapping("/v1/ru/vocabularies")
 @RequiredArgsConstructor
-public class VocabularyController {
+public class VocabularyRuController {
 
-    private final VocabularyService vocabularyService;
+    private final VocabularyRuService vocabularyService;
     private final JwtUtils jwtUtils;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<VocabularyResponse>> createVocabulary(
-            @Valid @ModelAttribute CreateVocabularyRequest request,
+    public ResponseEntity<ApiResponse<VocabularyRuResponse>> createVocabulary(
+            @Valid @ModelAttribute CreateVocabularyRuRequest request,
             HttpServletRequest httpRequest) {
         String createdBy = extractUserIdFromRequest(httpRequest);
-        VocabularyResponse response = vocabularyService.createVocabulary(request, createdBy);
+        VocabularyRuResponse response = vocabularyService.createVocabulary(request, createdBy);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "Vocabulary created successfully"));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<VocabularyResponse>> createVocabularyJson(
-            @Valid @RequestBody CreateVocabularyRequest request,
+    public ResponseEntity<ApiResponse<VocabularyRuResponse>> createVocabularyJson(
+            @Valid @RequestBody CreateVocabularyRuRequest request,
             HttpServletRequest httpRequest) {
         String createdBy = extractUserIdFromRequest(httpRequest);
-        VocabularyResponse response = vocabularyService.createVocabulary(request, createdBy);
+        VocabularyRuResponse response = vocabularyService.createVocabulary(request, createdBy);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "Vocabulary created successfully"));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<VocabularyResponse>> updateVocabulary(
+    public ResponseEntity<ApiResponse<VocabularyRuResponse>> updateVocabulary(
             @PathVariable String id,
-            @Valid @ModelAttribute UpdateVocabularyRequest request,
+            @Valid @ModelAttribute UpdateVocabularyRuRequest request,
             HttpServletRequest httpRequest) {
         String updatedBy = extractUserIdFromRequest(httpRequest);
-        VocabularyResponse response = vocabularyService.updateVocabulary(id, request, updatedBy);
+        VocabularyRuResponse response = vocabularyService.updateVocabulary(id, request, updatedBy);
         return ResponseEntity.ok(ApiResponse.success(response, "Vocabulary updated successfully"));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<VocabularyResponse>> updateVocabularyJson(
+    public ResponseEntity<ApiResponse<VocabularyRuResponse>> updateVocabularyJson(
             @PathVariable String id,
-            @Valid @RequestBody UpdateVocabularyRequest request,
+            @Valid @RequestBody UpdateVocabularyRuRequest request,
             HttpServletRequest httpRequest) {
         String updatedBy = extractUserIdFromRequest(httpRequest);
-        VocabularyResponse response = vocabularyService.updateVocabulary(id, request, updatedBy);
+        VocabularyRuResponse response = vocabularyService.updateVocabulary(id, request, updatedBy);
         return ResponseEntity.ok(ApiResponse.success(response, "Vocabulary updated successfully"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<VocabularyResponse>> getVocabularyById(@PathVariable String id) {
-        VocabularyResponse response = vocabularyService.getVocabularyById(id);
+    public ResponseEntity<ApiResponse<VocabularyRuResponse>> getVocabularyById(@PathVariable String id) {
+        VocabularyRuResponse response = vocabularyService.getVocabularyById(id);
         return ResponseEntity.ok(ApiResponse.success(response, "Vocabulary retrieved successfully"));
     }
 
@@ -82,22 +82,22 @@ public class VocabularyController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PaginatedResponse<VocabularyResponse>>> getVocabularies(
+    public ResponseEntity<ApiResponse<PaginatedResponse<VocabularyRuResponse>>> getVocabularies(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "updatedAt") String sort,
             @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(required = false) String word,
-            @RequestParam(required = false) Vocabulary.Language lang,
+            @RequestParam(required = false) VocabularyRu.Language lang,
             @RequestParam(required = false) String tags,
             @RequestParam(required = false) Boolean isActive
     ) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         
-        Page<VocabularyResponse> pageResult = vocabularyService.getVocabularies(word, lang, tags, isActive, pageable);
+        Page<VocabularyRuResponse> pageResult = vocabularyService.getVocabularies(word, lang, tags, isActive, pageable);
         
-        PaginatedResponse<VocabularyResponse> response = PaginatedResponse.of(
+        PaginatedResponse<VocabularyRuResponse> response = PaginatedResponse.of(
                 pageResult.getContent(), 
                 pageResult.getNumber(), 
                 pageResult.getSize(), 
@@ -108,8 +108,8 @@ public class VocabularyController {
     }
 
     @GetMapping("/by-language/{lang}")
-    public ResponseEntity<ApiResponse<List<VocabularyResponse>>> getVocabulariesByLanguage(@PathVariable Vocabulary.Language lang) {
-        List<VocabularyResponse> response = vocabularyService.getVocabulariesByLanguage(lang);
+    public ResponseEntity<ApiResponse<List<VocabularyRuResponse>>> getVocabulariesByLanguage(@PathVariable VocabularyRu.Language lang) {
+        List<VocabularyRuResponse> response = vocabularyService.getVocabulariesByLanguage(lang);
         return ResponseEntity.ok(ApiResponse.success(response, "Vocabularies retrieved successfully"));
     }
 

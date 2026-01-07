@@ -133,7 +133,7 @@ CREATE TABLE `rubi_saq` (
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Short answer questions for vocabulary practice';
 
-CREATE TABLE `rubi_question_answser_image` (
+CREATE TABLE `rubi_question_image` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
   `mcq_id` char(36) DEFAULT NULL COMMENT 'Associated MCQ ID',
   `saq_id` char(36) DEFAULT NULL COMMENT 'Associated SAQ ID',

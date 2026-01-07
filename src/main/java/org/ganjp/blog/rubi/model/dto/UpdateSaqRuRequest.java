@@ -4,25 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.rubi.model.entity.Mcq;
+import org.ganjp.blog.rubi.model.entity.SaqRu;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateMcqRequest {
+public class UpdateSaqRuRequest {
 
     private String question;
-    private String optionA;
-    private String optionB;
-    private String optionC;
-    private String optionD;
-    private String correctAnswers;
-    private Boolean isMultipleCorrect;
+    private String correctAnswer;
     private String explanation;
     private String difficultyLevel;
     private String tags;
-    private Mcq.Language lang;
+    private SaqRu.Language lang;
     private Integer displayOrder;
     private Boolean isActive;
 }

@@ -3,11 +3,11 @@ package org.ganjp.blog.rubi.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.rubi.config.RubiProperties;
-import org.ganjp.blog.rubi.model.dto.QuestionAnswerImageCreateRequest;
-import org.ganjp.blog.rubi.model.dto.QuestionAnswerImageUpdateRequest;
-import org.ganjp.blog.rubi.model.dto.QuestionAnswerImageResponse;
-import org.ganjp.blog.rubi.model.entity.QuestionAnswerImage;
-import org.ganjp.blog.rubi.repository.QuestionAnswerImageRepository;
+import org.ganjp.blog.rubi.model.dto.QuestionImageRuCreateRequest;
+import org.ganjp.blog.rubi.model.dto.QuestionImageRuUpdateRequest;
+import org.ganjp.blog.rubi.model.dto.QuestionImageRuResponse;
+import org.ganjp.blog.rubi.model.entity.QuestionImageRu;
+import org.ganjp.blog.rubi.repository.QuestionImageRuRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,8 +25,8 @@ import javax.imageio.ImageIO;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class QuestionAnswerImageService {
-    private final QuestionAnswerImageRepository questionAnswerImageRepository;
+public class QuestionImageRuService {
+    private final QuestionImageRuRepository questionImageRuRepository;
     private final RubiProperties rubiProperties;
 
     public org.springframework.core.io.Resource getImage(String filename) {
@@ -51,22 +51,22 @@ public class QuestionAnswerImageService {
         return filePath.toFile();
     }
 
-    public QuestionAnswerImageResponse getQuestionAnswerImageById(String id) {
-        Optional<QuestionAnswerImage> imageOpt = questionAnswerImageRepository.findByIdAndIsActiveTrue(id);
+    public QuestionImageRuResponse getQuestionImageRuById(String id) {
+        Optional<QuestionImageRu> imageOpt = questionImageRuRepository.findByIdAndIsActiveTrue(id);
         return imageOpt.map(this::toResponse).orElse(null);
     }
 
-    public List<QuestionAnswerImageResponse> listQuestionAnswerImagesByMcq(String mcqId) {
-        List<QuestionAnswerImage> images = questionAnswerImageRepository.findByMcqIdAndIsActiveTrueOrderByDisplayOrderAsc(mcqId);
+    public List<QuestionImageRuResponse> listQuestionImageRusByMcq(String mcqId) {
+        List<QuestionImageRu> images = questionImageRuRepository.findByMcqIdAndIsActiveTrueOrderByDisplayOrderAsc(mcqId);
         return images.stream().map(this::toResponse).toList();
     }
 
-    public List<QuestionAnswerImageResponse> listQuestionAnswerImagesBySaq(String saqId) {
-        List<QuestionAnswerImage> images = questionAnswerImageRepository.findBySaqIdAndIsActiveTrueOrderByDisplayOrderAsc(saqId);
+    public List<QuestionImageRuResponse> listQuestionImageRusBySaq(String saqId) {
+        List<QuestionImageRu> images = questionImageRuRepository.findBySaqIdAndIsActiveTrueOrderByDisplayOrderAsc(saqId);
         return images.stream().map(this::toResponse).toList();
     }
 
-    public QuestionAnswerImageResponse createQuestionAnswerImage(QuestionAnswerImageCreateRequest request, String userId) {
+    public QuestionImageRuResponse createQuestionImageRu(QuestionImageRuCreateRequest request, String userId) {
         try {
             if (request.getFilename() == null || request.getFilename().trim().isEmpty()) {
                 throw new IllegalArgumentException("Filename is required");
@@ -122,7 +122,7 @@ public class QuestionAnswerImageService {
             Integer width = bufferedImage.getWidth();
             Integer height = bufferedImage.getHeight();
 
-            QuestionAnswerImage questionAnswerImage = QuestionAnswerImage.builder()
+            QuestionImageRu questionAnswerImage = QuestionImageRu.builder()
                     .id(UUID.randomUUID().toString())
                     .mcqId(request.getMcqId())
                     .saqId(request.getSaqId())
@@ -139,7 +139,7 @@ public class QuestionAnswerImageService {
                     .updatedBy(userId)
                     .build();
 
-            QuestionAnswerImage saved = questionAnswerImageRepository.save(questionAnswerImage);
+            QuestionImageRu saved = questionImageRuRepository.save(questionAnswerImage);
             return toResponse(saved);
         } catch (IOException e) {
             log.error("Error creating question answer image", e);
@@ -147,10 +147,10 @@ public class QuestionAnswerImageService {
         }
     }
 
-    public QuestionAnswerImageResponse updateQuestionAnswerImage(String id, QuestionAnswerImageUpdateRequest request, String userId) {
-        Optional<QuestionAnswerImage> imageOpt = questionAnswerImageRepository.findByIdAndIsActiveTrue(id);
+    public QuestionImageRuResponse updateQuestionImageRu(String id, QuestionImageRuUpdateRequest request, String userId) {
+        Optional<QuestionImageRu> imageOpt = questionImageRuRepository.findByIdAndIsActiveTrue(id);
         if (imageOpt.isEmpty()) return null;
-        QuestionAnswerImage image = imageOpt.get();
+        QuestionImageRu image = imageOpt.get();
 
         if (request.getMcqId() != null) image.setMcqId(request.getMcqId());
         if (request.getSaqId() != null) image.setSaqId(request.getSaqId());
@@ -162,24 +162,24 @@ public class QuestionAnswerImageService {
         image.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         image.setUpdatedBy(userId);
 
-        QuestionAnswerImage saved = questionAnswerImageRepository.save(image);
+        QuestionImageRu saved = questionImageRuRepository.save(image);
         return toResponse(saved);
     }
 
-    public void deleteQuestionAnswerImage(String id) {
-        Optional<QuestionAnswerImage> imageOpt = questionAnswerImageRepository.findById(id);
+    public void deleteQuestionImageRu(String id) {
+        Optional<QuestionImageRu> imageOpt = questionImageRuRepository.findById(id);
         if (imageOpt.isPresent()) {
-            QuestionAnswerImage image = imageOpt.get();
+            QuestionImageRu image = imageOpt.get();
             // Soft delete
             image.setIsActive(false);
-            questionAnswerImageRepository.save(image);
+            questionImageRuRepository.save(image);
         }
     }
 
-    public void deleteQuestionAnswerImagePermanently(String id) {
-        Optional<QuestionAnswerImage> imageOpt = questionAnswerImageRepository.findById(id);
+    public void deleteQuestionImageRuPermanently(String id) {
+        Optional<QuestionImageRu> imageOpt = questionImageRuRepository.findById(id);
         if (imageOpt.isPresent()) {
-            QuestionAnswerImage image = imageOpt.get();
+            QuestionImageRu image = imageOpt.get();
             
             // Delete file
             if (image.getFilename() != null) {
@@ -192,13 +192,13 @@ public class QuestionAnswerImageService {
                 }
             }
             
-            questionAnswerImageRepository.delete(image);
+            questionImageRuRepository.delete(image);
         }
     }
     
-    public List<QuestionAnswerImageResponse> searchQuestionAnswerImages(
-            String mcqId, String saqId, QuestionAnswerImage.Language lang, Boolean isActive) {
-        return questionAnswerImageRepository.searchQuestionAnswerImages(mcqId, saqId, lang, isActive)
+    public List<QuestionImageRuResponse> searchQuestionImageRus(
+            String mcqId, String saqId, QuestionImageRu.Language lang, Boolean isActive) {
+        return questionImageRuRepository.searchQuestionImageRus(mcqId, saqId, lang, isActive)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -227,12 +227,12 @@ public class QuestionAnswerImageService {
         return filename.substring(lastDot + 1).toLowerCase();
     }
 
-    private QuestionAnswerImageResponse toResponse(QuestionAnswerImage image) {
+    private QuestionImageRuResponse toResponse(QuestionImageRu image) {
         String fileUrl = null;
         if (image.getFilename() != null) {
             fileUrl = rubiProperties.getQuestionImage().getBaseUrl() + "/" + image.getFilename();
         }
-        return QuestionAnswerImageResponse.builder()
+        return QuestionImageRuResponse.builder()
                 .id(image.getId())
                 .mcqId(image.getMcqId())
                 .saqId(image.getSaqId())

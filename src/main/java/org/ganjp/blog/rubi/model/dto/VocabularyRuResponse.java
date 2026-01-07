@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.rubi.model.entity.Vocabulary;
+import org.ganjp.blog.rubi.model.entity.VocabularyRu;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VocabularyResponse {
+public class VocabularyRuResponse {
 
     private String id;
     private String word;
@@ -31,7 +31,7 @@ public class VocabularyResponse {
     private String example;
     private String dictionaryUrl;
     private String tags;
-    private Vocabulary.Language lang;
+    private VocabularyRu.Language lang;
     private Integer displayOrder;
     private Boolean isActive;
     private LocalDateTime createdAt;
@@ -39,11 +39,11 @@ public class VocabularyResponse {
     private String createdBy;
     private String updatedBy;
 
-    public static VocabularyResponse fromEntity(Vocabulary vocabulary) {
+    public static VocabularyRuResponse fromEntity(VocabularyRu vocabulary) {
         if (vocabulary == null) {
             return null;
         }
-        return VocabularyResponse.builder()
+        return VocabularyRuResponse.builder()
                 .id(vocabulary.getId())
                 .word(vocabulary.getWord())
                 .wordImageFilename(vocabulary.getWordImageFilename())

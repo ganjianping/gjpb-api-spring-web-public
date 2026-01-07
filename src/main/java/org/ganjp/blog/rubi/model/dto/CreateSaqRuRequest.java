@@ -1,30 +1,32 @@
 package org.ganjp.blog.rubi.model.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.rubi.model.entity.Saq;
-
-import java.time.LocalDateTime;
+import org.ganjp.blog.rubi.model.entity.SaqRu;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SaqResponse {
+public class CreateSaqRuRequest {
 
-    private String id;
+    @NotBlank(message = "Question is required")
     private String question;
+
+    @NotBlank(message = "Correct answer is required")
     private String correctAnswer;
+
     private String explanation;
     private String difficultyLevel;
     private String tags;
-    private Saq.Language lang;
+
+    @NotNull(message = "Language is required")
+    private SaqRu.Language lang;
+
     private Integer displayOrder;
     private Boolean isActive;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private String createdBy;
-    private String updatedBy;
 }

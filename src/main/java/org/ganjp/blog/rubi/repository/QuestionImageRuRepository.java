@@ -1,6 +1,6 @@
 package org.ganjp.blog.rubi.repository;
 
-import org.ganjp.blog.rubi.model.entity.QuestionAnswerImage;
+import org.ganjp.blog.rubi.model.entity.QuestionImageRu;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,25 +10,25 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface QuestionAnswerImageRepository extends JpaRepository<QuestionAnswerImage, String> {
-    List<QuestionAnswerImage> findByMcqIdAndIsActiveTrueOrderByDisplayOrderAsc(String mcqId);
+public interface QuestionImageRuRepository extends JpaRepository<QuestionImageRu, String> {
+    List<QuestionImageRu> findByMcqIdAndIsActiveTrueOrderByDisplayOrderAsc(String mcqId);
 
-    List<QuestionAnswerImage> findBySaqIdAndIsActiveTrueOrderByDisplayOrderAsc(String saqId);
+    List<QuestionImageRu> findBySaqIdAndIsActiveTrueOrderByDisplayOrderAsc(String saqId);
 
-    Optional<QuestionAnswerImage> findByIdAndIsActiveTrue(String id);
+    Optional<QuestionImageRu> findByIdAndIsActiveTrue(String id);
 
     boolean existsByFilename(String filename);
 
-    @Query("SELECT i FROM QuestionAnswerImage i WHERE " +
+    @Query("SELECT i FROM QuestionImageRu i WHERE " +
         "(:mcqId IS NULL OR i.mcqId = :mcqId) AND " +
         "(:saqId IS NULL OR i.saqId = :saqId) AND " +
         "(:lang IS NULL OR i.lang = :lang) AND " +
         "(:isActive IS NULL OR i.isActive = :isActive) " +
         "ORDER BY i.displayOrder")
-    List<QuestionAnswerImage> searchQuestionAnswerImages(
+    List<QuestionImageRu> searchQuestionImageRus(
         @Param("mcqId") String mcqId,
         @Param("saqId") String saqId,
-        @Param("lang") QuestionAnswerImage.Language lang,
+        @Param("lang") QuestionImageRu.Language lang,
         @Param("isActive") Boolean isActive
     );
 }
