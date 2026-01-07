@@ -114,3 +114,10 @@ rubi:
       max-size: 800
     audio:
       directory: /Users/ganjianping/Local/Rubi/vocabularies/audios
+  question-image:
+    base-url: http://localhost:8081/api/v1/public/rubi/question-answer-images
+    upload:
+      directory: /Users/ganjianping/Local/Rubi/question-images
+      max-file-size: 10485760
+      resize:
+        max-size: 1024

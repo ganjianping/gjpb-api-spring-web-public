@@ -113,3 +113,10 @@ rubi:
       max-size: 800
     audio:
       directory: /var/www/gjpb/resources/rubi/vocabularies/audios
+  question-image:
+    base-url: https://www.ganjianping.com/resources/rubi/question-images
+    upload:
+      directory: /var/www/gjpb/resources/rubi/question-images
+      max-file-size: 10485760
+      resize:
+        max-size: 1024

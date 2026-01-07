@@ -255,7 +255,7 @@ CREATE TABLE `cms_article_image` (
 
   PRIMARY KEY (`id`),
   INDEX `idx_article_id` (`article_id`),
-  INDEX `idx_active_lang_order` (`is_active`, `lang`, `display_order`
+  INDEX `idx_active_lang_order` (`is_active`, `lang`, `display_order`),
   INDEX `idx_filename` (`filename`),
   INDEX `idx_created_at` (`created_at`),
   INDEX `idx_created_by` (`created_by`),
