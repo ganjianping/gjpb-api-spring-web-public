@@ -238,52 +238,9 @@ public class PublicCmsController {
      */
     private <T> PaginatedResponse<Map<String, Object>> sanitizeLogos(PaginatedResponse<T> raw) {
         List<Map<String, Object>> list = raw.getContent().stream()
-            .map(item -> objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {}))
-            .filter(m -> {
-                Object isActive = m.get("isActive");
-                return isActive == null || Boolean.TRUE.equals(isActive);
-            })
-            .map(m -> {
-                // Build full url from filename
-                Object fnameObj = m.get("filename");
-                if (fnameObj instanceof String) {
-                    String fname = (String) fnameObj;
-                    if (!fname.isBlank() && logoBaseUrl != null && !logoBaseUrl.isBlank()) {
-                        String prefix = logoBaseUrl;
-                        if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
-                        else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
-                        m.put("url", prefix + fname);
-                    } else if (!fname.isBlank() && (fname.startsWith("http") || fname.startsWith("/"))) {
-                        // if filename already contains absolute or starts with slash and no base is set, keep as-is in url
-                        m.put("url", fname);
-                    }
-                }
-
-                // Build thumbnailUrl from thumbnailFilename
-                Object tnameObj = m.get("thumbnailFilename");
-                if (tnameObj instanceof String) {
-                    String tname = (String) tnameObj;
-                    if (!tname.isBlank() && logoBaseUrl != null && !logoBaseUrl.isBlank()) {
-                        String prefix = logoBaseUrl;
-                        if (!prefix.endsWith("/") && !tname.startsWith("/")) prefix = prefix + "/";
-                        else if (prefix.endsWith("/") && tname.startsWith("/")) tname = tname.substring(1);
-                        m.put("thumbnailUrl", prefix + tname);
-                    } else if (!tname.isBlank() && (tname.startsWith("http") || tname.startsWith("/"))) {
-                        m.put("thumbnailUrl", tname);
-                    }
-                }
-
-                // remove original filename keys and other internal props
-                m.remove("filename");
-                m.remove("thumbnailFilename");
-                m.remove("isActive");
-                m.remove("createdAt");
-                m.remove("createdBy");
-                m.remove("updatedBy");
-                m.remove("tagsArray");
-                m.remove("content");
-                return m;
-            })
+            .map(this::convertToMap)
+            .filter(this::isActive)
+            .map(this::processLogoMap)
             .collect(Collectors.toList());
 
         return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
@@ -296,56 +253,9 @@ public class PublicCmsController {
      */
     private <T> PaginatedResponse<Map<String, Object>> sanitizeVideos(PaginatedResponse<T> raw) {
         List<Map<String, Object>> list = raw.getContent().stream()
-            .map(item -> objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {}))
-            .filter(m -> {
-                Object isActive = m.get("isActive");
-                return isActive == null || Boolean.TRUE.equals(isActive);
-            })
-            .map(m -> {
-                // Build full video url from filename
-                Object fnameObj = m.get("filename");
-                if (fnameObj instanceof String) {
-                    String fname = (String) fnameObj;
-                    if (!fname.isBlank() && videoBaseUrl != null && !videoBaseUrl.isBlank()) {
-                        String prefix = videoBaseUrl;
-                        if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
-                        else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
-                        m.put("url", prefix + fname);
-                    } else if (!fname.isBlank() && (fname.startsWith("http") || fname.startsWith("/"))) {
-                        m.put("url", fname);
-                    }
-                }
-
-                // Build coverImageUrl from coverImageFilename under cover-images path
-                Object cimgObj = m.get("coverImageFilename");
-                if (cimgObj instanceof String) {
-                    String cimg = (String) cimgObj;
-                    if (!cimg.isBlank() && videoBaseUrl != null && !videoBaseUrl.isBlank()) {
-                        String prefix = videoBaseUrl;
-                        if (!prefix.endsWith("/")) prefix = prefix + "/";
-                        // ensure 'cover-images/' segment
-                        if (!prefix.endsWith("cover-images/")) {
-                            if (!prefix.endsWith("/")) prefix = prefix + "cover-images/";
-                            else prefix = prefix + "cover-images/";
-                        }
-                        if (cimg.startsWith("/")) cimg = cimg.substring(1);
-                        m.put("coverImageUrl", prefix + cimg);
-                    } else if (!cimg.isBlank() && (cimg.startsWith("http") || cimg.startsWith("/"))) {
-                        m.put("coverImageUrl", cimg);
-                    }
-                }
-
-                // remove original filename keys and other internal props
-                m.remove("filename");
-                m.remove("coverImageFilename");
-                m.remove("isActive");
-                m.remove("createdAt");
-                m.remove("createdBy");
-                m.remove("updatedBy");
-                m.remove("tagsArray");
-                m.remove("content");
-                return m;
-            })
+            .map(this::convertToMap)
+            .filter(this::isActive)
+            .map(this::processVideoMap)
             .collect(Collectors.toList());
 
         return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
@@ -358,55 +268,9 @@ public class PublicCmsController {
      */
     private <T> PaginatedResponse<Map<String, Object>> sanitizeAudios(PaginatedResponse<T> raw) {
         List<Map<String, Object>> list = raw.getContent().stream()
-            .map(item -> objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {}))
-            .filter(m -> {
-                Object isActive = m.get("isActive");
-                return isActive == null || Boolean.TRUE.equals(isActive);
-            })
-            .map(m -> {
-                // Build full audio url from filename
-                Object fnameObj = m.get("filename");
-                if (fnameObj instanceof String) {
-                    String fname = (String) fnameObj;
-                    if (!fname.isBlank() && audioBaseUrl != null && !audioBaseUrl.isBlank()) {
-                        String prefix = audioBaseUrl;
-                        if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
-                        else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
-                        m.put("url", prefix + fname);
-                    } else if (!fname.isBlank() && (fname.startsWith("http") || fname.startsWith("/"))) {
-                        m.put("url", fname);
-                    }
-                }
-
-                // Build coverImageUrl from coverImageFilename under cover-images path
-                Object cimgObj = m.get("coverImageFilename");
-                if (cimgObj instanceof String) {
-                    String cimg = (String) cimgObj;
-                    if (!cimg.isBlank() && audioBaseUrl != null && !audioBaseUrl.isBlank()) {
-                        String prefix = audioBaseUrl;
-                        if (!prefix.endsWith("/")) prefix = prefix + "/";
-                        if (!prefix.endsWith("cover-images/")) {
-                            if (!prefix.endsWith("/")) prefix = prefix + "cover-images/";
-                            else prefix = prefix + "cover-images/";
-                        }
-                        if (cimg.startsWith("/")) cimg = cimg.substring(1);
-                        m.put("coverImageUrl", prefix + cimg);
-                    } else if (!cimg.isBlank() && (cimg.startsWith("http") || cimg.startsWith("/"))) {
-                        m.put("coverImageUrl", cimg);
-                    }
-                }
-
-                // remove original filename keys and other internal props
-                m.remove("filename");
-                m.remove("coverImageFilename");
-                m.remove("isActive");
-                m.remove("createdAt");
-                m.remove("createdBy");
-                m.remove("updatedBy");
-                m.remove("tagsArray");
-                m.remove("content");
-                return m;
-            })
+            .map(this::convertToMap)
+            .filter(this::isActive)
+            .map(this::processAudioMap)
             .collect(Collectors.toList());
 
         return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
@@ -419,35 +283,9 @@ public class PublicCmsController {
      */
     private <T> PaginatedResponse<Map<String, Object>> sanitizeArticles(PaginatedResponse<T> raw) {
         List<Map<String, Object>> list = raw.getContent().stream()
-            .map(item -> objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {}))
-            .filter(m -> {
-                Object isActive = m.get("isActive");
-                return isActive == null || Boolean.TRUE.equals(isActive);
-            })
-            .map(m -> {
-                Object cimgObj = m.get("coverImageFilename");
-                if (cimgObj instanceof String) {
-                    String cimg = (String) cimgObj;
-                    String baseUrl = articleProperties.getCoverImage().getBaseUrl();
-                    if (!cimg.isBlank() && baseUrl != null && !baseUrl.isBlank()) {
-                        String prefix = baseUrl;
-                        if (!prefix.endsWith("/")) prefix = prefix + "/";
-                        if (cimg.startsWith("/")) cimg = cimg.substring(1);
-                        m.put("coverImageUrl", prefix + cimg);
-                    } else if (!cimg.isBlank() && (cimg.startsWith("http") || cimg.startsWith("/"))) {
-                        m.put("coverImageUrl", cimg);
-                    }
-                }
-
-                m.remove("coverImageFilename");
-                m.remove("isActive");
-                m.remove("createdAt");
-                m.remove("createdBy");
-                m.remove("updatedBy");
-                m.remove("tagsArray");
-                m.remove("content");
-                return m;
-            })
+            .map(this::convertToMap)
+            .filter(this::isActive)
+            .map(this::processArticleMap)
             .collect(Collectors.toList());
 
         return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
@@ -473,6 +311,30 @@ public class PublicCmsController {
         return m;
     }
 
+    private Map<String, Object> processFileMap(Map<String, Object> m) {
+        Object fnameObj = m.get("filename");
+        if (fnameObj instanceof String) {
+            String fname = (String) fnameObj;
+            if (!fname.isBlank() && fileBaseUrl != null && !fileBaseUrl.isBlank()) {
+                String prefix = fileBaseUrl;
+                if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
+                else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
+                m.put("url", prefix + fname);
+            } else if (!fname.isBlank() && (fname.startsWith("http") || fname.startsWith("/"))) {
+                m.put("url", fname);
+            }
+        }
+
+        m.remove("filename");
+        m.remove("isActive");
+        m.remove("createdAt");
+        m.remove("createdBy");
+        m.remove("updatedBy");
+        m.remove("tagsArray");
+        m.remove("content");
+        return m;
+    }
+
     private Map<String, Object> processWebsiteMap(Map<String, Object> m) {
         // Keep logoUrl absolute by prefixing logoBaseUrl when needed
         Object logoObj = m.get("logoUrl");
@@ -487,6 +349,163 @@ public class PublicCmsController {
             }
         }
 
+        m.remove("isActive");
+        m.remove("createdAt");
+        m.remove("createdBy");
+        m.remove("updatedBy");
+        m.remove("tagsArray");
+        m.remove("content");
+        return m;
+    }
+
+    private Map<String, Object> processLogoMap(Map<String, Object> m) {
+        // Build full url from filename
+        Object fnameObj = m.get("filename");
+        if (fnameObj instanceof String) {
+            String fname = (String) fnameObj;
+            if (!fname.isBlank() && logoBaseUrl != null && !logoBaseUrl.isBlank()) {
+                String prefix = logoBaseUrl;
+                if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
+                else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
+                m.put("url", prefix + fname);
+            } else if (!fname.isBlank() && (fname.startsWith("http") || fname.startsWith("/"))) {
+                m.put("url", fname);
+            }
+        }
+
+        // Build thumbnailUrl from thumbnailFilename
+        Object tnameObj = m.get("thumbnailFilename");
+        if (tnameObj instanceof String) {
+            String tname = (String) tnameObj;
+            if (!tname.isBlank() && logoBaseUrl != null && !logoBaseUrl.isBlank()) {
+                String prefix = logoBaseUrl;
+                if (!prefix.endsWith("/") && !tname.startsWith("/")) prefix = prefix + "/";
+                else if (prefix.endsWith("/") && tname.startsWith("/")) tname = tname.substring(1);
+                m.put("thumbnailUrl", prefix + tname);
+            } else if (!tname.isBlank() && (tname.startsWith("http") || tname.startsWith("/"))) {
+                m.put("thumbnailUrl", tname);
+            }
+        }
+
+        // remove original filename keys and other internal props
+        m.remove("filename");
+        m.remove("thumbnailFilename");
+        m.remove("isActive");
+        m.remove("createdAt");
+        m.remove("createdBy");
+        m.remove("updatedBy");
+        m.remove("tagsArray");
+        m.remove("content");
+        return m;
+    }
+
+    private Map<String, Object> processVideoMap(Map<String, Object> m) {
+        // Build full video url from filename
+        Object fnameObj = m.get("filename");
+        if (fnameObj instanceof String) {
+            String fname = (String) fnameObj;
+            if (!fname.isBlank() && videoBaseUrl != null && !videoBaseUrl.isBlank()) {
+                String prefix = videoBaseUrl;
+                if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
+                else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
+                m.put("url", prefix + fname);
+            } else if (!fname.isBlank() && (fname.startsWith("http") || fname.startsWith("/"))) {
+                m.put("url", fname);
+            }
+        }
+
+        // Build coverImageUrl from coverImageFilename under cover-images path
+        Object cimgObj = m.get("coverImageFilename");
+        if (cimgObj instanceof String) {
+            String cimg = (String) cimgObj;
+            if (!cimg.isBlank() && videoBaseUrl != null && !videoBaseUrl.isBlank()) {
+                String prefix = videoBaseUrl;
+                if (!prefix.endsWith("/")) prefix = prefix + "/";
+                // ensure 'cover-images/' segment
+                if (!prefix.endsWith("cover-images/")) {
+                    if (!prefix.endsWith("/")) prefix = prefix + "cover-images/";
+                    else prefix = prefix + "cover-images/";
+                }
+                if (cimg.startsWith("/")) cimg = cimg.substring(1);
+                m.put("coverImageUrl", prefix + cimg);
+            } else if (!cimg.isBlank() && (cimg.startsWith("http") || cimg.startsWith("/"))) {
+                m.put("coverImageUrl", cimg);
+            }
+        }
+
+        // remove original filename keys and other internal props
+        m.remove("filename");
+        m.remove("coverImageFilename");
+        m.remove("isActive");
+        m.remove("createdAt");
+        m.remove("createdBy");
+        m.remove("updatedBy");
+        m.remove("tagsArray");
+        m.remove("content");
+        return m;
+    }
+
+    private Map<String, Object> processAudioMap(Map<String, Object> m) {
+        // Build full audio url from filename
+        Object fnameObj = m.get("filename");
+        if (fnameObj instanceof String) {
+            String fname = (String) fnameObj;
+            if (!fname.isBlank() && audioBaseUrl != null && !audioBaseUrl.isBlank()) {
+                String prefix = audioBaseUrl;
+                if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
+                else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
+                m.put("url", prefix + fname);
+            } else if (!fname.isBlank() && (fname.startsWith("http") || fname.startsWith("/"))) {
+                m.put("url", fname);
+            }
+        }
+
+        // Build coverImageUrl from coverImageFilename under cover-images path
+        Object cimgObj = m.get("coverImageFilename");
+        if (cimgObj instanceof String) {
+            String cimg = (String) cimgObj;
+            if (!cimg.isBlank() && audioBaseUrl != null && !audioBaseUrl.isBlank()) {
+                String prefix = audioBaseUrl;
+                if (!prefix.endsWith("/")) prefix = prefix + "/";
+                if (!prefix.endsWith("cover-images/")) {
+                    if (!prefix.endsWith("/")) prefix = prefix + "cover-images/";
+                    else prefix = prefix + "cover-images/";
+                }
+                if (cimg.startsWith("/")) cimg = cimg.substring(1);
+                m.put("coverImageUrl", prefix + cimg);
+            } else if (!cimg.isBlank() && (cimg.startsWith("http") || cimg.startsWith("/"))) {
+                m.put("coverImageUrl", cimg);
+            }
+        }
+
+        // remove original filename keys and other internal props
+        m.remove("filename");
+        m.remove("coverImageFilename");
+        m.remove("isActive");
+        m.remove("createdAt");
+        m.remove("createdBy");
+        m.remove("updatedBy");
+        m.remove("tagsArray");
+        m.remove("content");
+        return m;
+    }
+
+    private Map<String, Object> processArticleMap(Map<String, Object> m) {
+        Object cimgObj = m.get("coverImageFilename");
+        if (cimgObj instanceof String) {
+            String cimg = (String) cimgObj;
+            String baseUrl = articleProperties.getCoverImage().getBaseUrl();
+            if (!cimg.isBlank() && baseUrl != null && !baseUrl.isBlank()) {
+                String prefix = baseUrl;
+                if (!prefix.endsWith("/")) prefix = prefix + "/";
+                if (cimg.startsWith("/")) cimg = cimg.substring(1);
+                m.put("coverImageUrl", prefix + cimg);
+            } else if (!cimg.isBlank() && (cimg.startsWith("http") || cimg.startsWith("/"))) {
+                m.put("coverImageUrl", cimg);
+            }
+        }
+
+        m.remove("coverImageFilename");
         m.remove("isActive");
         m.remove("createdAt");
         m.remove("createdBy");
