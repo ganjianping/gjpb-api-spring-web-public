@@ -132,6 +132,7 @@ CREATE TABLE `rubi_free_text_question` (
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Short answer questions for vocabulary practice';
 
+
 CREATE TABLE `rubi_question_image` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
   `multiple_choice_question_id` char(36) DEFAULT NULL COMMENT 'Associated Multiple Choice Question ID',
@@ -155,11 +156,9 @@ CREATE TABLE `rubi_question_image` (
   INDEX `idx_filename` (`filename`),
   INDEX `idx_created_at` (`created_at`),
   INDEX `idx_created_by` (`created_by`),
-  INDEX `idx_updated_by` (`updated_by`)
+  INDEX `idx_updated_by` (`updated_by`),
 
   -- Foreign Key Constraints
-  CONSTRAINT `fk_rubi_qi_mcq` FOREIGN KEY (`multiple_choice_question_id`) REFERENCES `rubi_multiple_choice_question` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_rubi_qi_saq` FOREIGN KEY (`free_text_question_id`) REFERENCES `rubi_free_text_question` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_rubi_qi_created_by` FOREIGN KEY (`created_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_rubi_qi_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Images associated with questions and answers';

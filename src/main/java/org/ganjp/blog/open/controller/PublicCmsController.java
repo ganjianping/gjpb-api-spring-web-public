@@ -131,34 +131,9 @@ public class PublicCmsController {
      */
     private <T> PaginatedResponse<Map<String, Object>> sanitizeFiles(PaginatedResponse<T> raw) {
         List<Map<String, Object>> list = raw.getContent().stream()
-            .map(item -> objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {}))
-            .filter(m -> {
-                Object isActive = m.get("isActive");
-                return isActive == null || Boolean.TRUE.equals(isActive);
-            })
-            .map(m -> {
-                Object fnameObj = m.get("filename");
-                if (fnameObj instanceof String) {
-                    String fname = (String) fnameObj;
-                    if (!fname.isBlank() && fileBaseUrl != null && !fileBaseUrl.isBlank()) {
-                        String prefix = fileBaseUrl;
-                        if (!prefix.endsWith("/") && !fname.startsWith("/")) prefix = prefix + "/";
-                        else if (prefix.endsWith("/") && fname.startsWith("/")) fname = fname.substring(1);
-                        m.put("url", prefix + fname);
-                    } else if (!fname.isBlank() && (fname.startsWith("http") || fname.startsWith("/"))) {
-                        m.put("url", fname);
-                    }
-                }
-
-                m.remove("filename");
-                m.remove("isActive");
-                m.remove("createdAt");
-                m.remove("createdBy");
-                m.remove("updatedBy");
-                m.remove("tagsArray");
-                m.remove("content");
-                return m;
-            })
+            .map(this::convertToMap)
+            .filter(this::isActive)
+            .map(this::processFileMap)
             .collect(Collectors.toList());
 
         return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
@@ -234,20 +209,9 @@ public class PublicCmsController {
 
     private <T> PaginatedResponse<Map<String, Object>> sanitizePaginated(PaginatedResponse<T> raw) {
     List<Map<String, Object>> list = raw.getContent().stream()
-        .map(item -> objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {}))
-                .filter(m -> {
-                    Object isActive = m.get("isActive");
-                    return isActive == null || Boolean.TRUE.equals(isActive);
-                })
-                .map(m -> {
-                    m.remove("isActive");
-                    m.remove("createdAt");
-                    m.remove("createdBy");
-                    m.remove("updatedBy");
-                    m.remove("tagsArray");
-                    m.remove("content");
-                    return m;
-                })
+        .map(this::convertToMap)
+                .filter(this::isActive)
+                .map(this::cleanMap)
                 .collect(Collectors.toList());
 
         return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
@@ -259,33 +223,9 @@ public class PublicCmsController {
      */
     private <T> PaginatedResponse<Map<String, Object>> sanitizeWebsites(PaginatedResponse<T> raw) {
         List<Map<String, Object>> list = raw.getContent().stream()
-            .map(item -> objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {}))
-            .filter(m -> {
-                Object isActive = m.get("isActive");
-                return isActive == null || Boolean.TRUE.equals(isActive);
-            })
-            .map(m -> {
-                // Keep logoUrl absolute by prefixing logoBaseUrl when needed
-                Object logoObj = m.get("logoUrl");
-                if (logoObj instanceof String) {
-                    String logo = (String) logoObj;
-                    if (!logo.isBlank() && !logo.startsWith("http") && logoBaseUrl != null && !logoBaseUrl.isBlank()) {
-                        String prefix = logoBaseUrl;
-                        // Ensure no double slash when concatenating
-                        if (!prefix.endsWith("/") && !logo.startsWith("/")) prefix = prefix + "/";
-                        else if (prefix.endsWith("/") && logo.startsWith("/")) logo = logo.substring(1);
-                        m.put("logoUrl", prefix + logo);
-                    }
-                }
-
-                m.remove("isActive");
-                m.remove("createdAt");
-                m.remove("createdBy");
-                m.remove("updatedBy");
-                m.remove("tagsArray");
-                m.remove("content");
-                return m;
-            })
+            .map(this::convertToMap)
+            .filter(this::isActive)
+            .map(this::processWebsiteMap)
             .collect(Collectors.toList());
 
         return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
@@ -511,5 +451,48 @@ public class PublicCmsController {
             .collect(Collectors.toList());
 
         return PaginatedResponse.of(list, raw.getPage(), raw.getSize(), raw.getTotalElements());
+    }
+
+    // Helper methods to avoid anonymous inner classes
+    private Map<String, Object> convertToMap(Object item) {
+        return objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {});
+    }
+
+    private boolean isActive(Map<String, Object> m) {
+        Object isActive = m.get("isActive");
+        return isActive == null || Boolean.TRUE.equals(isActive);
+    }
+
+    private Map<String, Object> cleanMap(Map<String, Object> m) {
+        m.remove("isActive");
+        m.remove("createdAt");
+        m.remove("createdBy");
+        m.remove("updatedBy");
+        m.remove("tagsArray");
+        m.remove("content");
+        return m;
+    }
+
+    private Map<String, Object> processWebsiteMap(Map<String, Object> m) {
+        // Keep logoUrl absolute by prefixing logoBaseUrl when needed
+        Object logoObj = m.get("logoUrl");
+        if (logoObj instanceof String) {
+            String logo = (String) logoObj;
+            if (!logo.isBlank() && !logo.startsWith("http") && logoBaseUrl != null && !logoBaseUrl.isBlank()) {
+                String prefix = logoBaseUrl;
+                // Ensure no double slash when concatenating
+                if (!prefix.endsWith("/") && !logo.startsWith("/")) prefix = prefix + "/";
+                else if (prefix.endsWith("/") && logo.startsWith("/")) logo = logo.substring(1);
+                m.put("logoUrl", prefix + logo);
+            }
+        }
+
+        m.remove("isActive");
+        m.remove("createdAt");
+        m.remove("createdBy");
+        m.remove("updatedBy");
+        m.remove("tagsArray");
+        m.remove("content");
+        return m;
     }
 }
