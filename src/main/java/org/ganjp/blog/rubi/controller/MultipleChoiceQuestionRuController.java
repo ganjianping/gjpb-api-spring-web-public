@@ -35,13 +35,13 @@ public class MultipleChoiceQuestionRuController {
             HttpServletRequest httpRequest) {
         String createdBy = extractUserIdFromRequest(httpRequest);
         MultipleChoiceQuestionRuResponse response = multipleChoiceQuestionRuService.createMultipleChoiceQuestionRu(request, createdBy);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "MCQ created successfully"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "MultipleChoiceQuestion created successfully"));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<MultipleChoiceQuestionRuResponse>> getMultipleChoiceQuestionRuById(@PathVariable String id) {
         MultipleChoiceQuestionRuResponse response = multipleChoiceQuestionRuService.getMultipleChoiceQuestionRuById(id);
-        return ResponseEntity.ok(ApiResponse.success(response, "MCQ retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "MultipleChoiceQuestion retrieved successfully"));
     }
 
     @GetMapping
@@ -62,7 +62,7 @@ public class MultipleChoiceQuestionRuController {
 
         PaginatedResponse<MultipleChoiceQuestionRuResponse> paginatedResponse = PaginatedResponse.of(multipleChoiceQuestionRuPage);
 
-        return ResponseEntity.ok(ApiResponse.success(paginatedResponse, "MCQs retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(paginatedResponse, "MultipleChoiceQuestions retrieved successfully"));
     }
 
     @GetMapping("/active/{lang}")
@@ -70,7 +70,7 @@ public class MultipleChoiceQuestionRuController {
         try {
             MultipleChoiceQuestionRu.Language language = MultipleChoiceQuestionRu.Language.valueOf(lang.toUpperCase());
             List<MultipleChoiceQuestionRuResponse> responses = multipleChoiceQuestionRuService.getActiveMultipleChoiceQuestionRusByLang(language);
-            return ResponseEntity.ok(ApiResponse.success(responses, "MCQs retrieved successfully"));
+            return ResponseEntity.ok(ApiResponse.success(responses, "MultipleChoiceQuestions retrieved successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid language: " + lang, null));
         }
@@ -83,7 +83,7 @@ public class MultipleChoiceQuestionRuController {
             HttpServletRequest httpRequest) {
         String updatedBy = extractUserIdFromRequest(httpRequest);
         MultipleChoiceQuestionRuResponse response = multipleChoiceQuestionRuService.updateMultipleChoiceQuestionRu(id, request, updatedBy);
-        return ResponseEntity.ok(ApiResponse.success(response, "MCQ updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "MultipleChoiceQuestion updated successfully"));
     }
 
     @DeleteMapping("/{id}")
@@ -92,7 +92,7 @@ public class MultipleChoiceQuestionRuController {
             HttpServletRequest httpRequest) {
         String deletedBy = extractUserIdFromRequest(httpRequest);
         multipleChoiceQuestionRuService.deleteMultipleChoiceQuestionRu(id, deletedBy);
-        return ResponseEntity.ok(ApiResponse.success(null, "MCQ deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "MultipleChoiceQuestion deleted successfully"));
     }
 
     private String extractUserIdFromRequest(HttpServletRequest request) {

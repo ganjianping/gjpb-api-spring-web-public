@@ -29,7 +29,7 @@ public class MultipleChoiceQuestionRuService {
     private final MultipleChoiceQuestionRuRepository multipleChoiceQuestionRuRepository;
 
     /**
-     * Create a new MCQ
+     * Create a new MultipleChoiceQuestion
      */
     @Transactional
     public MultipleChoiceQuestionRuResponse createMultipleChoiceQuestionRu(CreateMultipleChoiceQuestionRuRequest request, String createdBy) {
@@ -50,22 +50,22 @@ public class MultipleChoiceQuestionRuService {
                 .build();
 
         MultipleChoiceQuestionRu savedMultipleChoiceQuestionRu = multipleChoiceQuestionRuRepository.save(multipleChoiceQuestionRu);
-        log.info("Created MCQ with id: {}", savedMultipleChoiceQuestionRu.getId());
+        log.info("Created MultipleChoiceQuestion with id: {}", savedMultipleChoiceQuestionRu.getId());
 
         return mapToResponse(savedMultipleChoiceQuestionRu);
     }
 
     /**
-     * Get MCQ by ID
+     * Get MultipleChoiceQuestion by ID
      */
     public MultipleChoiceQuestionRuResponse getMultipleChoiceQuestionRuById(String id) {
         MultipleChoiceQuestionRu multipleChoiceQuestionRu = multipleChoiceQuestionRuRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("MCQ not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("MultipleChoiceQuestion not found with id: " + id));
         return mapToResponse(multipleChoiceQuestionRu);
     }
 
     /**
-     * Get all MCQs with pagination and filtering
+     * Get all MultipleChoiceQuestions with pagination and filtering
      */
     public Page<MultipleChoiceQuestionRuResponse> getAllMultipleChoiceQuestionRus(Pageable pageable, String lang, String difficultyLevel, String tags, Boolean isActive) {
         Specification<MultipleChoiceQuestionRu> spec = buildSpecification(lang, difficultyLevel, tags, isActive);
@@ -74,12 +74,12 @@ public class MultipleChoiceQuestionRuService {
     }
 
     /**
-     * Update MCQ
+     * Update MultipleChoiceQuestion
      */
     @Transactional
     public MultipleChoiceQuestionRuResponse updateMultipleChoiceQuestionRu(String id, UpdateMultipleChoiceQuestionRuRequest request, String updatedBy) {
         MultipleChoiceQuestionRu multipleChoiceQuestionRu = multipleChoiceQuestionRuRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("MCQ not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("MultipleChoiceQuestion not found with id: " + id));
 
         if (StringUtils.hasText(request.getQuestion())) {
             multipleChoiceQuestionRu.setQuestion(request.getQuestion());
@@ -121,28 +121,28 @@ public class MultipleChoiceQuestionRuService {
         multipleChoiceQuestionRu.setUpdatedBy(updatedBy);
 
         MultipleChoiceQuestionRu updatedMultipleChoiceQuestionRu = multipleChoiceQuestionRuRepository.save(multipleChoiceQuestionRu);
-        log.info("Updated MCQ with id: {}", updatedMultipleChoiceQuestionRu.getId());
+        log.info("Updated MultipleChoiceQuestion with id: {}", updatedMultipleChoiceQuestionRu.getId());
 
         return mapToResponse(updatedMultipleChoiceQuestionRu);
     }
 
     /**
-     * Delete MCQ (soft delete)
+     * Delete MultipleChoiceQuestion (soft delete)
      */
     @Transactional
     public void deleteMultipleChoiceQuestionRu(String id, String deletedBy) {
         MultipleChoiceQuestionRu multipleChoiceQuestionRu = multipleChoiceQuestionRuRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("MCQ not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("MultipleChoiceQuestion not found with id: " + id));
 
         multipleChoiceQuestionRu.setIsActive(false);
         multipleChoiceQuestionRu.setUpdatedBy(deletedBy);
         multipleChoiceQuestionRuRepository.save(multipleChoiceQuestionRu);
 
-        log.info("Soft deleted MCQ with id: {}", id);
+        log.info("Soft deleted MultipleChoiceQuestion with id: {}", id);
     }
 
     /**
-     * Get active MCQs by language
+     * Get active MultipleChoiceQuestions by language
      */
     public List<MultipleChoiceQuestionRuResponse> getActiveMultipleChoiceQuestionRusByLang(MultipleChoiceQuestionRu.Language lang) {
         List<MultipleChoiceQuestionRu> multipleChoiceQuestionRus = multipleChoiceQuestionRuRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang);

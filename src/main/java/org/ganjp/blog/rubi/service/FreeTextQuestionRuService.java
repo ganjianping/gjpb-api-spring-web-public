@@ -29,7 +29,7 @@ public class FreeTextQuestionRuService {
     private final FreeTextQuestionRuRepository freeTextQuestionRuRepository;
 
     /**
-     * Create a new SAQ
+     * Create a new FreeTextQuestion
      */
     @Transactional
     public FreeTextQuestionRuResponse createFreeTextQuestionRu(CreateFreeTextQuestionRuRequest request, String createdBy) {
@@ -46,22 +46,22 @@ public class FreeTextQuestionRuService {
                 .build();
 
         FreeTextQuestionRu savedFreeTextQuestionRu = freeTextQuestionRuRepository.save(freeTextQuestionRu);
-        log.info("Created SAQ with id: {}", savedFreeTextQuestionRu.getId());
+        log.info("Created FreeTextQuestion with id: {}", savedFreeTextQuestionRu.getId());
 
         return mapToResponse(savedFreeTextQuestionRu);
     }
 
     /**
-     * Get SAQ by ID
+     * Get FreeTextQuestion by ID
      */
     public FreeTextQuestionRuResponse getFreeTextQuestionRuById(String id) {
         FreeTextQuestionRu freeTextQuestionRu = freeTextQuestionRuRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("SAQ not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("FreeTextQuestion not found with id: " + id));
         return mapToResponse(freeTextQuestionRu);
     }
 
     /**
-     * Get all SAQs with pagination and filtering
+     * Get all FreeTextQuestions with pagination and filtering
      */
     public Page<FreeTextQuestionRuResponse> getAllFreeTextQuestionRus(Pageable pageable, String lang, String difficultyLevel, String tags, Boolean isActive) {
         Specification<FreeTextQuestionRu> spec = buildSpecification(lang, difficultyLevel, tags, isActive);
@@ -70,12 +70,12 @@ public class FreeTextQuestionRuService {
     }
 
     /**
-     * Update SAQ
+     * Update FreeTextQuestion
      */
     @Transactional
     public FreeTextQuestionRuResponse updateFreeTextQuestionRu(String id, UpdateFreeTextQuestionRuRequest request, String updatedBy) {
         FreeTextQuestionRu freeTextQuestionRu = freeTextQuestionRuRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("SAQ not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("FreeTextQuestion not found with id: " + id));
 
         if (StringUtils.hasText(request.getQuestion())) {
             freeTextQuestionRu.setQuestion(request.getQuestion());
@@ -105,28 +105,28 @@ public class FreeTextQuestionRuService {
         freeTextQuestionRu.setUpdatedBy(updatedBy);
 
         FreeTextQuestionRu updatedFreeTextQuestionRu = freeTextQuestionRuRepository.save(freeTextQuestionRu);
-        log.info("Updated SAQ with id: {}", updatedFreeTextQuestionRu.getId());
+        log.info("Updated FreeTextQuestion with id: {}", updatedFreeTextQuestionRu.getId());
 
         return mapToResponse(updatedFreeTextQuestionRu);
     }
 
     /**
-     * Delete SAQ (soft delete)
+     * Delete FreeTextQuestion (soft delete)
      */
     @Transactional
     public void deleteFreeTextQuestionRu(String id, String deletedBy) {
         FreeTextQuestionRu freeTextQuestionRu = freeTextQuestionRuRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("SAQ not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("FreeTextQuestion not found with id: " + id));
 
         freeTextQuestionRu.setIsActive(false);
         freeTextQuestionRu.setUpdatedBy(deletedBy);
         freeTextQuestionRuRepository.save(freeTextQuestionRu);
 
-        log.info("Soft deleted SAQ with id: {}", id);
+        log.info("Soft deleted FreeTextQuestion with id: {}", id);
     }
 
     /**
-     * Get active SAQs by language
+     * Get active FreeTextQuestions by language
      */
     public List<FreeTextQuestionRuResponse> getActiveFreeTextQuestionRusByLang(FreeTextQuestionRu.Language lang) {
         List<FreeTextQuestionRu> freeTextQuestionRus = freeTextQuestionRuRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang);

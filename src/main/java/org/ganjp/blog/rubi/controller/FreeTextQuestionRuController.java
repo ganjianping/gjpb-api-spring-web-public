@@ -35,13 +35,13 @@ public class FreeTextQuestionRuController {
             HttpServletRequest httpRequest) {
         String createdBy = extractUserIdFromRequest(httpRequest);
         FreeTextQuestionRuResponse response = freeTextQuestionRuService.createFreeTextQuestionRu(request, createdBy);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "SAQ created successfully"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "FreeTextQuestion created successfully"));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<FreeTextQuestionRuResponse>> getFreeTextQuestionRuById(@PathVariable String id) {
         FreeTextQuestionRuResponse response = freeTextQuestionRuService.getFreeTextQuestionRuById(id);
-        return ResponseEntity.ok(ApiResponse.success(response, "SAQ retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "FreeTextQuestion retrieved successfully"));
     }
 
     @GetMapping
@@ -62,7 +62,7 @@ public class FreeTextQuestionRuController {
 
         PaginatedResponse<FreeTextQuestionRuResponse> paginatedResponse = PaginatedResponse.of(freeTextQuestionRuPage);
 
-        return ResponseEntity.ok(ApiResponse.success(paginatedResponse, "SAQs retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(paginatedResponse, "FreeTextQuestions retrieved successfully"));
     }
 
     @GetMapping("/active/{lang}")
@@ -70,7 +70,7 @@ public class FreeTextQuestionRuController {
         try {
             FreeTextQuestionRu.Language language = FreeTextQuestionRu.Language.valueOf(lang.toUpperCase());
             List<FreeTextQuestionRuResponse> responses = freeTextQuestionRuService.getActiveFreeTextQuestionRusByLang(language);
-            return ResponseEntity.ok(ApiResponse.success(responses, "SAQs retrieved successfully"));
+            return ResponseEntity.ok(ApiResponse.success(responses, "FreeTextQuestions retrieved successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid language: " + lang, null));
         }
@@ -83,7 +83,7 @@ public class FreeTextQuestionRuController {
             HttpServletRequest httpRequest) {
         String updatedBy = extractUserIdFromRequest(httpRequest);
         FreeTextQuestionRuResponse response = freeTextQuestionRuService.updateFreeTextQuestionRu(id, request, updatedBy);
-        return ResponseEntity.ok(ApiResponse.success(response, "SAQ updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "FreeTextQuestion updated successfully"));
     }
 
     @DeleteMapping("/{id}")
@@ -92,7 +92,7 @@ public class FreeTextQuestionRuController {
             HttpServletRequest httpRequest) {
         String deletedBy = extractUserIdFromRequest(httpRequest);
         freeTextQuestionRuService.deleteFreeTextQuestionRu(id, deletedBy);
-        return ResponseEntity.ok(ApiResponse.success(null, "SAQ deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "FreeTextQuestion deleted successfully"));
     }
 
     private String extractUserIdFromRequest(HttpServletRequest request) {

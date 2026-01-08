@@ -61,13 +61,13 @@ public class QuestionImageRuController {
     @GetMapping("/multipleChoiceQuestionRu/{multipleChoiceQuestionId}")
     public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> getImagesByMultipleChoiceQuestionRu(@PathVariable String multipleChoiceQuestionId) {
         List<QuestionImageRuResponse> images = questionImageRuService.listQuestionImageRusByMultipleChoiceQuestionRu(multipleChoiceQuestionId);
-        return ResponseEntity.ok(ApiResponse.success(images, "Images found for MCQ"));
+        return ResponseEntity.ok(ApiResponse.success(images, "Images found for MultipleChoiceQuestion"));
     }
 
     @GetMapping("/freeTextQuestionRu/{freeTextQuestionId}")
     public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> getImagesByFreeTextQuestionRu(@PathVariable String freeTextQuestionId) {
         List<QuestionImageRuResponse> images = questionImageRuService.listQuestionImageRusByFreeTextQuestionRu(freeTextQuestionId);
-        return ResponseEntity.ok(ApiResponse.success(images, "Images found for SAQ"));
+        return ResponseEntity.ok(ApiResponse.success(images, "Images found for FreeTextQuestion"));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -79,7 +79,7 @@ public class QuestionImageRuController {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, "Original URL is required", null));
         }
         if (!request.hasQuestionReference()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(400, "Either MCQ ID or SAQ ID is required", null));
+            return ResponseEntity.badRequest().body(ApiResponse.error(400, "Either MultipleChoiceQuestion ID or FreeTextQuestion ID is required", null));
         }
         String userId = jwtUtils.extractUserIdFromToken(httpRequest);
         QuestionImageRuResponse image = questionImageRuService.createQuestionImageRu(request, userId);
@@ -92,7 +92,7 @@ public class QuestionImageRuController {
             HttpServletRequest httpRequest
     ) {
         if (!request.hasQuestionReference()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(400, "Either MCQ ID or SAQ ID is required", null));
+            return ResponseEntity.badRequest().body(ApiResponse.error(400, "Either MultipleChoiceQuestion ID or FreeTextQuestion ID is required", null));
         }
         String userId = jwtUtils.extractUserIdFromToken(httpRequest);
         QuestionImageRuResponse image = questionImageRuService.createQuestionImageRu(request, userId);

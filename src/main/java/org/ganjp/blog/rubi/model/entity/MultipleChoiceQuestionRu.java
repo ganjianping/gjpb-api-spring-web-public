@@ -81,7 +81,7 @@ public class MultipleChoiceQuestionRu extends BaseEntity {
     }
 
     /**
-     * Check if MCQ is active
+     * Check if MultipleChoiceQuestion is active
      */
     public boolean isActiveMultipleChoiceQuestionRu() {
         return isActive != null && isActive;
