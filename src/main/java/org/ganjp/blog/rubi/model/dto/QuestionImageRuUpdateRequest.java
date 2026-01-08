@@ -13,10 +13,10 @@ import org.ganjp.blog.rubi.model.entity.QuestionImageRu.Language;
 @AllArgsConstructor
 public class QuestionImageRuUpdateRequest {
     @Size(max = 36)
-    private String mcqId;
+    private String multipleChoiceQuestionId;
 
     @Size(max = 36)
-    private String saqId;
+    private String freeTextQuestionId;
 
     @Size(max = 500)
     private String originalUrl;

@@ -4,11 +4,11 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.common.exception.ResourceNotFoundException;
-import org.ganjp.blog.rubi.model.dto.CreateMcqRuRequest;
-import org.ganjp.blog.rubi.model.dto.McqRuResponse;
-import org.ganjp.blog.rubi.model.dto.UpdateMcqRuRequest;
-import org.ganjp.blog.rubi.model.entity.McqRu;
-import org.ganjp.blog.rubi.repository.McqRuRepository;
+import org.ganjp.blog.rubi.model.dto.CreateMultipleChoiceQuestionRuRequest;
+import org.ganjp.blog.rubi.model.dto.MultipleChoiceQuestionRuResponse;
+import org.ganjp.blog.rubi.model.dto.UpdateMultipleChoiceQuestionRuRequest;
+import org.ganjp.blog.rubi.model.entity.MultipleChoiceQuestionRu;
+import org.ganjp.blog.rubi.repository.MultipleChoiceQuestionRuRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -24,15 +24,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class McqRuService {
+public class MultipleChoiceQuestionRuService {
 
-    private final McqRuRepository mcqRuRepository;
+    private final MultipleChoiceQuestionRuRepository multipleChoiceQuestionRuRepository;
 
     /**
      * Create a new MCQ
      */
     @Transactional
-    public McqRuResponse createMcq(CreateMcqRuRequest request, String createdBy) {
+    public MultipleChoiceQuestionRuResponse createMcq(CreateMultipleChoiceQuestionRuRequest request, String createdBy) {
         McqRu mcqRu = McqRu.builder()
                 .id(UUID.randomUUID().toString())
                 .question(request.getQuestion())
@@ -50,7 +50,7 @@ public class McqRuService {
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
 
-        McqRu savedMcq = mcqRuRepository.save(mcqRu);
+        McqRu savedMcq = multipleChoiceQuestionRuRepository.save(mcqRu);
         log.info("Created MCQ with id: {}", savedMcq.getId());
 
         return mapToResponse(savedMcq);
@@ -59,8 +59,8 @@ public class McqRuService {
     /**
      * Get MCQ by ID
      */
-    public McqRuResponse getMcqById(String id) {
-        McqRu mcqRu = mcqRuRepository.findById(id)
+    public MultipleChoiceQuestionRuResponse getMcqById(String id) {
+        McqRu mcqRu = multipleChoiceQuestionRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("MCQ not found with id: " + id));
         return mapToResponse(mcqRu);
     }
@@ -68,9 +68,9 @@ public class McqRuService {
     /**
      * Get all MCQs with pagination and filtering
      */
-    public Page<McqRuResponse> getAllMcqs(Pageable pageable, String lang, String difficultyLevel, String tags, Boolean isActive) {
+    public Page<MultipleChoiceQuestionRuResponse> getAllMcqs(Pageable pageable, String lang, String difficultyLevel, String tags, Boolean isActive) {
         Specification<McqRu> spec = buildSpecification(lang, difficultyLevel, tags, isActive);
-        Page<McqRu> mcqs = mcqRuRepository.findAll(spec, pageable);
+        Page<McqRu> mcqs = multipleChoiceQuestionRuRepository.findAll(spec, pageable);
         return mcqs.map(this::mapToResponse);
     }
 
@@ -78,8 +78,8 @@ public class McqRuService {
      * Update MCQ
      */
     @Transactional
-    public McqRuResponse updateMcq(String id, UpdateMcqRuRequest request, String updatedBy) {
-        McqRu mcqRu = mcqRuRepository.findById(id)
+    public MultipleChoiceQuestionRuResponse updateMcq(String id, UpdateMultipleChoiceQuestionRuRequest request, String updatedBy) {
+        McqRu mcqRu = multipleChoiceQuestionRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("MCQ not found with id: " + id));
 
         if (StringUtils.hasText(request.getQuestion())) {
@@ -124,7 +124,7 @@ public class McqRuService {
 
         mcqRu.setUpdatedBy(updatedBy);
 
-        McqRu updatedMcq = mcqRuRepository.save(mcqRu);
+        McqRu updatedMcq = multipleChoiceQuestionRuRepository.save(mcqRu);
         log.info("Updated MCQ with id: {}", updatedMcq.getId());
 
         return mapToResponse(updatedMcq);
@@ -135,12 +135,12 @@ public class McqRuService {
      */
     @Transactional
     public void deleteMcq(String id, String deletedBy) {
-        McqRu mcqRu = mcqRuRepository.findById(id)
+        McqRu mcqRu = multipleChoiceQuestionRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("MCQ not found with id: " + id));
 
         mcqRu.setIsActive(false);
         mcqRu.setUpdatedBy(deletedBy);
-        mcqRuRepository.save(mcqRu);
+        multipleChoiceQuestionRuRepository.save(mcqRu);
 
         log.info("Soft deleted MCQ with id: {}", id);
     }
@@ -148,8 +148,8 @@ public class McqRuService {
     /**
      * Get active MCQs by language
      */
-    public List<McqRuResponse> getActiveMcqsByLang(McqRu.Language lang) {
-        List<McqRu> mcqs = mcqRuRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang);
+    public List<MultipleChoiceQuestionRuResponse> getActiveMcqsByLang(McqRu.Language lang) {
+        List<McqRu> mcqs = multipleChoiceQuestionRuRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang);
         return mcqs.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -185,8 +185,8 @@ public class McqRuService {
     /**
      * Map entity to response DTO
      */
-    private McqRuResponse mapToResponse(McqRu mcqRu) {
-        return McqRuResponse.builder()
+    private MultipleChoiceQuestionRuResponse mapToResponse(McqRu mcqRu) {
+        return MultipleChoiceQuestionRuResponse.builder()
                 .id(mcqRu.getId())
                 .question(mcqRu.getQuestion())
                 .optionA(mcqRu.getOptionA())

@@ -6,11 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.ganjp.blog.common.model.PaginatedResponse;
-import org.ganjp.blog.rubi.model.dto.CreateMcqRuRequest;
-import org.ganjp.blog.rubi.model.dto.McqRuResponse;
-import org.ganjp.blog.rubi.model.dto.UpdateMcqRuRequest;
-import org.ganjp.blog.rubi.model.entity.McqRu;
-import org.ganjp.blog.rubi.service.McqRuService;
+import org.ganjp.blog.rubi.model.dto.CreateMultipleChoiceQuestionRuRequest;
+import org.ganjp.blog.rubi.model.dto.MultipleChoiceQuestionRuResponse;
+import org.ganjp.blog.rubi.model.dto.UpdateMultipleChoiceQuestionRuRequest;
+import org.ganjp.blog.rubi.model.entity.MultipleChoiceQuestionRu;
+import org.ganjp.blog.rubi.service.MultipleChoiceQuestionRuService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,28 +24,28 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/ru/mcqs")
 @RequiredArgsConstructor
-public class McqRuController {
+public class MultipleChoiceQuestionRuController {
 
-    private final McqRuService mcqRuService;
+    private final MultipleChoiceQuestionRuService multipleChoiceQuestionRuService;
     private final JwtUtils jwtUtils;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<McqRuResponse>> createMcq(
-            @Valid @RequestBody CreateMcqRuRequest request,
+    public ResponseEntity<ApiResponse<MultipleChoiceQuestionRuResponse>> createMcq(
+            @Valid @RequestBody CreateMultipleChoiceQuestionRuRequest request,
             HttpServletRequest httpRequest) {
         String createdBy = extractUserIdFromRequest(httpRequest);
-        McqRuResponse response = mcqRuService.createMcq(request, createdBy);
+        MultipleChoiceQuestionRuResponse response = multipleChoiceQuestionRuService.createMcq(request, createdBy);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "MCQ created successfully"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<McqRuResponse>> getMcqById(@PathVariable String id) {
-        McqRuResponse response = mcqRuService.getMcqById(id);
+    public ResponseEntity<ApiResponse<MultipleChoiceQuestionRuResponse>> getMcqById(@PathVariable String id) {
+        MultipleChoiceQuestionRuResponse response = multipleChoiceQuestionRuService.getMcqById(id);
         return ResponseEntity.ok(ApiResponse.success(response, "MCQ retrieved successfully"));
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PaginatedResponse<McqRuResponse>>> getAllMcqs(
+    public ResponseEntity<ApiResponse<PaginatedResponse<MultipleChoiceQuestionRuResponse>>> getAllMcqs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -58,18 +58,18 @@ public class McqRuController {
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<McqRuResponse> mcqPage = mcqRuService.getAllMcqs(pageable, lang, difficultyLevel, tags, isActive);
+        Page<MultipleChoiceQuestionRuResponse> mcqPage = multipleChoiceQuestionRuService.getAllMcqs(pageable, lang, difficultyLevel, tags, isActive);
 
-        PaginatedResponse<McqRuResponse> paginatedResponse = PaginatedResponse.of(mcqPage);
+        PaginatedResponse<MultipleChoiceQuestionRuResponse> paginatedResponse = PaginatedResponse.of(mcqPage);
 
         return ResponseEntity.ok(ApiResponse.success(paginatedResponse, "MCQs retrieved successfully"));
     }
 
     @GetMapping("/active/{lang}")
-    public ResponseEntity<ApiResponse<List<McqRuResponse>>> getActiveMcqsByLang(@PathVariable String lang) {
+    public ResponseEntity<ApiResponse<List<MultipleChoiceQuestionRuResponse>>> getActiveMcqsByLang(@PathVariable String lang) {
         try {
             McqRu.Language language = McqRu.Language.valueOf(lang.toUpperCase());
-            List<McqRuResponse> responses = mcqRuService.getActiveMcqsByLang(language);
+            List<MultipleChoiceQuestionRuResponse> responses = multipleChoiceQuestionRuService.getActiveMcqsByLang(language);
             return ResponseEntity.ok(ApiResponse.success(responses, "MCQs retrieved successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid language: " + lang, null));
@@ -77,12 +77,12 @@ public class McqRuController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<McqRuResponse>> updateMcq(
+    public ResponseEntity<ApiResponse<MultipleChoiceQuestionRuResponse>> updateMcq(
             @PathVariable String id,
-            @Valid @RequestBody UpdateMcqRuRequest request,
+            @Valid @RequestBody UpdateMultipleChoiceQuestionRuRequest request,
             HttpServletRequest httpRequest) {
         String updatedBy = extractUserIdFromRequest(httpRequest);
-        McqRuResponse response = mcqRuService.updateMcq(id, request, updatedBy);
+        MultipleChoiceQuestionRuResponse response = multipleChoiceQuestionRuService.updateMcq(id, request, updatedBy);
         return ResponseEntity.ok(ApiResponse.success(response, "MCQ updated successfully"));
     }
 
@@ -91,7 +91,7 @@ public class McqRuController {
             @PathVariable String id,
             HttpServletRequest httpRequest) {
         String deletedBy = extractUserIdFromRequest(httpRequest);
-        mcqRuService.deleteMcq(id, deletedBy);
+        multipleChoiceQuestionRuService.deleteMcq(id, deletedBy);
         return ResponseEntity.ok(ApiResponse.success(null, "MCQ deleted successfully"));
     }
 

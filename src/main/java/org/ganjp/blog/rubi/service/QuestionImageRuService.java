@@ -56,13 +56,13 @@ public class QuestionImageRuService {
         return imageOpt.map(this::toResponse).orElse(null);
     }
 
-    public List<QuestionImageRuResponse> listQuestionImageRusByMcq(String mcqId) {
-        List<QuestionImageRu> images = questionImageRuRepository.findByMcqIdAndIsActiveTrueOrderByDisplayOrderAsc(mcqId);
+    public List<QuestionImageRuResponse> listQuestionImageRusByMcq(String multipleChoiceQuestionId) {
+        List<QuestionImageRu> images = questionImageRuRepository.findByMultipleChoiceQuestionIdAndIsActiveTrueOrderByDisplayOrderAsc(multipleChoiceQuestionId);
         return images.stream().map(this::toResponse).toList();
     }
 
-    public List<QuestionImageRuResponse> listQuestionImageRusBySaq(String saqId) {
-        List<QuestionImageRu> images = questionImageRuRepository.findBySaqIdAndIsActiveTrueOrderByDisplayOrderAsc(saqId);
+    public List<QuestionImageRuResponse> listQuestionImageRusBySaq(String freeTextQuestionId) {
+        List<QuestionImageRu> images = questionImageRuRepository.findByFreeTextQuestionIdAndIsActiveTrueOrderByDisplayOrderAsc(freeTextQuestionId);
         return images.stream().map(this::toResponse).toList();
     }
 
@@ -124,8 +124,8 @@ public class QuestionImageRuService {
 
             QuestionImageRu questionAnswerImage = QuestionImageRu.builder()
                     .id(UUID.randomUUID().toString())
-                    .mcqId(request.getMcqId())
-                    .saqId(request.getSaqId())
+                    .multipleChoiceQuestionId(request.getMultipleChoiceQuestionId())
+                    .freeTextQuestionId(request.getFreeTextQuestionId())
                     .filename(targetFilename)
                     .originalUrl(request.getOriginalUrl())
                     .width(width)
@@ -152,8 +152,8 @@ public class QuestionImageRuService {
         if (imageOpt.isEmpty()) return null;
         QuestionImageRu image = imageOpt.get();
 
-        if (request.getMcqId() != null) image.setMcqId(request.getMcqId());
-        if (request.getSaqId() != null) image.setSaqId(request.getSaqId());
+        if (request.getMultipleChoiceQuestionId() != null) image.setMultipleChoiceQuestionId(request.getMultipleChoiceQuestionId());
+        if (request.getFreeTextQuestionId() != null) image.setFreeTextQuestionId(request.getFreeTextQuestionId());
         if (request.getOriginalUrl() != null) image.setOriginalUrl(request.getOriginalUrl());
         if (request.getLang() != null) image.setLang(request.getLang());
         if (request.getDisplayOrder() != null) image.setDisplayOrder(request.getDisplayOrder());
@@ -197,8 +197,8 @@ public class QuestionImageRuService {
     }
     
     public List<QuestionImageRuResponse> searchQuestionImageRus(
-            String mcqId, String saqId, QuestionImageRu.Language lang, Boolean isActive) {
-        return questionImageRuRepository.searchQuestionImageRus(mcqId, saqId, lang, isActive)
+            String multipleChoiceQuestionId, String freeTextQuestionId, QuestionImageRu.Language lang, Boolean isActive) {
+        return questionImageRuRepository.searchQuestionImageRus(multipleChoiceQuestionId, freeTextQuestionId, lang, isActive)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -234,8 +234,8 @@ public class QuestionImageRuService {
         }
         return QuestionImageRuResponse.builder()
                 .id(image.getId())
-                .mcqId(image.getMcqId())
-                .saqId(image.getSaqId())
+                .multipleChoiceQuestionId(image.getMultipleChoiceQuestionId())
+                .freeTextQuestionId(image.getFreeTextQuestionId())
                 .filename(image.getFilename())
                 .fileUrl(fileUrl)
                 .originalUrl(image.getOriginalUrl())

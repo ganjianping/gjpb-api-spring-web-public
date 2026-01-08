@@ -6,13 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.rubi.model.entity.McqRu;
+import org.ganjp.blog.rubi.model.entity.MultipleChoiceQuestionRu;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateMcqRuRequest {
+public class CreateMultipleChoiceQuestionRuRequest {
 
     @NotBlank(message = "Question is required")
     private String question;
@@ -38,7 +38,7 @@ public class CreateMcqRuRequest {
     private String tags;
 
     @NotNull(message = "Language is required")
-    private McqRu.Language lang;
+    private MultipleChoiceQuestionRu.Language lang;
 
     private Integer displayOrder;
     private Boolean isActive;

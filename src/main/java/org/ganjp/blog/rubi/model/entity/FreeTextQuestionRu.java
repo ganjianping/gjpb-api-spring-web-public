@@ -12,13 +12,13 @@ import org.ganjp.blog.common.model.entity.BaseEntity;
  * Short Answer Question Entity for Rubi
  */
 @Entity
-@Table(name = "rubi_saq")
+@Table(name = "rubi_free_text_question")
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SaqRu extends BaseEntity {
+public class FreeTextQuestionRu extends BaseEntity {
 
     @Id
     @Column(name = "id", length = 36)

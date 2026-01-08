@@ -11,23 +11,23 @@ import java.util.Optional;
 
 @Repository
 public interface QuestionImageRuRepository extends JpaRepository<QuestionImageRu, String> {
-    List<QuestionImageRu> findByMcqIdAndIsActiveTrueOrderByDisplayOrderAsc(String mcqId);
+    List<QuestionImageRu> findByMultipleChoiceQuestionIdAndIsActiveTrueOrderByDisplayOrderAsc(String multipleChoiceQuestionId);
 
-    List<QuestionImageRu> findBySaqIdAndIsActiveTrueOrderByDisplayOrderAsc(String saqId);
+    List<QuestionImageRu> findByFreeTextQuestionIdAndIsActiveTrueOrderByDisplayOrderAsc(String freeTextQuestionId);
 
     Optional<QuestionImageRu> findByIdAndIsActiveTrue(String id);
 
     boolean existsByFilename(String filename);
 
     @Query("SELECT i FROM QuestionImageRu i WHERE " +
-        "(:mcqId IS NULL OR i.mcqId = :mcqId) AND " +
-        "(:saqId IS NULL OR i.saqId = :saqId) AND " +
+        "(:multipleChoiceQuestionId IS NULL OR i.multipleChoiceQuestionId = :multipleChoiceQuestionId) AND " +
+        "(:freeTextQuestionId IS NULL OR i.freeTextQuestionId = :freeTextQuestionId) AND " +
         "(:lang IS NULL OR i.lang = :lang) AND " +
         "(:isActive IS NULL OR i.isActive = :isActive) " +
         "ORDER BY i.displayOrder")
     List<QuestionImageRu> searchQuestionImageRus(
-        @Param("mcqId") String mcqId,
-        @Param("saqId") String saqId,
+        @Param("multipleChoiceQuestionId") String multipleChoiceQuestionId,
+        @Param("freeTextQuestionId") String freeTextQuestionId,
         @Param("lang") QuestionImageRu.Language lang,
         @Param("isActive") Boolean isActive
     );

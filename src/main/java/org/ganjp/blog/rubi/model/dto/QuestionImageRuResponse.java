@@ -12,8 +12,8 @@ import org.ganjp.blog.rubi.model.entity.QuestionImageRu.Language;
 @AllArgsConstructor
 public class QuestionImageRuResponse {
     private String id;
-    private String mcqId;
-    private String saqId;
+    private String multipleChoiceQuestionId;
+    private String freeTextQuestionId;
     private String filename;
     private String fileUrl;
     private String originalUrl;

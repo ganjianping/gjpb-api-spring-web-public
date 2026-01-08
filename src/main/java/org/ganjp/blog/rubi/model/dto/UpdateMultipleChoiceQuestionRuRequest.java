@@ -4,17 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.rubi.model.entity.McqRu;
-
-import java.time.LocalDateTime;
+import org.ganjp.blog.rubi.model.entity.MultipleChoiceQuestionRu;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class McqRuResponse {
+public class UpdateMultipleChoiceQuestionRuRequest {
 
-    private String id;
     private String question;
     private String optionA;
     private String optionB;
@@ -24,14 +21,8 @@ public class McqRuResponse {
     private Boolean isMultipleCorrect;
     private String explanation;
     private String difficultyLevel;
-    private Integer failCount;
-    private Integer successCount;
     private String tags;
-    private McqRu.Language lang;
+    private MultipleChoiceQuestionRu.Language lang;
     private Integer displayOrder;
     private Boolean isActive;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private String createdBy;
-    private String updatedBy;
 }

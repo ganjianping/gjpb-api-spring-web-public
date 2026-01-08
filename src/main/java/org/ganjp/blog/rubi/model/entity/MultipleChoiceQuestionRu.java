@@ -12,13 +12,13 @@ import org.ganjp.blog.common.model.entity.BaseEntity;
  * Multiple Choice Question Entity for Rubi
  */
 @Entity
-@Table(name = "rubi_mcq")
+@Table(name = "rubi_multiple_choice_question")
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class McqRu extends BaseEntity {
+public class MultipleChoiceQuestionRu extends BaseEntity {
 
     @Id
     @Column(name = "id", length = 36)

@@ -16,11 +16,11 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuestionImageRuCreateRequest {
-    @Size(max = 36, message = "MCQ ID must not exceed 36 characters")
-    private String mcqId;
+    @Size(max = 36, message = "Multiple Choice Question ID must not exceed 36 characters")
+    private String multipleChoiceQuestionId;
 
-    @Size(max = 36, message = "SAQ ID must not exceed 36 characters")
-    private String saqId;
+    @Size(max = 36, message = "Free Text Question ID must not exceed 36 characters")
+    private String freeTextQuestionId;
 
     @Pattern(regexp = "^https?://.*", message = "Original URL must be a valid HTTP/HTTPS URL")
     @Size(max = 500, message = "Original URL must not exceed 500 characters")
@@ -46,6 +46,6 @@ public class QuestionImageRuCreateRequest {
     }
 
     public boolean hasQuestionReference() {
-        return (mcqId != null && !mcqId.trim().isEmpty()) || (saqId != null && !saqId.trim().isEmpty());
+        return (multipleChoiceQuestionId != null && !multipleChoiceQuestionId.trim().isEmpty()) || (freeTextQuestionId != null && !freeTextQuestionId.trim().isEmpty());
     }
 }

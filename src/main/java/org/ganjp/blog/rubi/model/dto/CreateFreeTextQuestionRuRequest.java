@@ -6,13 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.ganjp.blog.rubi.model.entity.SaqRu;
+import org.ganjp.blog.rubi.model.entity.FreeTextQuestionRu;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateSaqRuRequest {
+public class CreateFreeTextQuestionRuRequest {
 
     @NotBlank(message = "Question is required")
     private String question;
@@ -25,7 +25,7 @@ public class CreateSaqRuRequest {
     private String tags;
 
     @NotNull(message = "Language is required")
-    private SaqRu.Language lang;
+    private FreeTextQuestionRu.Language lang;
 
     private Integer displayOrder;
     private Boolean isActive;

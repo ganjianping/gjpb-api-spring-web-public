@@ -40,12 +40,12 @@ public class QuestionImageRuController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> searchQuestionImageRus(
-            @RequestParam(required = false) String mcqId,
-            @RequestParam(required = false) String saqId,
+            @RequestParam(required = false) String multipleChoiceQuestionId,
+            @RequestParam(required = false) String freeTextQuestionId,
             @RequestParam(required = false) QuestionImageRu.Language lang,
             @RequestParam(required = false) Boolean isActive
     ) {
-        List<QuestionImageRuResponse> images = questionImageRuService.searchQuestionImageRus(mcqId, saqId, lang, isActive);
+        List<QuestionImageRuResponse> images = questionImageRuService.searchQuestionImageRus(multipleChoiceQuestionId, freeTextQuestionId, lang, isActive);
         return ResponseEntity.ok(ApiResponse.success(images, "Question answer images found"));
     }
 
@@ -58,15 +58,15 @@ public class QuestionImageRuController {
         return ResponseEntity.ok(ApiResponse.success(image, "Question answer image found"));
     }
 
-    @GetMapping("/mcq/{mcqId}")
-    public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> getImagesByMcq(@PathVariable String mcqId) {
-        List<QuestionImageRuResponse> images = questionImageRuService.listQuestionImageRusByMcq(mcqId);
+    @GetMapping("/mcq/{multipleChoiceQuestionId}")
+    public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> getImagesByMcq(@PathVariable String multipleChoiceQuestionId) {
+        List<QuestionImageRuResponse> images = questionImageRuService.listQuestionImageRusByMcq(multipleChoiceQuestionId);
         return ResponseEntity.ok(ApiResponse.success(images, "Images found for MCQ"));
     }
 
-    @GetMapping("/saq/{saqId}")
-    public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> getImagesBySaq(@PathVariable String saqId) {
-        List<QuestionImageRuResponse> images = questionImageRuService.listQuestionImageRusBySaq(saqId);
+    @GetMapping("/saq/{freeTextQuestionId}")
+    public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> getImagesBySaq(@PathVariable String freeTextQuestionId) {
+        List<QuestionImageRuResponse> images = questionImageRuService.listQuestionImageRusBySaq(freeTextQuestionId);
         return ResponseEntity.ok(ApiResponse.success(images, "Images found for SAQ"));
     }
 

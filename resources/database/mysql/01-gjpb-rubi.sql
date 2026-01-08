@@ -53,7 +53,7 @@ ALTER TABLE `rubi_vocabulary`
 ADD CONSTRAINT `uniq_rubi_vocab_word_lang` UNIQUE (`word`, `lang`);
 
 -- Multiple Choice Questions Table
-CREATE TABLE `rubi_mcq` (
+CREATE TABLE `rubi_multiple_choice_question` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
   `question` varchar(1000) NOT NULL COMMENT 'The question text',
   `option_a` varchar(200) DEFAULT NULL COMMENT 'Option A',
@@ -96,7 +96,7 @@ CREATE TABLE `rubi_mcq` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Multiple choice questions for vocabulary practice';
 
 -- Short Answer Questions Table
-CREATE TABLE `rubi_saq` (
+CREATE TABLE `rubi_free_text_question` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
   `question` varchar(1000) NOT NULL COMMENT 'The question text',
   `correct_answer` varchar(1000) NOT NULL COMMENT 'The correct answer',
@@ -135,8 +135,8 @@ CREATE TABLE `rubi_saq` (
 
 CREATE TABLE `rubi_question_image` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
-  `mcq_id` char(36) DEFAULT NULL COMMENT 'Associated MCQ ID',
-  `saq_id` char(36) DEFAULT NULL COMMENT 'Associated SAQ ID',
+  `multiple_choice_question_id` char(36) DEFAULT NULL COMMENT 'Associated Multiple Choice Question ID',
+  `free_text_question_id` char(36) DEFAULT NULL COMMENT 'Associated Free Text Question ID',
   `filename` varchar(255) NOT NULL COMMENT 'Stored filename',
   `original_url` varchar(500) DEFAULT NULL COMMENT 'Original source URL',
   `width` smallint UNSIGNED DEFAULT NULL COMMENT 'Image width in pixels',
@@ -151,11 +151,16 @@ CREATE TABLE `rubi_question_image` (
 
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_rubi_question_answer_image_filename` (`filename`),
-  INDEX `idx_mcq_id` (`mcq_id`),
-  INDEX `idx_saq_id` (`saq_id`),
+  
   INDEX `idx_active_lang_order` (`is_active`, `lang`, `display_order`),
   INDEX `idx_filename` (`filename`),
   INDEX `idx_created_at` (`created_at`),
   INDEX `idx_created_by` (`created_by`),
   INDEX `idx_updated_by` (`updated_by`)
+
+  -- Foreign Key Constraints
+  CONSTRAINT `fk_rubi_qi_mcq` FOREIGN KEY (`multiple_choice_question_id`) REFERENCES `rubi_multiple_choice_question` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_rubi_qi_saq` FOREIGN KEY (`free_text_question_id`) REFERENCES `rubi_free_text_question` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_rubi_qi_created_by` FOREIGN KEY (`created_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_rubi_qi_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Images associated with questions and answers';

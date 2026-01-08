@@ -17,11 +17,11 @@ public class QuestionImageRu {
     @Column(length = 36, nullable = false)
     private String id;
 
-    @Column(name = "mcq_id", length = 36)
-    private String mcqId;
+    @Column(name = "multiple_choice_question_id", length = 36)
+    private String multipleChoiceQuestionId;
 
-    @Column(name = "saq_id", length = 36)
-    private String saqId;
+    @Column(name = "free_text_question_id", length = 36)
+    private String freeTextQuestionId;
 
     @Column(length = 255, nullable = false)
     private String filename;

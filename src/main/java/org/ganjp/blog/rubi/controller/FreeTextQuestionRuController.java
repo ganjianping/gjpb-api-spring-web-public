@@ -6,11 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.ganjp.blog.auth.security.JwtUtils;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.ganjp.blog.common.model.PaginatedResponse;
-import org.ganjp.blog.rubi.model.dto.CreateSaqRuRequest;
-import org.ganjp.blog.rubi.model.dto.SaqRuResponse;
-import org.ganjp.blog.rubi.model.dto.UpdateSaqRuRequest;
-import org.ganjp.blog.rubi.model.entity.SaqRu;
-import org.ganjp.blog.rubi.service.SaqRuService;
+import org.ganjp.blog.rubi.model.dto.CreateFreeTextQuestionRuRequest;
+import org.ganjp.blog.rubi.model.dto.FreeTextQuestionRuResponse;
+import org.ganjp.blog.rubi.model.dto.UpdateFreeTextQuestionRuRequest;
+import org.ganjp.blog.rubi.model.entity.FreeTextQuestionRu;
+import org.ganjp.blog.rubi.service.FreeTextQuestionRuService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,28 +24,28 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/ru/saqs")
 @RequiredArgsConstructor
-public class SaqRuController {
+public class FreeTextQuestionRuController {
 
-    private final SaqRuService saqRuService;
+    private final FreeTextQuestionRuService freeTextQuestionRuService;
     private final JwtUtils jwtUtils;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<SaqRuResponse>> createSaq(
-            @Valid @RequestBody CreateSaqRuRequest request,
+    public ResponseEntity<ApiResponse<FreeTextQuestionRuResponse>> createSaq(
+            @Valid @RequestBody CreateFreeTextQuestionRuRequest request,
             HttpServletRequest httpRequest) {
         String createdBy = extractUserIdFromRequest(httpRequest);
-        SaqRuResponse response = saqRuService.createSaq(request, createdBy);
+        FreeTextQuestionRuResponse response = freeTextQuestionRuService.createSaq(request, createdBy);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "SAQ created successfully"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SaqRuResponse>> getSaqById(@PathVariable String id) {
-        SaqRuResponse response = saqRuService.getSaqById(id);
+    public ResponseEntity<ApiResponse<FreeTextQuestionRuResponse>> getSaqById(@PathVariable String id) {
+        FreeTextQuestionRuResponse response = freeTextQuestionRuService.getSaqById(id);
         return ResponseEntity.ok(ApiResponse.success(response, "SAQ retrieved successfully"));
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PaginatedResponse<SaqRuResponse>>> getAllSaqs(
+    public ResponseEntity<ApiResponse<PaginatedResponse<FreeTextQuestionRuResponse>>> getAllSaqs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -58,18 +58,18 @@ public class SaqRuController {
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<SaqRuResponse> saqPage = saqRuService.getAllSaqs(pageable, lang, difficultyLevel, tags, isActive);
+        Page<FreeTextQuestionRuResponse> saqPage = freeTextQuestionRuService.getAllSaqs(pageable, lang, difficultyLevel, tags, isActive);
 
-        PaginatedResponse<SaqRuResponse> paginatedResponse = PaginatedResponse.of(saqPage);
+        PaginatedResponse<FreeTextQuestionRuResponse> paginatedResponse = PaginatedResponse.of(saqPage);
 
         return ResponseEntity.ok(ApiResponse.success(paginatedResponse, "SAQs retrieved successfully"));
     }
 
     @GetMapping("/active/{lang}")
-    public ResponseEntity<ApiResponse<List<SaqRuResponse>>> getActiveSaqsByLang(@PathVariable String lang) {
+    public ResponseEntity<ApiResponse<List<FreeTextQuestionRuResponse>>> getActiveSaqsByLang(@PathVariable String lang) {
         try {
             SaqRu.Language language = SaqRu.Language.valueOf(lang.toUpperCase());
-            List<SaqRuResponse> responses = saqRuService.getActiveSaqsByLang(language);
+            List<FreeTextQuestionRuResponse> responses = freeTextQuestionRuService.getActiveSaqsByLang(language);
             return ResponseEntity.ok(ApiResponse.success(responses, "SAQs retrieved successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid language: " + lang, null));
@@ -77,12 +77,12 @@ public class SaqRuController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SaqRuResponse>> updateSaq(
+    public ResponseEntity<ApiResponse<FreeTextQuestionRuResponse>> updateSaq(
             @PathVariable String id,
-            @Valid @RequestBody UpdateSaqRuRequest request,
+            @Valid @RequestBody UpdateFreeTextQuestionRuRequest request,
             HttpServletRequest httpRequest) {
         String updatedBy = extractUserIdFromRequest(httpRequest);
-        SaqRuResponse response = saqRuService.updateSaq(id, request, updatedBy);
+        FreeTextQuestionRuResponse response = freeTextQuestionRuService.updateSaq(id, request, updatedBy);
         return ResponseEntity.ok(ApiResponse.success(response, "SAQ updated successfully"));
     }
 
@@ -91,7 +91,7 @@ public class SaqRuController {
             @PathVariable String id,
             HttpServletRequest httpRequest) {
         String deletedBy = extractUserIdFromRequest(httpRequest);
-        saqRuService.deleteSaq(id, deletedBy);
+        freeTextQuestionRuService.deleteSaq(id, deletedBy);
         return ResponseEntity.ok(ApiResponse.success(null, "SAQ deleted successfully"));
     }
 
