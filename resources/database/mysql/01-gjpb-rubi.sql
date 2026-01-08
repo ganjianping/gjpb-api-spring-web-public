@@ -61,7 +61,6 @@ CREATE TABLE `rubi_multiple_choice_question` (
   `option_c` varchar(200) DEFAULT NULL COMMENT 'Option C',
   `option_d` varchar(200) DEFAULT NULL COMMENT 'Option D',
   `correct_answers` varchar(10) NOT NULL COMMENT 'Comma-separated correct answer options (e.g., A,C)',
-  `is_multiple_correct` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Whether multiple answers are correct',
   `explanation` varchar(1000) DEFAULT NULL COMMENT 'Explanation for the correct answer',
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
   `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
@@ -119,17 +118,17 @@ CREATE TABLE `rubi_free_text_question` (
   `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Active status flag',
   
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_rubi_saq_question_lang` (`question`, `lang`),
+  UNIQUE KEY `uniq_rubi_ftq_question_lang` (`question`, `lang`),
   
   -- Indexes
-  KEY `idx_rubi_saq_difficulty` (`difficulty_level`),
-  KEY `idx_rubi_saq_tags` (`tags`),
-  KEY `idx_rubi_saq_lang` (`lang`),
-  KEY `idx_rubi_saq_is_active` (`is_active`),
+  KEY `idx_rubi_ftq_difficulty` (`difficulty_level`),
+  KEY `idx_rubi_ftq_tags` (`tags`),
+  KEY `idx_rubi_ftq_lang` (`lang`),
+  KEY `idx_rubi_ftq_is_active` (`is_active`),
   
   -- Foreign Key Constraints
-  CONSTRAINT `fk_rubi_saq_created_by` FOREIGN KEY (`created_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `fk_rubi_saq_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_rubi_ftq_created_by` FOREIGN KEY (`created_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_rubi_ftq_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Short answer questions for vocabulary practice';
 

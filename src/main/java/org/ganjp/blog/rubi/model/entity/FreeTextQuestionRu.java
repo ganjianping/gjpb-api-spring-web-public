@@ -63,7 +63,7 @@ public class FreeTextQuestionRu extends BaseEntity {
     /**
      * Check if SAQ is active
      */
-    public boolean isActiveSaq() {
+    public boolean isActiveFreeTextQuestionRu() {
         return isActive != null && isActive;
     }
 

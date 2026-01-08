@@ -32,8 +32,8 @@ public class MultipleChoiceQuestionRuService {
      * Create a new MCQ
      */
     @Transactional
-    public MultipleChoiceQuestionRuResponse createMcq(CreateMultipleChoiceQuestionRuRequest request, String createdBy) {
-        McqRu mcqRu = McqRu.builder()
+    public MultipleChoiceQuestionRuResponse createMultipleChoiceQuestionRu(CreateMultipleChoiceQuestionRuRequest request, String createdBy) {
+        MultipleChoiceQuestionRu multipleChoiceQuestionRu = MultipleChoiceQuestionRu.builder()
                 .id(UUID.randomUUID().toString())
                 .question(request.getQuestion())
                 .optionA(request.getOptionA())
@@ -41,7 +41,6 @@ public class MultipleChoiceQuestionRuService {
                 .optionC(request.getOptionC())
                 .optionD(request.getOptionD())
                 .correctAnswers(request.getCorrectAnswers())
-                .isMultipleCorrect(request.getIsMultipleCorrect() != null ? request.getIsMultipleCorrect() : false)
                 .explanation(request.getExplanation())
                 .difficultyLevel(request.getDifficultyLevel())
                 .tags(request.getTags())
@@ -50,97 +49,94 @@ public class MultipleChoiceQuestionRuService {
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
 
-        McqRu savedMcq = multipleChoiceQuestionRuRepository.save(mcqRu);
-        log.info("Created MCQ with id: {}", savedMcq.getId());
+        MultipleChoiceQuestionRu savedMultipleChoiceQuestionRu = multipleChoiceQuestionRuRepository.save(multipleChoiceQuestionRu);
+        log.info("Created MCQ with id: {}", savedMultipleChoiceQuestionRu.getId());
 
-        return mapToResponse(savedMcq);
+        return mapToResponse(savedMultipleChoiceQuestionRu);
     }
 
     /**
      * Get MCQ by ID
      */
-    public MultipleChoiceQuestionRuResponse getMcqById(String id) {
-        McqRu mcqRu = multipleChoiceQuestionRuRepository.findById(id)
+    public MultipleChoiceQuestionRuResponse getMultipleChoiceQuestionRuById(String id) {
+        MultipleChoiceQuestionRu multipleChoiceQuestionRu = multipleChoiceQuestionRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("MCQ not found with id: " + id));
-        return mapToResponse(mcqRu);
+        return mapToResponse(multipleChoiceQuestionRu);
     }
 
     /**
      * Get all MCQs with pagination and filtering
      */
-    public Page<MultipleChoiceQuestionRuResponse> getAllMcqs(Pageable pageable, String lang, String difficultyLevel, String tags, Boolean isActive) {
-        Specification<McqRu> spec = buildSpecification(lang, difficultyLevel, tags, isActive);
-        Page<McqRu> mcqs = multipleChoiceQuestionRuRepository.findAll(spec, pageable);
-        return mcqs.map(this::mapToResponse);
+    public Page<MultipleChoiceQuestionRuResponse> getAllMultipleChoiceQuestionRus(Pageable pageable, String lang, String difficultyLevel, String tags, Boolean isActive) {
+        Specification<MultipleChoiceQuestionRu> spec = buildSpecification(lang, difficultyLevel, tags, isActive);
+        Page<MultipleChoiceQuestionRu> multipleChoiceQuestionRus = multipleChoiceQuestionRuRepository.findAll(spec, pageable);
+        return multipleChoiceQuestionRus.map(this::mapToResponse);
     }
 
     /**
      * Update MCQ
      */
     @Transactional
-    public MultipleChoiceQuestionRuResponse updateMcq(String id, UpdateMultipleChoiceQuestionRuRequest request, String updatedBy) {
-        McqRu mcqRu = multipleChoiceQuestionRuRepository.findById(id)
+    public MultipleChoiceQuestionRuResponse updateMultipleChoiceQuestionRu(String id, UpdateMultipleChoiceQuestionRuRequest request, String updatedBy) {
+        MultipleChoiceQuestionRu multipleChoiceQuestionRu = multipleChoiceQuestionRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("MCQ not found with id: " + id));
 
         if (StringUtils.hasText(request.getQuestion())) {
-            mcqRu.setQuestion(request.getQuestion());
+            multipleChoiceQuestionRu.setQuestion(request.getQuestion());
         }
         if (StringUtils.hasText(request.getOptionA())) {
-            mcqRu.setOptionA(request.getOptionA());
+            multipleChoiceQuestionRu.setOptionA(request.getOptionA());
         }
         if (StringUtils.hasText(request.getOptionB())) {
-            mcqRu.setOptionB(request.getOptionB());
+            multipleChoiceQuestionRu.setOptionB(request.getOptionB());
         }
         if (StringUtils.hasText(request.getOptionC())) {
-            mcqRu.setOptionC(request.getOptionC());
+            multipleChoiceQuestionRu.setOptionC(request.getOptionC());
         }
         if (StringUtils.hasText(request.getOptionD())) {
-            mcqRu.setOptionD(request.getOptionD());
+            multipleChoiceQuestionRu.setOptionD(request.getOptionD());
         }
         if (StringUtils.hasText(request.getCorrectAnswers())) {
-            mcqRu.setCorrectAnswers(request.getCorrectAnswers());
-        }
-        if (request.getIsMultipleCorrect() != null) {
-            mcqRu.setIsMultipleCorrect(request.getIsMultipleCorrect());
+            multipleChoiceQuestionRu.setCorrectAnswers(request.getCorrectAnswers());
         }
         if (request.getExplanation() != null) {
-            mcqRu.setExplanation(request.getExplanation());
+            multipleChoiceQuestionRu.setExplanation(request.getExplanation());
         }
         if (request.getDifficultyLevel() != null) {
-            mcqRu.setDifficultyLevel(request.getDifficultyLevel());
+            multipleChoiceQuestionRu.setDifficultyLevel(request.getDifficultyLevel());
         }
         if (request.getTags() != null) {
-            mcqRu.setTags(request.getTags());
+            multipleChoiceQuestionRu.setTags(request.getTags());
         }
         if (request.getLang() != null) {
-            mcqRu.setLang(request.getLang());
+            multipleChoiceQuestionRu.setLang(request.getLang());
         }
         if (request.getDisplayOrder() != null) {
-            mcqRu.setDisplayOrder(request.getDisplayOrder());
+            multipleChoiceQuestionRu.setDisplayOrder(request.getDisplayOrder());
         }
         if (request.getIsActive() != null) {
-            mcqRu.setIsActive(request.getIsActive());
+            multipleChoiceQuestionRu.setIsActive(request.getIsActive());
         }
 
-        mcqRu.setUpdatedBy(updatedBy);
+        multipleChoiceQuestionRu.setUpdatedBy(updatedBy);
 
-        McqRu updatedMcq = multipleChoiceQuestionRuRepository.save(mcqRu);
-        log.info("Updated MCQ with id: {}", updatedMcq.getId());
+        MultipleChoiceQuestionRu updatedMultipleChoiceQuestionRu = multipleChoiceQuestionRuRepository.save(multipleChoiceQuestionRu);
+        log.info("Updated MCQ with id: {}", updatedMultipleChoiceQuestionRu.getId());
 
-        return mapToResponse(updatedMcq);
+        return mapToResponse(updatedMultipleChoiceQuestionRu);
     }
 
     /**
      * Delete MCQ (soft delete)
      */
     @Transactional
-    public void deleteMcq(String id, String deletedBy) {
-        McqRu mcqRu = multipleChoiceQuestionRuRepository.findById(id)
+    public void deleteMultipleChoiceQuestionRu(String id, String deletedBy) {
+        MultipleChoiceQuestionRu multipleChoiceQuestionRu = multipleChoiceQuestionRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("MCQ not found with id: " + id));
 
-        mcqRu.setIsActive(false);
-        mcqRu.setUpdatedBy(deletedBy);
-        multipleChoiceQuestionRuRepository.save(mcqRu);
+        multipleChoiceQuestionRu.setIsActive(false);
+        multipleChoiceQuestionRu.setUpdatedBy(deletedBy);
+        multipleChoiceQuestionRuRepository.save(multipleChoiceQuestionRu);
 
         log.info("Soft deleted MCQ with id: {}", id);
     }
@@ -148,9 +144,9 @@ public class MultipleChoiceQuestionRuService {
     /**
      * Get active MCQs by language
      */
-    public List<MultipleChoiceQuestionRuResponse> getActiveMcqsByLang(McqRu.Language lang) {
-        List<McqRu> mcqs = multipleChoiceQuestionRuRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang);
-        return mcqs.stream()
+    public List<MultipleChoiceQuestionRuResponse> getActiveMultipleChoiceQuestionRusByLang(MultipleChoiceQuestionRu.Language lang) {
+        List<MultipleChoiceQuestionRu> multipleChoiceQuestionRus = multipleChoiceQuestionRuRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang);
+        return multipleChoiceQuestionRus.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -158,12 +154,12 @@ public class MultipleChoiceQuestionRuService {
     /**
      * Build specification for filtering
      */
-    private Specification<McqRu> buildSpecification(String lang, String difficultyLevel, String tags, Boolean isActive) {
+    private Specification<MultipleChoiceQuestionRu> buildSpecification(String lang, String difficultyLevel, String tags, Boolean isActive) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (StringUtils.hasText(lang)) {
-                predicates.add(criteriaBuilder.equal(root.get("lang"), McqRu.Language.valueOf(lang.toUpperCase())));
+                predicates.add(criteriaBuilder.equal(root.get("lang"), MultipleChoiceQuestionRu.Language.valueOf(lang.toUpperCase())));
             }
 
             if (StringUtils.hasText(difficultyLevel)) {
@@ -185,28 +181,27 @@ public class MultipleChoiceQuestionRuService {
     /**
      * Map entity to response DTO
      */
-    private MultipleChoiceQuestionRuResponse mapToResponse(McqRu mcqRu) {
+    private MultipleChoiceQuestionRuResponse mapToResponse(MultipleChoiceQuestionRu multipleChoiceQuestionRu) {
         return MultipleChoiceQuestionRuResponse.builder()
-                .id(mcqRu.getId())
-                .question(mcqRu.getQuestion())
-                .optionA(mcqRu.getOptionA())
-                .optionB(mcqRu.getOptionB())
-                .optionC(mcqRu.getOptionC())
-                .optionD(mcqRu.getOptionD())
-                .correctAnswers(mcqRu.getCorrectAnswers())
-                .isMultipleCorrect(mcqRu.getIsMultipleCorrect())
-                .explanation(mcqRu.getExplanation())
-                .difficultyLevel(mcqRu.getDifficultyLevel())
-                .failCount(mcqRu.getFailCount())
-                .successCount(mcqRu.getSuccessCount())
-                .tags(mcqRu.getTags())
-                .lang(mcqRu.getLang())
-                .displayOrder(mcqRu.getDisplayOrder())
-                .isActive(mcqRu.getIsActive())
-                .createdAt(mcqRu.getCreatedAt())
-                .updatedAt(mcqRu.getUpdatedAt())
-                .createdBy(mcqRu.getCreatedBy())
-                .updatedBy(mcqRu.getUpdatedBy())
+                .id(multipleChoiceQuestionRu.getId())
+                .question(multipleChoiceQuestionRu.getQuestion())
+                .optionA(multipleChoiceQuestionRu.getOptionA())
+                .optionB(multipleChoiceQuestionRu.getOptionB())
+                .optionC(multipleChoiceQuestionRu.getOptionC())
+                .optionD(multipleChoiceQuestionRu.getOptionD())
+                .correctAnswers(multipleChoiceQuestionRu.getCorrectAnswers())
+                .explanation(multipleChoiceQuestionRu.getExplanation())
+                .difficultyLevel(multipleChoiceQuestionRu.getDifficultyLevel())
+                .failCount(multipleChoiceQuestionRu.getFailCount())
+                .successCount(multipleChoiceQuestionRu.getSuccessCount())
+                .tags(multipleChoiceQuestionRu.getTags())
+                .lang(multipleChoiceQuestionRu.getLang())
+                .displayOrder(multipleChoiceQuestionRu.getDisplayOrder())
+                .isActive(multipleChoiceQuestionRu.getIsActive())
+                .createdAt(multipleChoiceQuestionRu.getCreatedAt())
+                .updatedAt(multipleChoiceQuestionRu.getUpdatedAt())
+                .createdBy(multipleChoiceQuestionRu.getCreatedBy())
+                .updatedBy(multipleChoiceQuestionRu.getUpdatedBy())
                 .build();
     }
 }

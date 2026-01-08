@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/ru/saqs")
+@RequestMapping("/v1/free-text-question-rus")
 @RequiredArgsConstructor
 public class FreeTextQuestionRuController {
 
@@ -30,22 +30,22 @@ public class FreeTextQuestionRuController {
     private final JwtUtils jwtUtils;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<FreeTextQuestionRuResponse>> createSaq(
+    public ResponseEntity<ApiResponse<FreeTextQuestionRuResponse>> createFreeTextQuestionRu(
             @Valid @RequestBody CreateFreeTextQuestionRuRequest request,
             HttpServletRequest httpRequest) {
         String createdBy = extractUserIdFromRequest(httpRequest);
-        FreeTextQuestionRuResponse response = freeTextQuestionRuService.createSaq(request, createdBy);
+        FreeTextQuestionRuResponse response = freeTextQuestionRuService.createFreeTextQuestionRu(request, createdBy);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "SAQ created successfully"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<FreeTextQuestionRuResponse>> getSaqById(@PathVariable String id) {
-        FreeTextQuestionRuResponse response = freeTextQuestionRuService.getSaqById(id);
+    public ResponseEntity<ApiResponse<FreeTextQuestionRuResponse>> getFreeTextQuestionRuById(@PathVariable String id) {
+        FreeTextQuestionRuResponse response = freeTextQuestionRuService.getFreeTextQuestionRuById(id);
         return ResponseEntity.ok(ApiResponse.success(response, "SAQ retrieved successfully"));
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PaginatedResponse<FreeTextQuestionRuResponse>>> getAllSaqs(
+    public ResponseEntity<ApiResponse<PaginatedResponse<FreeTextQuestionRuResponse>>> getAllFreeTextQuestionRus(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -58,18 +58,18 @@ public class FreeTextQuestionRuController {
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<FreeTextQuestionRuResponse> saqPage = freeTextQuestionRuService.getAllSaqs(pageable, lang, difficultyLevel, tags, isActive);
+        Page<FreeTextQuestionRuResponse> freeTextQuestionRuPage = freeTextQuestionRuService.getAllFreeTextQuestionRus(pageable, lang, difficultyLevel, tags, isActive);
 
-        PaginatedResponse<FreeTextQuestionRuResponse> paginatedResponse = PaginatedResponse.of(saqPage);
+        PaginatedResponse<FreeTextQuestionRuResponse> paginatedResponse = PaginatedResponse.of(freeTextQuestionRuPage);
 
         return ResponseEntity.ok(ApiResponse.success(paginatedResponse, "SAQs retrieved successfully"));
     }
 
     @GetMapping("/active/{lang}")
-    public ResponseEntity<ApiResponse<List<FreeTextQuestionRuResponse>>> getActiveSaqsByLang(@PathVariable String lang) {
+    public ResponseEntity<ApiResponse<List<FreeTextQuestionRuResponse>>> getActiveFreeTextQuestionRusByLang(@PathVariable String lang) {
         try {
-            SaqRu.Language language = SaqRu.Language.valueOf(lang.toUpperCase());
-            List<FreeTextQuestionRuResponse> responses = freeTextQuestionRuService.getActiveSaqsByLang(language);
+            FreeTextQuestionRu.Language language = FreeTextQuestionRu.Language.valueOf(lang.toUpperCase());
+            List<FreeTextQuestionRuResponse> responses = freeTextQuestionRuService.getActiveFreeTextQuestionRusByLang(language);
             return ResponseEntity.ok(ApiResponse.success(responses, "SAQs retrieved successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid language: " + lang, null));
@@ -77,21 +77,21 @@ public class FreeTextQuestionRuController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<FreeTextQuestionRuResponse>> updateSaq(
+    public ResponseEntity<ApiResponse<FreeTextQuestionRuResponse>> updateFreeTextQuestionRu(
             @PathVariable String id,
             @Valid @RequestBody UpdateFreeTextQuestionRuRequest request,
             HttpServletRequest httpRequest) {
         String updatedBy = extractUserIdFromRequest(httpRequest);
-        FreeTextQuestionRuResponse response = freeTextQuestionRuService.updateSaq(id, request, updatedBy);
+        FreeTextQuestionRuResponse response = freeTextQuestionRuService.updateFreeTextQuestionRu(id, request, updatedBy);
         return ResponseEntity.ok(ApiResponse.success(response, "SAQ updated successfully"));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteSaq(
+    public ResponseEntity<ApiResponse<Void>> deleteFreeTextQuestionRu(
             @PathVariable String id,
             HttpServletRequest httpRequest) {
         String deletedBy = extractUserIdFromRequest(httpRequest);
-        freeTextQuestionRuService.deleteSaq(id, deletedBy);
+        freeTextQuestionRuService.deleteFreeTextQuestionRu(id, deletedBy);
         return ResponseEntity.ok(ApiResponse.success(null, "SAQ deleted successfully"));
     }
 

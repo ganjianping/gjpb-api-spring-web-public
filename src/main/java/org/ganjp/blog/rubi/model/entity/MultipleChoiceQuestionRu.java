@@ -42,10 +42,6 @@ public class MultipleChoiceQuestionRu extends BaseEntity {
     @Column(name = "correct_answers", length = 10, nullable = false)
     private String correctAnswers;
 
-    @Column(name = "is_multiple_correct", nullable = false)
-    @Builder.Default
-    private Boolean isMultipleCorrect = false;
-
     @Column(name = "explanation", length = 1000)
     private String explanation;
 
@@ -87,7 +83,7 @@ public class MultipleChoiceQuestionRu extends BaseEntity {
     /**
      * Check if MCQ is active
      */
-    public boolean isActiveMcq() {
+    public boolean isActiveMultipleChoiceQuestionRu() {
         return isActive != null && isActive;
     }
 

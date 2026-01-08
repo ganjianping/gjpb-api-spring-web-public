@@ -32,8 +32,8 @@ public class FreeTextQuestionRuService {
      * Create a new SAQ
      */
     @Transactional
-    public FreeTextQuestionRuResponse createSaq(CreateFreeTextQuestionRuRequest request, String createdBy) {
-        SaqRu saq = SaqRu.builder()
+    public FreeTextQuestionRuResponse createFreeTextQuestionRu(CreateFreeTextQuestionRuRequest request, String createdBy) {
+        FreeTextQuestionRu freeTextQuestionRu = FreeTextQuestionRu.builder()
                 .id(UUID.randomUUID().toString())
                 .question(request.getQuestion())
                 .correctAnswer(request.getCorrectAnswer())
@@ -45,82 +45,82 @@ public class FreeTextQuestionRuService {
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
 
-        SaqRu savedSaq = freeTextQuestionRuRepository.save(saq);
-        log.info("Created SAQ with id: {}", savedSaq.getId());
+        FreeTextQuestionRu savedFreeTextQuestionRu = freeTextQuestionRuRepository.save(freeTextQuestionRu);
+        log.info("Created SAQ with id: {}", savedFreeTextQuestionRu.getId());
 
-        return mapToResponse(savedSaq);
+        return mapToResponse(savedFreeTextQuestionRu);
     }
 
     /**
      * Get SAQ by ID
      */
-    public FreeTextQuestionRuResponse getSaqById(String id) {
-        SaqRu saq = freeTextQuestionRuRepository.findById(id)
+    public FreeTextQuestionRuResponse getFreeTextQuestionRuById(String id) {
+        FreeTextQuestionRu freeTextQuestionRu = freeTextQuestionRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SAQ not found with id: " + id));
-        return mapToResponse(saq);
+        return mapToResponse(freeTextQuestionRu);
     }
 
     /**
      * Get all SAQs with pagination and filtering
      */
-    public Page<FreeTextQuestionRuResponse> getAllSaqs(Pageable pageable, String lang, String difficultyLevel, String tags, Boolean isActive) {
-        Specification<SaqRu> spec = buildSpecification(lang, difficultyLevel, tags, isActive);
-        Page<SaqRu> saqs = freeTextQuestionRuRepository.findAll(spec, pageable);
-        return saqs.map(this::mapToResponse);
+    public Page<FreeTextQuestionRuResponse> getAllFreeTextQuestionRus(Pageable pageable, String lang, String difficultyLevel, String tags, Boolean isActive) {
+        Specification<FreeTextQuestionRu> spec = buildSpecification(lang, difficultyLevel, tags, isActive);
+        Page<FreeTextQuestionRu> freeTextQuestionRus = freeTextQuestionRuRepository.findAll(spec, pageable);
+        return freeTextQuestionRus.map(this::mapToResponse);
     }
 
     /**
      * Update SAQ
      */
     @Transactional
-    public FreeTextQuestionRuResponse updateSaq(String id, UpdateFreeTextQuestionRuRequest request, String updatedBy) {
-        SaqRu saq = freeTextQuestionRuRepository.findById(id)
+    public FreeTextQuestionRuResponse updateFreeTextQuestionRu(String id, UpdateFreeTextQuestionRuRequest request, String updatedBy) {
+        FreeTextQuestionRu freeTextQuestionRu = freeTextQuestionRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SAQ not found with id: " + id));
 
         if (StringUtils.hasText(request.getQuestion())) {
-            saq.setQuestion(request.getQuestion());
+            freeTextQuestionRu.setQuestion(request.getQuestion());
         }
         if (StringUtils.hasText(request.getCorrectAnswer())) {
-            saq.setCorrectAnswer(request.getCorrectAnswer());
+            freeTextQuestionRu.setCorrectAnswer(request.getCorrectAnswer());
         }
         if (request.getExplanation() != null) {
-            saq.setExplanation(request.getExplanation());
+            freeTextQuestionRu.setExplanation(request.getExplanation());
         }
         if (request.getDifficultyLevel() != null) {
-            saq.setDifficultyLevel(request.getDifficultyLevel());
+            freeTextQuestionRu.setDifficultyLevel(request.getDifficultyLevel());
         }
         if (request.getTags() != null) {
-            saq.setTags(request.getTags());
+            freeTextQuestionRu.setTags(request.getTags());
         }
         if (request.getLang() != null) {
-            saq.setLang(request.getLang());
+            freeTextQuestionRu.setLang(request.getLang());
         }
         if (request.getDisplayOrder() != null) {
-            saq.setDisplayOrder(request.getDisplayOrder());
+            freeTextQuestionRu.setDisplayOrder(request.getDisplayOrder());
         }
         if (request.getIsActive() != null) {
-            saq.setIsActive(request.getIsActive());
+            freeTextQuestionRu.setIsActive(request.getIsActive());
         }
 
-        saq.setUpdatedBy(updatedBy);
+        freeTextQuestionRu.setUpdatedBy(updatedBy);
 
-        SaqRu updatedSaq = freeTextQuestionRuRepository.save(saq);
-        log.info("Updated SAQ with id: {}", updatedSaq.getId());
+        FreeTextQuestionRu updatedFreeTextQuestionRu = freeTextQuestionRuRepository.save(freeTextQuestionRu);
+        log.info("Updated SAQ with id: {}", updatedFreeTextQuestionRu.getId());
 
-        return mapToResponse(updatedSaq);
+        return mapToResponse(updatedFreeTextQuestionRu);
     }
 
     /**
      * Delete SAQ (soft delete)
      */
     @Transactional
-    public void deleteSaq(String id, String deletedBy) {
-        SaqRu saq = freeTextQuestionRuRepository.findById(id)
+    public void deleteFreeTextQuestionRu(String id, String deletedBy) {
+        FreeTextQuestionRu freeTextQuestionRu = freeTextQuestionRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SAQ not found with id: " + id));
 
-        saq.setIsActive(false);
-        saq.setUpdatedBy(deletedBy);
-        freeTextQuestionRuRepository.save(saq);
+        freeTextQuestionRu.setIsActive(false);
+        freeTextQuestionRu.setUpdatedBy(deletedBy);
+        freeTextQuestionRuRepository.save(freeTextQuestionRu);
 
         log.info("Soft deleted SAQ with id: {}", id);
     }
@@ -128,9 +128,9 @@ public class FreeTextQuestionRuService {
     /**
      * Get active SAQs by language
      */
-    public List<FreeTextQuestionRuResponse> getActiveSaqsByLang(SaqRu.Language lang) {
-        List<SaqRu> saqs = freeTextQuestionRuRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang);
-        return saqs.stream()
+    public List<FreeTextQuestionRuResponse> getActiveFreeTextQuestionRusByLang(FreeTextQuestionRu.Language lang) {
+        List<FreeTextQuestionRu> freeTextQuestionRus = freeTextQuestionRuRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang);
+        return freeTextQuestionRus.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -138,12 +138,12 @@ public class FreeTextQuestionRuService {
     /**
      * Build specification for filtering
      */
-    private Specification<SaqRu> buildSpecification(String lang, String difficultyLevel, String tags, Boolean isActive) {
+    private Specification<FreeTextQuestionRu> buildSpecification(String lang, String difficultyLevel, String tags, Boolean isActive) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (StringUtils.hasText(lang)) {
-                predicates.add(criteriaBuilder.equal(root.get("lang"), SaqRu.Language.valueOf(lang.toUpperCase())));
+                predicates.add(criteriaBuilder.equal(root.get("lang"), FreeTextQuestionRu.Language.valueOf(lang.toUpperCase())));
             }
 
             if (StringUtils.hasText(difficultyLevel)) {
@@ -165,21 +165,21 @@ public class FreeTextQuestionRuService {
     /**
      * Map entity to response DTO
      */
-    private FreeTextQuestionRuResponse mapToResponse(SaqRu saq) {
+    private FreeTextQuestionRuResponse mapToResponse(FreeTextQuestionRu freeTextQuestionRu) {
         return FreeTextQuestionRuResponse.builder()
-                .id(saq.getId())
-                .question(saq.getQuestion())
-                .correctAnswer(saq.getCorrectAnswer())
-                .explanation(saq.getExplanation())
-                .difficultyLevel(saq.getDifficultyLevel())
-                .tags(saq.getTags())
-                .lang(saq.getLang())
-                .displayOrder(saq.getDisplayOrder())
-                .isActive(saq.getIsActive())
-                .createdAt(saq.getCreatedAt())
-                .updatedAt(saq.getUpdatedAt())
-                .createdBy(saq.getCreatedBy())
-                .updatedBy(saq.getUpdatedBy())
+                .id(freeTextQuestionRu.getId())
+                .question(freeTextQuestionRu.getQuestion())
+                .correctAnswer(freeTextQuestionRu.getCorrectAnswer())
+                .explanation(freeTextQuestionRu.getExplanation())
+                .difficultyLevel(freeTextQuestionRu.getDifficultyLevel())
+                .tags(freeTextQuestionRu.getTags())
+                .lang(freeTextQuestionRu.getLang())
+                .displayOrder(freeTextQuestionRu.getDisplayOrder())
+                .isActive(freeTextQuestionRu.getIsActive())
+                .createdAt(freeTextQuestionRu.getCreatedAt())
+                .updatedAt(freeTextQuestionRu.getUpdatedAt())
+                .createdBy(freeTextQuestionRu.getCreatedBy())
+                .updatedBy(freeTextQuestionRu.getUpdatedBy())
                 .build();
     }
 }

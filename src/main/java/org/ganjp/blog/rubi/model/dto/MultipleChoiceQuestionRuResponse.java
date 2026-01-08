@@ -21,7 +21,6 @@ public class MultipleChoiceQuestionRuResponse {
     private String optionC;
     private String optionD;
     private String correctAnswers;
-    private Boolean isMultipleCorrect;
     private String explanation;
     private String difficultyLevel;
     private Integer failCount;

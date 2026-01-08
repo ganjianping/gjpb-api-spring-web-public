@@ -56,12 +56,12 @@ public class QuestionImageRuService {
         return imageOpt.map(this::toResponse).orElse(null);
     }
 
-    public List<QuestionImageRuResponse> listQuestionImageRusByMcq(String multipleChoiceQuestionId) {
+    public List<QuestionImageRuResponse> listQuestionImageRusByMultipleChoiceQuestionRu(String multipleChoiceQuestionId) {
         List<QuestionImageRu> images = questionImageRuRepository.findByMultipleChoiceQuestionIdAndIsActiveTrueOrderByDisplayOrderAsc(multipleChoiceQuestionId);
         return images.stream().map(this::toResponse).toList();
     }
 
-    public List<QuestionImageRuResponse> listQuestionImageRusBySaq(String freeTextQuestionId) {
+    public List<QuestionImageRuResponse> listQuestionImageRusByFreeTextQuestionRu(String freeTextQuestionId) {
         List<QuestionImageRu> images = questionImageRuRepository.findByFreeTextQuestionIdAndIsActiveTrueOrderByDisplayOrderAsc(freeTextQuestionId);
         return images.stream().map(this::toResponse).toList();
     }

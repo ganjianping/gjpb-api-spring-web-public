@@ -21,7 +21,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/v1/ru/question-images")
+@RequestMapping("/v1/question-image-rus")
 @RequiredArgsConstructor
 public class QuestionImageRuController {
     private final QuestionImageRuService questionImageRuService;
@@ -58,15 +58,15 @@ public class QuestionImageRuController {
         return ResponseEntity.ok(ApiResponse.success(image, "Question answer image found"));
     }
 
-    @GetMapping("/mcq/{multipleChoiceQuestionId}")
-    public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> getImagesByMcq(@PathVariable String multipleChoiceQuestionId) {
-        List<QuestionImageRuResponse> images = questionImageRuService.listQuestionImageRusByMcq(multipleChoiceQuestionId);
+    @GetMapping("/multipleChoiceQuestionRu/{multipleChoiceQuestionId}")
+    public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> getImagesByMultipleChoiceQuestionRu(@PathVariable String multipleChoiceQuestionId) {
+        List<QuestionImageRuResponse> images = questionImageRuService.listQuestionImageRusByMultipleChoiceQuestionRu(multipleChoiceQuestionId);
         return ResponseEntity.ok(ApiResponse.success(images, "Images found for MCQ"));
     }
 
-    @GetMapping("/saq/{freeTextQuestionId}")
-    public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> getImagesBySaq(@PathVariable String freeTextQuestionId) {
-        List<QuestionImageRuResponse> images = questionImageRuService.listQuestionImageRusBySaq(freeTextQuestionId);
+    @GetMapping("/freeTextQuestionRu/{freeTextQuestionId}")
+    public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> getImagesByFreeTextQuestionRu(@PathVariable String freeTextQuestionId) {
+        List<QuestionImageRuResponse> images = questionImageRuService.listQuestionImageRusByFreeTextQuestionRu(freeTextQuestionId);
         return ResponseEntity.ok(ApiResponse.success(images, "Images found for SAQ"));
     }
 

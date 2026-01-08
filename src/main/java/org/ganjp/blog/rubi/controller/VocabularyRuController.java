@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/ru/vocabularies")
+@RequestMapping("/v1/vocabulary-rus")
 @RequiredArgsConstructor
 public class VocabularyRuController {
 

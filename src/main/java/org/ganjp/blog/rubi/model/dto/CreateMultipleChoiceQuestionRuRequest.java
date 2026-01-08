@@ -32,7 +32,6 @@ public class CreateMultipleChoiceQuestionRuRequest {
     @NotBlank(message = "Correct answers are required")
     private String correctAnswers;
 
-    private Boolean isMultipleCorrect;
     private String explanation;
     private String difficultyLevel;
     private String tags;
