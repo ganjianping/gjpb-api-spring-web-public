@@ -49,14 +49,10 @@ CREATE TABLE `rubi_vocabulary` (
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Vocabulary words for language learning';
 
-// create unique key to avoid duplicate word entries in the same language
-ALTER TABLE `rubi_vocabulary`
-ADD CONSTRAINT `uniq_rubi_vocab_word_lang` UNIQUE (`word`, `lang`);
-
 -- Multiple Choice Questions Table
 CREATE TABLE `rubi_multiple_choice_question` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
-  `question` varchar(1000) NOT NULL COMMENT 'The question text',
+  `question` varchar(500) NOT NULL COMMENT 'The question text',
   `option_a` varchar(200) DEFAULT NULL COMMENT 'Option A',
   `option_b` varchar(200) DEFAULT NULL COMMENT 'Option B',
   `option_c` varchar(200) DEFAULT NULL COMMENT 'Option C',
@@ -98,12 +94,10 @@ CREATE TABLE `rubi_multiple_choice_question` (
 -- Short Answer Questions Table
 CREATE TABLE `rubi_free_text_question` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
-  `question` varchar(1000) NOT NULL COMMENT 'The question text',
-  `correct_answer` varchar(1000) NOT NULL COMMENT 'The correct answer',
+  `question` varchar(500) NOT NULL COMMENT 'The question text',
+  `answer` varchar(1000) NOT NULL COMMENT 'The correct answer',
   `explanation` varchar(2000) DEFAULT NULL COMMENT 'Explanation for the correct answer',  
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
-  `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
-  `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
 
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',

@@ -17,8 +17,8 @@ public class CreateFreeTextQuestionRuRequest {
     @NotBlank(message = "Question is required")
     private String question;
 
-    @NotBlank(message = "Correct answer is required")
-    private String correctAnswer;
+    @NotBlank(message = "Answer is required")
+    private String answer;
 
     private String explanation;
     private String difficultyLevel;

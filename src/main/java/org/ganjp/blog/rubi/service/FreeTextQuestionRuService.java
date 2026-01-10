@@ -36,7 +36,7 @@ public class FreeTextQuestionRuService {
         FreeTextQuestionRu freeTextQuestionRu = FreeTextQuestionRu.builder()
                 .id(UUID.randomUUID().toString())
                 .question(request.getQuestion())
-                .correctAnswer(request.getCorrectAnswer())
+                .answer(request.getAnswer())
                 .explanation(request.getExplanation())
                 .difficultyLevel(request.getDifficultyLevel())
                 .tags(request.getTags())
@@ -80,8 +80,8 @@ public class FreeTextQuestionRuService {
         if (StringUtils.hasText(request.getQuestion())) {
             freeTextQuestionRu.setQuestion(request.getQuestion());
         }
-        if (StringUtils.hasText(request.getCorrectAnswer())) {
-            freeTextQuestionRu.setCorrectAnswer(request.getCorrectAnswer());
+        if (StringUtils.hasText(request.getAnswer())) {
+            freeTextQuestionRu.setAnswer(request.getAnswer());
         }
         if (request.getExplanation() != null) {
             freeTextQuestionRu.setExplanation(request.getExplanation());
@@ -181,7 +181,7 @@ public class FreeTextQuestionRuService {
         return FreeTextQuestionRuResponse.builder()
                 .id(freeTextQuestionRu.getId())
                 .question(freeTextQuestionRu.getQuestion())
-                .correctAnswer(freeTextQuestionRu.getCorrectAnswer())
+                .answer(freeTextQuestionRu.getAnswer())
                 .explanation(freeTextQuestionRu.getExplanation())
                 .difficultyLevel(freeTextQuestionRu.getDifficultyLevel())
                 .tags(freeTextQuestionRu.getTags())

@@ -16,7 +16,7 @@ public class FreeTextQuestionRuResponse {
 
     private String id;
     private String question;
-    private String correctAnswer;
+    private String answer;
     private String explanation;
     private String difficultyLevel;
     private String tags;

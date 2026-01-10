@@ -27,8 +27,8 @@ public class FreeTextQuestionRu extends BaseEntity {
     @Column(name = "question", length = 1000, nullable = false)
     private String question;
 
-    @Column(name = "correct_answer", length = 1000, nullable = false)
-    private String correctAnswer;
+    @Column(name = "answer", length = 1000, nullable = false)
+    private String answer;
 
     @Column(name = "explanation", length = 2000)
     private String explanation;

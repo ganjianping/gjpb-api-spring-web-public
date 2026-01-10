@@ -13,7 +13,7 @@ import org.ganjp.blog.rubi.model.entity.FreeTextQuestionRu;
 public class UpdateFreeTextQuestionRuRequest {
 
     private String question;
-    private String correctAnswer;
+    private String answer;
     private String explanation;
     private String difficultyLevel;
     private String tags;
