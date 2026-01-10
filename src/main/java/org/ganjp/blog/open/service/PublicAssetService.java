@@ -44,6 +44,8 @@ public class PublicAssetService {
     private final org.ganjp.blog.cms.service.FileService fileService;
     private final org.ganjp.blog.rubi.repository.QuestionImageRuRepository questionImageRuRepository;
     private final org.ganjp.blog.rubi.service.QuestionImageRuService questionImageRuService;
+    private final org.ganjp.blog.rubi.repository.VocabularyRuRepository vocabularyRuRepository;
+    private final org.ganjp.blog.rubi.service.VocabularyRuService vocabularyRuService;
     /**
      * Get image file by filename for public viewing
      * No authentication required
@@ -178,5 +180,29 @@ public class PublicAssetService {
             throw new IllegalArgumentException("Question image not found or not active with filename: " + filename);
         }
         return questionImageRuService.getImageFile(filename);
+    }
+
+    /**
+     * Get vocabulary audio file by filename for public viewing
+     * Ensures the vocabulary record exists and is active before returning the file
+     */
+    public File getVocabularyAudioFile(String filename) throws IOException {
+        log.debug("Fetching public vocabulary audio file: {}", filename);
+        if (!vocabularyRuRepository.existsByPhoneticAudioFilenameAndIsActiveTrue(filename)) {
+            throw new IllegalArgumentException("Vocabulary audio not found or not active with filename: " + filename);
+        }
+        return vocabularyRuService.getAudioFile(filename);
+    }
+
+    /**
+     * Get vocabulary image file by filename for public viewing
+     * Ensures the vocabulary record exists and is active before returning the file
+     */
+    public File getVocabularyImageFile(String filename) throws IOException {
+        log.debug("Fetching public vocabulary image file: {}", filename);
+        if (!vocabularyRuRepository.existsByWordImageFilenameAndIsActiveTrue(filename)) {
+            throw new IllegalArgumentException("Vocabulary image not found or not active with filename: " + filename);
+        }
+        return vocabularyRuService.getImageFile(filename);
     }
 }

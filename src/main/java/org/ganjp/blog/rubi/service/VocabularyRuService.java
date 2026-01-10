@@ -77,7 +77,7 @@ public class VocabularyRuService {
         dbVocabulary.setUpdatedBy(createdBy);
 
         VocabularyRu savedVocabulary = vocabularyRepository.save(dbVocabulary);
-        return VocabularyRuResponse.fromEntity(savedVocabulary);
+        return VocabularyRuResponse.fromEntity(savedVocabulary, rubiProperties.getVocabulary().getBaseUrl());
     }
 
     /**
@@ -128,7 +128,7 @@ public class VocabularyRuService {
         dbVocabulary.setUpdatedBy(updatedBy);
 
         VocabularyRu updatedVocabulary = vocabularyRepository.save(dbVocabulary);
-        return VocabularyRuResponse.fromEntity(updatedVocabulary);
+        return VocabularyRuResponse.fromEntity(updatedVocabulary, rubiProperties.getVocabulary().getBaseUrl());
     }
 
     private void handleImageUpload(VocabularyRu vocabulary, MultipartFile file, String originalUrl, String providedFilename) {
@@ -308,12 +308,30 @@ public class VocabularyRuService {
     }
 
     /**
+     * Get vocabulary audio file by filename
+     */
+    public java.io.File getAudioFile(String filename) {
+        Path audioPath = Path.of(rubiProperties.getVocabulary().getAudio().getDirectory());
+        Path filePath = audioPath.resolve(filename);
+        return filePath.toFile();
+    }
+
+    /**
+     * Get vocabulary image file by filename
+     */
+    public java.io.File getImageFile(String filename) {
+        Path imagePath = Path.of(rubiProperties.getVocabulary().getImage().getDirectory());
+        Path filePath = imagePath.resolve(filename);
+        return filePath.toFile();
+    }
+
+    /**
      * Get vocabulary by ID
      */
     public VocabularyRuResponse getVocabularyById(String id) {
         VocabularyRu vocabulary = vocabularyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found with id: " + id));
-        return VocabularyRuResponse.fromEntity(vocabulary);
+        return VocabularyRuResponse.fromEntity(vocabulary, rubiProperties.getVocabulary().getBaseUrl());
     }
 
     /**
@@ -355,7 +373,7 @@ public class VocabularyRuService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        return vocabularyRepository.findAll(spec, pageable).map(VocabularyRuResponse::fromEntity);
+        return vocabularyRepository.findAll(spec, pageable).map(vocab -> VocabularyRuResponse.fromEntity(vocab, rubiProperties.getVocabulary().getBaseUrl()));
     }
     
     /**
@@ -364,7 +382,7 @@ public class VocabularyRuService {
     public List<VocabularyRuResponse> getVocabulariesByLanguage(VocabularyRu.Language lang) {
         return vocabularyRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang)
                 .stream()
-                .map(VocabularyRuResponse::fromEntity)
+                .map(vocab -> VocabularyRuResponse.fromEntity(vocab, rubiProperties.getVocabulary().getBaseUrl()))
                 .collect(Collectors.toList());
     }
 }
