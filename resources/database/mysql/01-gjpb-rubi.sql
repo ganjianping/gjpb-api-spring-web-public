@@ -57,7 +57,7 @@ CREATE TABLE `rubi_multiple_choice_question` (
   `option_b` varchar(200) DEFAULT NULL COMMENT 'Option B',
   `option_c` varchar(200) DEFAULT NULL COMMENT 'Option C',
   `option_d` varchar(200) DEFAULT NULL COMMENT 'Option D',
-  `correct_answers` varchar(10) NOT NULL COMMENT 'Comma-separated correct answer options (e.g., A,C)',
+  `answer` varchar(10) NOT NULL COMMENT 'Comma-separated correct answer options (e.g., A,C)',
   `explanation` varchar(1000) DEFAULT NULL COMMENT 'Explanation for the correct answer',
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
   `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',

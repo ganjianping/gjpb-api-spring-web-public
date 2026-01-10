@@ -20,7 +20,7 @@ public class MultipleChoiceQuestionRuResponse {
     private String optionB;
     private String optionC;
     private String optionD;
-    private String correctAnswers;
+    private String answer;
     private String explanation;
     private String difficultyLevel;
     private Integer failCount;

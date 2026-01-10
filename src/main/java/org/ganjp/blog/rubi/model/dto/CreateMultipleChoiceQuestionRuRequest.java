@@ -29,8 +29,8 @@ public class CreateMultipleChoiceQuestionRuRequest {
     @NotBlank(message = "Option D is required")
     private String optionD;
 
-    @NotBlank(message = "Correct answers are required")
-    private String correctAnswers;
+    @NotBlank(message = "Answer is required")
+    private String answer;
 
     private String explanation;
     private String difficultyLevel;

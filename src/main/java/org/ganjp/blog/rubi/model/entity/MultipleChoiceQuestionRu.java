@@ -39,8 +39,8 @@ public class MultipleChoiceQuestionRu extends BaseEntity {
     @Column(name = "option_d", length = 200)
     private String optionD;
 
-    @Column(name = "correct_answers", length = 10, nullable = false)
-    private String correctAnswers;
+    @Column(name = "answer", length = 10, nullable = false)
+    private String answer;
 
     @Column(name = "explanation", length = 1000)
     private String explanation;
@@ -109,23 +109,23 @@ public class MultipleChoiceQuestionRu extends BaseEntity {
     }
 
     /**
-     * Get correct answers as array
+     * Get answer as array
      */
-    public String[] getCorrectAnswersArray() {
-        if (correctAnswers == null || correctAnswers.trim().isEmpty()) {
+    public String[] getAnswerArray() {
+        if (answer == null || answer.trim().isEmpty()) {
             return new String[0];
         }
-        return correctAnswers.split(",");
+        return answer.split(",");
     }
 
     /**
-     * Set correct answers from array
+     * Set answer from array
      */
-    public void setCorrectAnswersFromArray(String[] correctAnswersArray) {
-        if (correctAnswersArray == null || correctAnswersArray.length == 0) {
-            this.correctAnswers = null;
+    public void setAnswerFromArray(String[] answerArray) {
+        if (answerArray == null || answerArray.length == 0) {
+            this.answer = null;
         } else {
-            this.correctAnswers = String.join(",", correctAnswersArray);
+            this.answer = String.join(",", answerArray);
         }
     }
 }

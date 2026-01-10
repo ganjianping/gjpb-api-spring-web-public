@@ -40,7 +40,7 @@ public class MultipleChoiceQuestionRuService {
                 .optionB(request.getOptionB())
                 .optionC(request.getOptionC())
                 .optionD(request.getOptionD())
-                .correctAnswers(request.getCorrectAnswers())
+                .answer(request.getAnswer())
                 .explanation(request.getExplanation())
                 .difficultyLevel(request.getDifficultyLevel())
                 .tags(request.getTags())
@@ -96,8 +96,8 @@ public class MultipleChoiceQuestionRuService {
         if (StringUtils.hasText(request.getOptionD())) {
             multipleChoiceQuestionRu.setOptionD(request.getOptionD());
         }
-        if (StringUtils.hasText(request.getCorrectAnswers())) {
-            multipleChoiceQuestionRu.setCorrectAnswers(request.getCorrectAnswers());
+        if (StringUtils.hasText(request.getAnswer())) {
+            multipleChoiceQuestionRu.setAnswer(request.getAnswer());
         }
         if (request.getExplanation() != null) {
             multipleChoiceQuestionRu.setExplanation(request.getExplanation());
@@ -201,7 +201,7 @@ public class MultipleChoiceQuestionRuService {
                 .optionB(multipleChoiceQuestionRu.getOptionB())
                 .optionC(multipleChoiceQuestionRu.getOptionC())
                 .optionD(multipleChoiceQuestionRu.getOptionD())
-                .correctAnswers(multipleChoiceQuestionRu.getCorrectAnswers())
+                .answer(multipleChoiceQuestionRu.getAnswer())
                 .explanation(multipleChoiceQuestionRu.getExplanation())
                 .difficultyLevel(multipleChoiceQuestionRu.getDifficultyLevel())
                 .failCount(multipleChoiceQuestionRu.getFailCount())
