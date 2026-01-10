@@ -72,6 +72,9 @@ public class VocabularyRu extends BaseEntity {
     @Column(name = "tags", length = 500)
     private String tags;
 
+    @Column(name = "difficulty_level", length = 20)
+    private String difficultyLevel;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "lang", nullable = false)
     @Builder.Default

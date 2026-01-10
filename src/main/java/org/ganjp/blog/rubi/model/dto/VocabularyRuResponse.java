@@ -33,6 +33,7 @@ public class VocabularyRuResponse {
     private String example;
     private String dictionaryUrl;
     private String tags;
+    private String difficultyLevel;
     private VocabularyRu.Language lang;
     private Integer displayOrder;
     private Boolean isActive;
@@ -63,6 +64,7 @@ public class VocabularyRuResponse {
                 .example(vocabulary.getExample())
                 .dictionaryUrl(vocabulary.getDictionaryUrl())
                 .tags(vocabulary.getTags())
+                .difficultyLevel(vocabulary.getDifficultyLevel())
                 .lang(vocabulary.getLang())
                 .displayOrder(vocabulary.getDisplayOrder())
                 .isActive(vocabulary.getIsActive())
@@ -99,6 +101,7 @@ public class VocabularyRuResponse {
                 .example(vocabulary.getExample())
                 .dictionaryUrl(vocabulary.getDictionaryUrl())
                 .tags(vocabulary.getTags())
+                .difficultyLevel(vocabulary.getDifficultyLevel())
                 .lang(vocabulary.getLang())
                 .displayOrder(vocabulary.getDisplayOrder())
                 .isActive(vocabulary.getIsActive())

@@ -21,6 +21,7 @@ CREATE TABLE `rubi_vocabulary` (
   `phonetic_audio_original_url` varchar(500) DEFAULT NULL COMMENT 'Phonetic audio original URL',
   
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
+  `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the vocabulary',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Order for display (lower = higher priority)',
   
