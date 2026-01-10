@@ -95,6 +95,12 @@ public class MultipleChoiceQuestionRuController {
         return ResponseEntity.ok(ApiResponse.success(null, "MultipleChoiceQuestion deleted successfully"));
     }
 
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<ApiResponse<Void>> deleteMultipleChoiceQuestionRuPermanently(@PathVariable String id) {
+        multipleChoiceQuestionRuService.deleteMultipleChoiceQuestionRuPermanently(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "MultipleChoiceQuestion permanently deleted successfully"));
+    }
+
     private String extractUserIdFromRequest(HttpServletRequest request) {
         try {
             return jwtUtils.extractUserIdFromToken(request);

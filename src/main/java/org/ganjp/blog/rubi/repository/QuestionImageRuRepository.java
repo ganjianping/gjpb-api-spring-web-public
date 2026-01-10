@@ -19,6 +19,8 @@ public interface QuestionImageRuRepository extends JpaRepository<QuestionImageRu
 
     boolean existsByFilename(String filename);
 
+    boolean existsByFilenameAndIsActiveTrue(String filename);
+
     @Query("SELECT i FROM QuestionImageRu i WHERE " +
         "(:multipleChoiceQuestionId IS NULL OR i.multipleChoiceQuestionId = :multipleChoiceQuestionId) AND " +
         "(:freeTextQuestionId IS NULL OR i.freeTextQuestionId = :freeTextQuestionId) AND " +

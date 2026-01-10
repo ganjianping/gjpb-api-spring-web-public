@@ -95,6 +95,12 @@ public class FreeTextQuestionRuController {
         return ResponseEntity.ok(ApiResponse.success(null, "FreeTextQuestion deleted successfully"));
     }
 
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<ApiResponse<Void>> deleteFreeTextQuestionRuPermanently(@PathVariable String id) {
+        freeTextQuestionRuService.deleteFreeTextQuestionRuPermanently(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "FreeTextQuestion permanently deleted successfully"));
+    }
+
     private String extractUserIdFromRequest(HttpServletRequest request) {
         try {
             return jwtUtils.extractUserIdFromToken(request);

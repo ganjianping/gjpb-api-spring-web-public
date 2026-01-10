@@ -42,6 +42,8 @@ public class PublicAssetService {
     private final org.ganjp.blog.cms.service.ArticleImageService articleImageService;
     private final org.ganjp.blog.cms.repository.FileRepository fileRepository;
     private final org.ganjp.blog.cms.service.FileService fileService;
+    private final org.ganjp.blog.rubi.repository.QuestionImageRuRepository questionImageRuRepository;
+    private final org.ganjp.blog.rubi.service.QuestionImageRuService questionImageRuService;
     /**
      * Get image file by filename for public viewing
      * No authentication required
@@ -164,5 +166,17 @@ public class PublicAssetService {
             throw new IllegalArgumentException("File not found or not active with filename: " + filename);
         }
         return fileService.getFileByFilename(filename);
+    }
+
+    /**
+     * Get question image file by filename for public viewing
+     * Ensures the question image record exists and is active before returning the file
+     */
+    public File getQuestionImageFile(String filename) throws IOException {
+        log.debug("Fetching public question image file: {}", filename);
+        if (!questionImageRuRepository.existsByFilenameAndIsActiveTrue(filename)) {
+            throw new IllegalArgumentException("Question image not found or not active with filename: " + filename);
+        }
+        return questionImageRuService.getImageFile(filename);
     }
 }

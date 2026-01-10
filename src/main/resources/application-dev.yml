@@ -16,9 +16,9 @@ security:
   cors:
     allowed-origins:
       - http://localhost:3000
-      - http://localhost:8081
+      - http://localhost:8082
       - http://127.0.0.1:3000
-      - http://127.0.0.1:8081
+      - http://127.0.0.1:8082
 
 # Logging configuration
 logging:
@@ -30,7 +30,7 @@ logging:
 
 # Logo upload configuration
 logo:
-  base-url: http://localhost:8081/api/v1/public/logos
+  base-url: http://localhost:8082/blog/v1/public/logos
   upload:
     # Local directory for logo storage (relative to project root or absolute path)
     directory: /Users/ganjianping/Local/Logos
@@ -43,7 +43,7 @@ logo:
 
 # Image upload configuration
 image:
-  base-url: http://localhost:8081/api/v1/public/images
+  base-url: http://localhost:8082/blog/v1/public/images
   upload:
     # Local directory for image storage (relative to project root or absolute path)
     directory: /Users/ganjianping/Local/Images
@@ -78,7 +78,7 @@ article:
       resize:
         max-size: 800
 video:
-  base-url: http://localhost:8081/api/v1/public/videos
+  base-url: http://localhost:8082/blog/v1/public/videos
   upload:
     # Production directory for video storage
     directory: /Users/ganjianping/Local/Videos
@@ -89,7 +89,7 @@ video:
       max-size: 600
 # Audio upload configuration (mirrors video.upload)
 audio:
-  base-url: http://localhost:8081/api/v1/public/audios
+  base-url: http://localhost:8082/blog/v1/public/audios
   upload:
     directory: /Users/ganjianping/Local/Audios
     max-file-size: 1073741824
@@ -98,7 +98,7 @@ audio:
 
 # Video upload configuration
 file:
-  base-url: http://localhost:8081/api/v1/public/files
+  base-url: http://localhost:8082/blog/v1/public/files
   upload:
     # Local directory for generic file storage (documents, attachments)
     directory: /Users/ganjianping/Local/Files
@@ -108,14 +108,14 @@ file:
 # Rubi upload configuration
 rubi:
   vocabulary:
-    base-url: http://localhost:8081/api/v1/public/rubi/vocabularies
+    base-url: http://localhost:8082/blog/v1/public/vocabulary-rus
     image:
       directory: /Users/ganjianping/Local/Rubi/vocabularies/images
       max-size: 800
     audio:
       directory: /Users/ganjianping/Local/Rubi/vocabularies/audios
   question-image:
-    base-url: http://localhost:8081/api/v1/public/rubi/question-answer-images
+    base-url: http://localhost:8082/blog/v1/public/question-rus/images
     upload:
       directory: /Users/ganjianping/Local/Rubi/question-images
       max-file-size: 10485760

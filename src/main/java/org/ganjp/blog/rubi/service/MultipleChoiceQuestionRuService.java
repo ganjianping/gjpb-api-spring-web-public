@@ -142,6 +142,18 @@ public class MultipleChoiceQuestionRuService {
     }
 
     /**
+     * Permanently delete MultipleChoiceQuestion
+     */
+    @Transactional
+    public void deleteMultipleChoiceQuestionRuPermanently(String id) {
+        MultipleChoiceQuestionRu multipleChoiceQuestionRu = multipleChoiceQuestionRuRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("MultipleChoiceQuestion not found with id: " + id));
+
+        multipleChoiceQuestionRuRepository.delete(multipleChoiceQuestionRu);
+        log.info("Permanently deleted MultipleChoiceQuestion with id: {}", id);
+    }
+
+    /**
      * Get active MultipleChoiceQuestions by language
      */
     public List<MultipleChoiceQuestionRuResponse> getActiveMultipleChoiceQuestionRusByLang(MultipleChoiceQuestionRu.Language lang) {

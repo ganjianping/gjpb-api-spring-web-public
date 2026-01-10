@@ -126,6 +126,18 @@ public class FreeTextQuestionRuService {
     }
 
     /**
+     * Permanently delete FreeTextQuestion
+     */
+    @Transactional
+    public void deleteFreeTextQuestionRuPermanently(String id) {
+        FreeTextQuestionRu freeTextQuestionRu = freeTextQuestionRuRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("FreeTextQuestion not found with id: " + id));
+
+        freeTextQuestionRuRepository.delete(freeTextQuestionRu);
+        log.info("Permanently deleted FreeTextQuestion with id: {}", id);
+    }
+
+    /**
      * Get active FreeTextQuestions by language
      */
     public List<FreeTextQuestionRuResponse> getActiveFreeTextQuestionRusByLang(FreeTextQuestionRu.Language lang) {
