@@ -62,6 +62,7 @@ public class VocabularyRuService {
                 .example(request.getExample())
                 .dictionaryUrl(request.getDictionaryUrl())
                 .tags(request.getTags())
+                .difficultyLevel(request.getDifficultyLevel())
                 .lang(request.getLang())
                 .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
@@ -121,6 +122,7 @@ public class VocabularyRuService {
         if (request.getExample() != null) dbVocabulary.setExample(request.getExample());
         if (request.getDictionaryUrl() != null) dbVocabulary.setDictionaryUrl(request.getDictionaryUrl());
         if (request.getTags() != null) dbVocabulary.setTags(request.getTags());
+        if (request.getDifficultyLevel() != null) dbVocabulary.setDifficultyLevel(request.getDifficultyLevel());
         if (request.getLang() != null) dbVocabulary.setLang(request.getLang());
         if (request.getDisplayOrder() != null) dbVocabulary.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) dbVocabulary.setIsActive(request.getIsActive());

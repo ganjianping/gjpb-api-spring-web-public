@@ -34,6 +34,7 @@ public class UpdateVocabularyRuRequest {
     private String example;
     private String dictionaryUrl;
     private String tags;
+    private String difficultyLevel;
     private VocabularyRu.Language lang;
     private Integer displayOrder;
     private Boolean isActive;

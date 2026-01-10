@@ -40,6 +40,7 @@ public class CreateVocabularyRuRequest {
     private String example;
     private String dictionaryUrl;
     private String tags;
+    private String difficultyLevel;
 
     @NotNull(message = "Language is required")
     private VocabularyRu.Language lang;
