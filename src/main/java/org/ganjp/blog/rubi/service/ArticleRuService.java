@@ -384,6 +384,9 @@ public class ArticleRuService {
         r.setOriginalUrl(a.getOriginalUrl());
         r.setSourceName(a.getSourceName());
         r.setCoverImageFilename(a.getCoverImageFilename());
+        if (a.getCoverImageFilename() != null) {
+            r.setCoverImageFileUrl(articleProperties.getCoverImage().getBaseUrl() + "/" + a.getCoverImageFilename());
+        }
     r.setCoverImageOriginalUrl(a.getCoverImageOriginalUrl());
         r.setTags(a.getTags());
         r.setLang(a.getLang());

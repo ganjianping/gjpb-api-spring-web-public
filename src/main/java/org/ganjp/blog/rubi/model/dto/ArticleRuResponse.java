@@ -18,6 +18,7 @@ public class ArticleRuResponse {
     private String originalUrl;
     private String sourceName;
     private String coverImageFilename;
+    private String coverImageFileUrl;
     private String coverImageOriginalUrl;
     private String tags;
     private ArticleRu.Language lang;

@@ -27,7 +27,7 @@ import javax.imageio.ImageIO;
 @RequiredArgsConstructor
 @Slf4j
 public class ArticleImageRuService {
-    private final ArticleImageRuRepository articleImageRepository;
+    private final ArticleImageRuRepository articleImageRuRepository;
     private final ArticleRuProperties articleProperties;
 
     public org.springframework.core.io.Resource getImage(String filename) {
@@ -53,12 +53,12 @@ public class ArticleImageRuService {
     }
 
     public ArticleImageRuResponse getArticleImageById(String id) {
-        Optional<ArticleImageRu> imageOpt = articleImageRepository.findByIdAndIsActiveTrue(id);
+        Optional<ArticleImageRu> imageOpt = articleImageRuRepository.findByIdAndIsActiveTrue(id);
         return imageOpt.map(this::toResponse).orElse(null);
     }
 
     public List<ArticleImageRuResponse> listArticleImages(String articleRuId) {
-        List<ArticleImageRu> images = articleImageRepository.findByArticleRuIdAndIsActiveTrueOrderByDisplayOrderAsc(articleRuId);
+        List<ArticleImageRu> images = articleImageRuRepository.findByArticleRuIdAndIsActiveTrueOrderByDisplayOrderAsc(articleRuId);
         return images.stream().map(this::toResponse).toList();
     }
 
@@ -135,7 +135,7 @@ public class ArticleImageRuService {
                     .updatedBy(userId)
                     .build();
 
-            ArticleImageRu saved = articleImageRepository.save(articleImage);
+            ArticleImageRu saved = articleImageRuRepository.save(articleImage);
             return toResponse(saved);
         } catch (IOException e) {
             log.error("Error creating article image", e);
@@ -144,7 +144,7 @@ public class ArticleImageRuService {
     }
 
     public ArticleImageRuResponse updateArticleImage(String id, ArticleImageRuUpdateRequest request, String userId) {
-        Optional<ArticleImageRu> imageOpt = articleImageRepository.findByIdAndIsActiveTrue(id);
+        Optional<ArticleImageRu> imageOpt = articleImageRuRepository.findByIdAndIsActiveTrue(id);
         if (imageOpt.isEmpty()) return null;
         ArticleImageRu image = imageOpt.get();
 
@@ -158,22 +158,22 @@ public class ArticleImageRuService {
         image.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         image.setUpdatedBy(userId);
 
-        ArticleImageRu saved = articleImageRepository.save(image);
+        ArticleImageRu saved = articleImageRuRepository.save(image);
         return toResponse(saved);
     }
 
     public void deleteArticleImage(String id) {
-        Optional<ArticleImageRu> imageOpt = articleImageRepository.findById(id);
+        Optional<ArticleImageRu> imageOpt = articleImageRuRepository.findById(id);
         if (imageOpt.isPresent()) {
             ArticleImageRu image = imageOpt.get();
             // Soft delete
             image.setIsActive(false);
-            articleImageRepository.save(image);
+            articleImageRuRepository.save(image);
         }
     }
 
     public void deleteArticleImagePermanently(String id) {
-        Optional<ArticleImageRu> imageOpt = articleImageRepository.findById(id);
+        Optional<ArticleImageRu> imageOpt = articleImageRuRepository.findById(id);
         if (imageOpt.isPresent()) {
             ArticleImageRu image = imageOpt.get();
             
@@ -188,12 +188,12 @@ public class ArticleImageRuService {
                 }
             }
             
-            articleImageRepository.delete(image);
+            articleImageRuRepository.delete(image);
         }
     }
     
     public List<ArticleImageRuResponse> searchArticleImages(String articleRuId, ArticleImageRu.Language lang, Boolean isActive) {
-        return articleImageRepository.searchArticleImages(articleRuId, lang, isActive)
+        return articleImageRuRepository.searchArticleImages(articleRuId, lang, isActive)
                 .stream()
                 .map(this::toResponse)
                 .toList();
