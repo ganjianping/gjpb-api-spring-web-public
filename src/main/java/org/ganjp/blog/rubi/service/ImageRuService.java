@@ -2,7 +2,7 @@ package org.ganjp.blog.rubi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ganjp.blog.rubi.config.ImageRuUploadProperties;
+import org.ganjp.blog.rubi.config.ImageRuProperties;
 import org.ganjp.blog.rubi.model.dto.ImageRuCreateRequest;
 import org.ganjp.blog.rubi.model.dto.ImageRuUpdateRequest;
 import org.ganjp.blog.rubi.model.dto.ImageRuResponse;
@@ -37,7 +37,7 @@ import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombi
 @Slf4j
 public class ImageRuService {
     private final ImageRuRepository imageRepository;
-    private final ImageRuUploadProperties imageUploadProperties;
+    private final ImageRuProperties imageProperties;
 
     public ImageRuResponse getImageById(String id) {
         Optional<ImageRu> imageOpt = imageRepository.findByIdAndIsActiveTrue(id);
@@ -63,7 +63,7 @@ public class ImageRuService {
             // Need to convert stored files to new extension
             String newExt = request.getExtension().toLowerCase();
             try {
-                Path uploadDir = Paths.get(imageUploadProperties.getDirectory());
+                Path uploadDir = Paths.get(imageProperties.getUpload().getDirectory());
                 Path oldImagePath = uploadDir.resolve(oldFilename);
                 Path oldThumbPath = uploadDir.resolve(oldThumbnail);
 
@@ -115,7 +115,7 @@ public class ImageRuService {
             // Extension not changed, but filename might have
             if (request.getFilename() != null && !request.getFilename().equals(oldFilename)) {
                 try {
-                    Path uploadDir = Paths.get(imageUploadProperties.getDirectory());
+                    Path uploadDir = Paths.get(imageProperties.getUpload().getDirectory());
                     Path oldPath = uploadDir.resolve(oldFilename);
                     Path newPath = uploadDir.resolve(request.getFilename());
                     Files.move(oldPath, newPath);
@@ -126,7 +126,7 @@ public class ImageRuService {
             }
             if (request.getThumbnailFilename() != null && !request.getThumbnailFilename().equals(oldThumbnail)) {
                 try {
-                    Path uploadDir = Paths.get(imageUploadProperties.getDirectory());
+                    Path uploadDir = Paths.get(imageProperties.getUpload().getDirectory());
                     Path oldPath = uploadDir.resolve(oldThumbnail);
                     Path newPath = uploadDir.resolve(request.getThumbnailFilename());
                     Files.move(oldPath, newPath);
@@ -207,8 +207,8 @@ public class ImageRuService {
                 extension = "png";
             }
         }
-        BufferedImage resizedImage = resizeImageIfNeeded(originalImage, imageUploadProperties.getResize().getMaxSize());
-        BufferedImage thumbnailImage = resizeImageIfNeeded(originalImage, imageUploadProperties.getResize().getThumbnailSize());
+        BufferedImage resizedImage = resizeImageIfNeeded(originalImage, imageProperties.getUpload().getResize().getMaxSize());
+        BufferedImage thumbnailImage = resizeImageIfNeeded(originalImage, imageProperties.getUpload().getResize().getThumbnailSize());
         
         String filename;
         String thumbnailFilename;
@@ -226,8 +226,8 @@ public class ImageRuService {
             thumbnailFilename = generateFilename(request.getName(), extension, thumbnailImage.getWidth(), thumbnailImage.getHeight());
         }
 
-        Path imagePath = Paths.get(imageUploadProperties.getDirectory(), filename);
-        Path thumbPath = Paths.get(imageUploadProperties.getDirectory(), thumbnailFilename);
+        Path imagePath = Paths.get(imageProperties.getUpload().getDirectory(), filename);
+        Path thumbPath = Paths.get(imageProperties.getUpload().getDirectory(), thumbnailFilename);
         ImageIO.write(resizedImage, extension, imagePath.toFile());
         ImageIO.write(thumbnailImage, extension, thumbPath.toFile());
 
@@ -348,13 +348,24 @@ public class ImageRuService {
     }
 
     private ImageRuResponse toResponse(ImageRu image) {
+        String fileUrl = null;
+        String thumbnailFileUrl = null;
+        if (image.getFilename() != null) {
+            fileUrl = imageProperties.getBaseUrl() + "/" + image.getFilename();
+        }
+        if (image.getThumbnailFilename() != null) {
+            thumbnailFileUrl = imageProperties.getBaseUrl() + "/" + image.getThumbnailFilename();
+        }
+        
         ImageRuResponse resp = new ImageRuResponse();
         resp.setId(image.getId());
         resp.setName(image.getName());
         resp.setOriginalUrl(image.getOriginalUrl());
         resp.setSourceName(image.getSourceName());
         resp.setFilename(image.getFilename());
+        resp.setFileUrl(fileUrl);
         resp.setThumbnailFilename(image.getThumbnailFilename());
+        resp.setThumbnailFileUrl(thumbnailFileUrl);
         resp.setExtension(image.getExtension());
         resp.setMimeType(image.getMimeType());
         resp.setSizeBytes(image.getSizeBytes());
@@ -379,7 +390,7 @@ public class ImageRuService {
      * @throws IOException if file not found or error reading file
      */
     public File getImageFile(String filename) throws IOException {
-        Path uploadDir = Paths.get(imageUploadProperties.getDirectory());
+        Path uploadDir = Paths.get(imageProperties.getUpload().getDirectory());
         Path fullPath = uploadDir.resolve(filename);
 
         if (!Files.exists(fullPath)) {

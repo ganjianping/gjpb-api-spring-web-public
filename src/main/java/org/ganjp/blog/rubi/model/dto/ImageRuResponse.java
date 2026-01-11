@@ -16,7 +16,9 @@ public class ImageRuResponse {
     private String originalUrl;
     private String sourceName;
     private String filename;
+    private String fileUrl;
     private String thumbnailFilename;
+    private String thumbnailFileUrl;
     private String extension;
     private String mimeType;
     private Long sizeBytes;
