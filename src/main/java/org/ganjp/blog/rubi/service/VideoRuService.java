@@ -1,7 +1,7 @@
 package org.ganjp.blog.rubi.service;
 
 import lombok.RequiredArgsConstructor;
-import org.ganjp.blog.rubi.config.VideoRuUploadProperties;
+import org.ganjp.blog.rubi.config.VideoRuProperties;
 import org.ganjp.blog.rubi.model.dto.VideoRuCreateRequest;
 import org.ganjp.blog.rubi.model.dto.VideoRuResponse;
 import org.ganjp.blog.rubi.model.dto.VideoRuUpdateRequest;
@@ -28,7 +28,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class VideoRuService {
     private final VideoRuRepository videoRepository;
-    private final VideoRuUploadProperties uploadProperties;
+    private final VideoRuProperties videoProperties;
 
     public VideoRuResponse createVideo(VideoRuCreateRequest request, String userId) throws IOException {
         VideoRu video = new VideoRu();
@@ -59,7 +59,7 @@ public class VideoRuService {
             } else {
                 filename = originalFilename.replaceAll("\\s+", "-");
             }
-            Path videoDir = Path.of(uploadProperties.getDirectory());
+            Path videoDir = Path.of(videoProperties.getUpload().getDirectory());
             Files.createDirectories(videoDir);
             Path target = videoDir.resolve(filename);
 
@@ -87,7 +87,7 @@ public class VideoRuService {
             } else {
                 coverFilename = coverOriginal.replaceAll("\\s+", "-");
             }
-            Path imagesDir = Path.of(uploadProperties.getDirectory(), "cover-images");
+            Path imagesDir = Path.of(videoProperties.getUpload().getDirectory(), "cover-images");
             Files.createDirectories(imagesDir);
             Path coverTarget = imagesDir.resolve(coverFilename);
 
@@ -100,7 +100,7 @@ public class VideoRuService {
             try {
                 BufferedImage original = ImageIO.read(cover.getInputStream());
                 if (original != null) {
-                    BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
+                    BufferedImage resized = resizeImageIfNeeded(original, videoProperties.getUpload().getCoverImage().getMaxSize());
                     String ext = "png";
                     int dot = coverFilename.lastIndexOf('.');
                     if (dot > 0 && dot < coverFilename.length() - 1) ext = coverFilename.substring(dot + 1).toLowerCase();
@@ -146,7 +146,7 @@ public class VideoRuService {
                 } else {
                     coverFilename = coverOriginal.replaceAll("\\s+", "-");
                 }
-                Path imagesDir = Path.of(uploadProperties.getDirectory(), "cover-images");
+                Path imagesDir = Path.of(videoProperties.getUpload().getDirectory(), "cover-images");
                 Files.createDirectories(imagesDir);
                 Path coverTarget = imagesDir.resolve(coverFilename);
 
@@ -177,7 +177,7 @@ public class VideoRuService {
                 try {
                     BufferedImage original = ImageIO.read(cover.getInputStream());
                     if (original != null) {
-                        BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
+                        BufferedImage resized = resizeImageIfNeeded(original, videoProperties.getUpload().getCoverImage().getMaxSize());
                         String writeExt = "png";
                         if (dot > 0 && dot < coverFilename.length() - 1) writeExt = coverFilename.substring(dot + 1).toLowerCase();
                         ImageIO.write(resized, writeExt, coverTarget.toFile());
@@ -195,7 +195,7 @@ public class VideoRuService {
                     request.getCoverImageFilename().lastIndexOf('.') > 0 &&
                     !request.getCoverImageFilename().equals(video.getCoverImageFilename())) {
                 // change the image file name in local storage only (no re-download), implying a rename
-                Path coverImagesDir = Path.of(uploadProperties.getDirectory(), "cover-images");
+                Path coverImagesDir = Path.of(videoProperties.getUpload().getDirectory(), "cover-images");
                 Path oldPath = coverImagesDir.resolve(video.getCoverImageFilename());
                 Path newPath = coverImagesDir.resolve(request.getCoverImageFilename());
                 // if newPath exists, it will not be overwritten
@@ -214,7 +214,7 @@ public class VideoRuService {
             if (request.getFilename() != null && 
                     request.getFilename().lastIndexOf('.') > 0 &&
                     !request.getFilename().equals(video.getFilename())) {
-                Path videoDir = Path.of(uploadProperties.getDirectory());
+                Path videoDir = Path.of(videoProperties.getUpload().getDirectory());
                 Path oldPath = videoDir.resolve(video.getFilename());
                 Path newPath = videoDir.resolve(request.getFilename());
                 // if newPath exists, it will not be overwritten
@@ -256,7 +256,7 @@ public class VideoRuService {
 
     public java.io.File getVideoFileByFilename(String filename) throws java.io.IOException {
         if (filename == null) throw new IllegalArgumentException("filename is null");
-        Path videoPath = Path.of(uploadProperties.getDirectory(), filename);
+        Path videoPath = Path.of(videoProperties.getUpload().getDirectory(), filename);
         if (!Files.exists(videoPath)) {
             throw new IllegalArgumentException("VideoRu file not found: " + filename);
         }
@@ -265,7 +265,7 @@ public class VideoRuService {
 
     public org.springframework.core.io.Resource getVideoResource(String filename) throws java.io.IOException {
         if (filename == null) throw new IllegalArgumentException("filename is null");
-        Path videoPath = Path.of(uploadProperties.getDirectory(), filename);
+        Path videoPath = Path.of(videoProperties.getUpload().getDirectory(), filename);
         if (!Files.exists(videoPath)) {
             throw new IllegalArgumentException("VideoRu file not found: " + filename);
         }
@@ -275,7 +275,7 @@ public class VideoRuService {
 
     public java.io.File getCoverImageFileByFilename(String filename) throws java.io.IOException {
         if (filename == null) throw new IllegalArgumentException("filename is null");
-        Path coverPath = Path.of(uploadProperties.getDirectory(), "cover-images", filename);
+        Path coverPath = Path.of(videoProperties.getUpload().getDirectory(), "cover-images", filename);
         if (!Files.exists(coverPath)) {
             throw new IllegalArgumentException("Cover image file not found: " + filename);
         }
@@ -303,12 +303,23 @@ public class VideoRuService {
     }
 
     private VideoRuResponse toResponse(VideoRu v) {
+        String fileUrl = null;
+        String coverImageFileUrl = null;
+        if (v.getFilename() != null) {
+            fileUrl = videoProperties.getBaseUrl() + "/" + v.getFilename();
+        }
+        if (v.getCoverImageFilename() != null) {
+            coverImageFileUrl = videoProperties.getBaseUrl() + "/cover-images/" + v.getCoverImageFilename();
+        }
+        
         VideoRuResponse r = new VideoRuResponse();
         r.setId(v.getId());
         r.setName(v.getName());
         r.setFilename(v.getFilename());
+        r.setFileUrl(fileUrl);
         r.setSizeBytes(v.getSizeBytes());
     r.setCoverImageFilename(v.getCoverImageFilename());
+    r.setCoverImageFileUrl(coverImageFileUrl);
     r.setOriginalUrl(v.getOriginalUrl());
     r.setSourceName(v.getSourceName());
         r.setDescription(v.getDescription());
