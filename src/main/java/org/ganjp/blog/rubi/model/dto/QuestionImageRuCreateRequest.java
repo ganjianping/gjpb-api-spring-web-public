@@ -22,6 +22,12 @@ public class QuestionImageRuCreateRequest {
     @Size(max = 36, message = "Free Text Question ID must not exceed 36 characters")
     private String freeTextQuestionId;
 
+    @Size(max = 36, message = "True/False Question ID must not exceed 36 characters")
+    private String trueFalseQuestionId;
+
+    @Size(max = 36, message = "Fill Blank Question ID must not exceed 36 characters")
+    private String fillBlankQuestionId;
+
     @Pattern(regexp = "^https?://.*", message = "Original URL must be a valid HTTP/HTTPS URL")
     @Size(max = 500, message = "Original URL must not exceed 500 characters")
     private String originalUrl;
@@ -46,6 +52,9 @@ public class QuestionImageRuCreateRequest {
     }
 
     public boolean hasQuestionReference() {
-        return (multipleChoiceQuestionId != null && !multipleChoiceQuestionId.trim().isEmpty()) || (freeTextQuestionId != null && !freeTextQuestionId.trim().isEmpty());
+        return (multipleChoiceQuestionId != null && !multipleChoiceQuestionId.trim().isEmpty()) || 
+               (freeTextQuestionId != null && !freeTextQuestionId.trim().isEmpty()) ||
+               (trueFalseQuestionId != null && !trueFalseQuestionId.trim().isEmpty()) ||
+               (fillBlankQuestionId != null && !fillBlankQuestionId.trim().isEmpty());
     }
 }

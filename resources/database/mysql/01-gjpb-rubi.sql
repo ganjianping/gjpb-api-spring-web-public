@@ -91,7 +91,7 @@ CREATE TABLE `rubi_multiple_choice_question` (
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Multiple choice questions for vocabulary practice';
 
--- Short Answer Questions Table
+-- Free Text Answer Questions Table
 CREATE TABLE `rubi_free_text_question` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
   `question` varchar(500) NOT NULL COMMENT 'The question text',
@@ -127,11 +127,100 @@ CREATE TABLE `rubi_free_text_question` (
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Short answer questions for vocabulary practice';
 
+CREATE TABLE `rubi_true_false_question` (
+  `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
+  `question` varchar(500) NOT NULL COMMENT 'The question text',
+  `answer` enum('TRUE','FALSE') NOT NULL COMMENT 'Correct answer for the question',
+  `explanation` varchar(1000) DEFAULT NULL COMMENT 'Explanation for the correct answer',
+  `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
+  `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
+  `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
+
+  `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
+  `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',
+  `display_order` int NOT NULL DEFAULT '0' COMMENT 'Order for display (lower = higher priority)',
+
+  -- Audit Trail
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+  `created_by` char(36) DEFAULT NULL COMMENT 'Created by user ID',
+  `updated_by` char(36) DEFAULT NULL COMMENT 'Last updated by user ID',
+
+  -- Soft Delete
+  `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Active status flag',
+
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_rubi_tf_question_lang` (`question`, `lang`),
+
+  -- Indexes
+  KEY `idx_rubi_tf_difficulty` (`difficulty_level`),
+  KEY `idx_rubi_tf_tags` (`tags`),
+  KEY `idx_rubi_tf_lang` (`lang`),
+  KEY `idx_rubi_tf_is_active` (`is_active`),
+
+  -- Foreign Key Constraints
+  CONSTRAINT `fk_rubi_tf_created_by`
+    FOREIGN KEY (`created_by`) REFERENCES `auth_users` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_rubi_tf_updated_by`
+    FOREIGN KEY (`updated_by`) REFERENCES `auth_users` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+  COMMENT='True/False questions for vocabulary practice';
+
+CREATE TABLE `rubi_fill_blank_question` (
+  `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
+  `question` varchar(500) NOT NULL COMMENT 'Question text with blank(s), e.g. "I ___ to school yesterday."',
+  `answer` varchar(200) NOT NULL COMMENT 'Comma-separated correct answers for the blank',
+  `explanation` varchar(1000) DEFAULT NULL COMMENT 'Explanation for the correct answer(s)',
+  `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
+  `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
+  `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
+
+  `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
+  `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',
+  `display_order` int NOT NULL DEFAULT '0' COMMENT 'Order for display (lower = higher priority)',
+
+  -- Audit Trail
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+  `created_by` char(36) DEFAULT NULL COMMENT 'Created by user ID',
+  `updated_by` char(36) DEFAULT NULL COMMENT 'Last updated by user ID',
+
+  -- Soft Delete
+  `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Active status flag',
+
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_rubi_fb_question_lang` (`question`, `lang`),
+
+  -- Indexes
+  KEY `idx_rubi_fb_difficulty` (`difficulty_level`),
+  KEY `idx_rubi_fb_tags` (`tags`),
+  KEY `idx_rubi_fb_lang` (`lang`),
+  KEY `idx_rubi_fb_is_active` (`is_active`),
+
+  -- Foreign Key Constraints
+  CONSTRAINT `fk_rubi_fb_created_by`
+    FOREIGN KEY (`created_by`) REFERENCES `auth_users` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_rubi_fb_updated_by`
+    FOREIGN KEY (`updated_by`) REFERENCES `auth_users` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+  COMMENT='Fill-in-the-blank questions for vocabulary practice';
 
 CREATE TABLE `rubi_question_image` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
   `multiple_choice_question_id` char(36) DEFAULT NULL COMMENT 'Associated Multiple Choice Question ID',
   `free_text_question_id` char(36) DEFAULT NULL COMMENT 'Associated Free Text Question ID',
+  `true_false_question_id` char(36) DEFAULT NULL COMMENT 'Associated True/False Question ID',
+  `fill_blank_question_id` char(36) DEFAULT NULL COMMENT 'Associated Fill-in-the-Blank Question ID',
   `filename` varchar(255) NOT NULL COMMENT 'Stored filename',
   `original_url` varchar(500) DEFAULT NULL COMMENT 'Original source URL',
   `width` smallint UNSIGNED DEFAULT NULL COMMENT 'Image width in pixels',
@@ -157,3 +246,4 @@ CREATE TABLE `rubi_question_image` (
   CONSTRAINT `fk_rubi_qi_created_by` FOREIGN KEY (`created_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_rubi_qi_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Images associated with questions and answers';
+

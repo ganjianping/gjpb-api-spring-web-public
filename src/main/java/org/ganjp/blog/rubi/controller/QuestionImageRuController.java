@@ -42,10 +42,13 @@ public class QuestionImageRuController {
     public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> searchQuestionImageRus(
             @RequestParam(required = false) String multipleChoiceQuestionId,
             @RequestParam(required = false) String freeTextQuestionId,
+            @RequestParam(required = false) String trueFalseQuestionId,
+            @RequestParam(required = false) String fillBlankQuestionId,
             @RequestParam(required = false) QuestionImageRu.Language lang,
             @RequestParam(required = false) Boolean isActive
     ) {
-        List<QuestionImageRuResponse> images = questionImageRuService.searchQuestionImageRus(multipleChoiceQuestionId, freeTextQuestionId, lang, isActive);
+        List<QuestionImageRuResponse> images = questionImageRuService.searchQuestionImageRus(
+                multipleChoiceQuestionId, freeTextQuestionId, trueFalseQuestionId, fillBlankQuestionId, lang, isActive);
         return ResponseEntity.ok(ApiResponse.success(images, "Question answer images found"));
     }
 
@@ -70,6 +73,18 @@ public class QuestionImageRuController {
         return ResponseEntity.ok(ApiResponse.success(images, "Images found for FreeTextQuestion"));
     }
 
+    @GetMapping("/trueFalseQuestionRu/{trueFalseQuestionId}")
+    public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> getImagesByTrueFalseQuestionRu(@PathVariable String trueFalseQuestionId) {
+        List<QuestionImageRuResponse> images = questionImageRuService.listQuestionImageRusByTrueFalseQuestionRu(trueFalseQuestionId);
+        return ResponseEntity.ok(ApiResponse.success(images, "Images found for TrueFalseQuestion"));
+    }
+
+    @GetMapping("/fillBlankQuestionRu/{fillBlankQuestionId}")
+    public ResponseEntity<ApiResponse<List<QuestionImageRuResponse>>> getImagesByFillBlankQuestionRu(@PathVariable String fillBlankQuestionId) {
+        List<QuestionImageRuResponse> images = questionImageRuService.listQuestionImageRusByFillBlankQuestionRu(fillBlankQuestionId);
+        return ResponseEntity.ok(ApiResponse.success(images, "Images found for FillBlankQuestion"));
+    }
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<QuestionImageRuResponse>> createQuestionImageRuJson(
             @Valid @RequestBody QuestionImageRuCreateRequest request,
@@ -79,7 +94,7 @@ public class QuestionImageRuController {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, "Original URL is required", null));
         }
         if (!request.hasQuestionReference()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(400, "Either MultipleChoiceQuestion ID or FreeTextQuestion ID is required", null));
+            return ResponseEntity.badRequest().body(ApiResponse.error(400, "At least one Question ID (MultipleChoice, FreeText, TrueFalse, or FillBlank) is required", null));
         }
         String userId = jwtUtils.extractUserIdFromToken(httpRequest);
         QuestionImageRuResponse image = questionImageRuService.createQuestionImageRu(request, userId);
@@ -92,7 +107,7 @@ public class QuestionImageRuController {
             HttpServletRequest httpRequest
     ) {
         if (!request.hasQuestionReference()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(400, "Either MultipleChoiceQuestion ID or FreeTextQuestion ID is required", null));
+            return ResponseEntity.badRequest().body(ApiResponse.error(400, "At least one Question ID (MultipleChoice, FreeText, TrueFalse, or FillBlank) is required", null));
         }
         String userId = jwtUtils.extractUserIdFromToken(httpRequest);
         QuestionImageRuResponse image = questionImageRuService.createQuestionImageRu(request, userId);

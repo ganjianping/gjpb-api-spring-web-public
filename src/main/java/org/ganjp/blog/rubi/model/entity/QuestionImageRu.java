@@ -23,6 +23,12 @@ public class QuestionImageRu {
     @Column(name = "free_text_question_id", length = 36)
     private String freeTextQuestionId;
 
+    @Column(name = "true_false_question_id", length = 36)
+    private String trueFalseQuestionId;
+
+    @Column(name = "fill_blank_question_id", length = 36)
+    private String fillBlankQuestionId;
+
     @Column(length = 255, nullable = false)
     private String filename;
 

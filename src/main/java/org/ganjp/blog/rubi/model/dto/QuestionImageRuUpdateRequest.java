@@ -18,6 +18,12 @@ public class QuestionImageRuUpdateRequest {
     @Size(max = 36)
     private String freeTextQuestionId;
 
+    @Size(max = 36)
+    private String trueFalseQuestionId;
+
+    @Size(max = 36)
+    private String fillBlankQuestionId;
+
     @Size(max = 500)
     private String originalUrl;
 

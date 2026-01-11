@@ -14,6 +14,8 @@ public class QuestionImageRuResponse {
     private String id;
     private String multipleChoiceQuestionId;
     private String freeTextQuestionId;
+    private String trueFalseQuestionId;
+    private String fillBlankQuestionId;
     private String filename;
     private String fileUrl;
     private String originalUrl;

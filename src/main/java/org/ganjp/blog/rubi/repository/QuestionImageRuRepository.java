@@ -15,6 +15,10 @@ public interface QuestionImageRuRepository extends JpaRepository<QuestionImageRu
 
     List<QuestionImageRu> findByFreeTextQuestionIdAndIsActiveTrueOrderByDisplayOrderAsc(String freeTextQuestionId);
 
+    List<QuestionImageRu> findByTrueFalseQuestionIdAndIsActiveTrueOrderByDisplayOrderAsc(String trueFalseQuestionId);
+
+    List<QuestionImageRu> findByFillBlankQuestionIdAndIsActiveTrueOrderByDisplayOrderAsc(String fillBlankQuestionId);
+
     Optional<QuestionImageRu> findByIdAndIsActiveTrue(String id);
 
     boolean existsByFilename(String filename);
@@ -24,12 +28,16 @@ public interface QuestionImageRuRepository extends JpaRepository<QuestionImageRu
     @Query("SELECT i FROM QuestionImageRu i WHERE " +
         "(:multipleChoiceQuestionId IS NULL OR i.multipleChoiceQuestionId = :multipleChoiceQuestionId) AND " +
         "(:freeTextQuestionId IS NULL OR i.freeTextQuestionId = :freeTextQuestionId) AND " +
+        "(:trueFalseQuestionId IS NULL OR i.trueFalseQuestionId = :trueFalseQuestionId) AND " +
+        "(:fillBlankQuestionId IS NULL OR i.fillBlankQuestionId = :fillBlankQuestionId) AND " +
         "(:lang IS NULL OR i.lang = :lang) AND " +
         "(:isActive IS NULL OR i.isActive = :isActive) " +
         "ORDER BY i.displayOrder")
     List<QuestionImageRu> searchQuestionImageRus(
         @Param("multipleChoiceQuestionId") String multipleChoiceQuestionId,
         @Param("freeTextQuestionId") String freeTextQuestionId,
+        @Param("trueFalseQuestionId") String trueFalseQuestionId,
+        @Param("fillBlankQuestionId") String fillBlankQuestionId,
         @Param("lang") QuestionImageRu.Language lang,
         @Param("isActive") Boolean isActive
     );
