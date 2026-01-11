@@ -227,6 +227,16 @@ public class PublicAssetService {
     }
 
     /**
+     * Get Rubi video file by filename for public viewing
+     */
+    public File getVideoRuFile(String filename) throws IOException {
+        log.debug("Fetching public Rubi video file: {}", filename);
+        videoRuRepository.findByFilenameAndIsActiveTrue(filename)
+                .orElseThrow(() -> new IllegalArgumentException("Rubi video not found or not active with filename: " + filename));
+        return videoRuService.getVideoFileByFilename(filename);
+    }
+
+    /**
      * Get Rubi video cover image file by filename for public viewing
      */
     public File getVideoRuCoverFile(String filename) throws IOException {

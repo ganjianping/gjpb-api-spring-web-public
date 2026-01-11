@@ -39,4 +39,6 @@ public interface VideoRuRepository extends JpaRepository<VideoRu, String> {
     default boolean existsByFilename(String filename) {
         return existsByFilenameOrCoverImageFilename(filename, filename);
     }
+
+    Optional<VideoRu> findByFilenameAndIsActiveTrue(String filename);
 }
