@@ -1,0 +1,228 @@
+package org.ganjp.blog.rubi.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.ganjp.blog.auth.security.JwtUtils;
+import org.ganjp.blog.rubi.model.dto.*;
+import org.ganjp.blog.rubi.service.ImageRuService;
+import org.ganjp.blog.rubi.util.RubiUtil;
+import org.ganjp.blog.common.model.ApiResponse;
+import org.ganjp.blog.common.model.PaginatedResponse;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+@Slf4j
+@RestController
+@RequestMapping("/v1/image-rus")
+@RequiredArgsConstructor
+public class ImageRuController {
+    private final ImageRuService imageRuService;
+    private final JwtUtils jwtUtils;
+
+    /**
+     * Search images with pagination and filtering
+     * GET /v1/images?name=xxx&lang=EN&tags=yyy&isActive=true&page=0&size=20&sort=updatedAt&direction=desc
+     * 
+     * @param page Page number (0-based)
+     * @param size Page size
+     * @param sort Sort field (e.g., updatedAt, createdAt, name)
+     * @param direction Sort direction (asc or desc)
+     * @param name Optional name filter
+     * @param lang Optional language filter
+     * @param tags Optional tags filter
+     * @param isActive Optional active status filter
+     * @param keyword Optional keyword for backward compatibility
+     * @return List of images
+     */
+    @GetMapping()
+    public ResponseEntity<ApiResponse<PaginatedResponse<ImageRuResponse>>> searchImages(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "updatedAt") String sort,
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) org.ganjp.blog.rubi.model.entity.ImageRu.Language lang,
+            @RequestParam(required = false) String tags,
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) String keyword
+    ) {
+        try {
+            Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) 
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+            
+            Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
+            
+            // backward compatibility: if keyword is provided use the old simple search
+            Page<ImageRuResponse> images;
+            if (keyword != null && !keyword.isBlank()) {
+                images = imageRuService.searchImages(keyword, pageable);
+            } else {
+                images = imageRuService.searchImages(name, lang, tags, isActive, pageable);
+            }
+
+            PaginatedResponse<ImageRuResponse> response = PaginatedResponse.of(images.getContent(), images.getNumber(), images.getSize(), images.getTotalElements());
+            return ResponseEntity.ok(ApiResponse.success(response, "Images found"));
+        } catch (Exception e) {
+            log.error("Error searching images", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error searching images: " + e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<ImageRuResponse>>> listImages() {
+        try {
+            List<ImageRuResponse> images = imageRuService.listImages();
+            return ResponseEntity.ok(ApiResponse.success(images, "Images listed"));
+        } catch (Exception e) {
+            log.error("Error listing images", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error listing images: " + e.getMessage(), null));
+        }
+    }
+
+
+    /**
+     * Create a new image from file upload
+     * POST /v1/images
+     */
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<ImageRuResponse>> createImage(
+            @Valid @ModelAttribute ImageRuCreateRequest request,
+            HttpServletRequest httpRequest) {
+        try {
+            String userId = extractUserIdFromRequest(httpRequest);
+            ImageRuResponse response = imageRuService.createImage(request, userId);
+            return ResponseEntity.status(201).body(ApiResponse.success(response, "ImageRu created successfully"));
+        } catch (IOException e) {
+            log.error("Error creating image", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error creating image: " + e.getMessage(), null));
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid request", e);
+            return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid request: " + e.getMessage(), null));
+        }
+    }
+
+    /**
+     * Create a new image from URL (JSON payload)
+     * POST /v1/images (application/json)
+     */
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<ImageRuResponse>> createImageFromUrl(
+            @Valid @RequestBody ImageRuCreateRequest request,
+            HttpServletRequest httpRequest) {
+        try {
+            if (request.getOriginalUrl() == null || request.getOriginalUrl().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(ApiResponse.error(400, "originalUrl is required", null));
+            }
+            String userId = extractUserIdFromRequest(httpRequest);
+            ImageRuResponse response = imageRuService.createImage(request, userId);
+            return ResponseEntity.status(201).body(ApiResponse.success(response, "ImageRu created successfully from URL"));
+        } catch (IOException e) {
+            log.error("Error creating image from URL", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error creating image from URL: " + e.getMessage(), null));
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid URL or request", e);
+            return ResponseEntity.badRequest().body(ApiResponse.error(400, "Invalid request: " + e.getMessage(), null));
+        }
+    }
+    /**
+     * Extract user ID from JWT token in the Authorization header
+     * @param request HttpServletRequest containing the Authorization header
+     * @return User ID extracted from token
+     */
+    private String extractUserIdFromRequest(HttpServletRequest request) {
+        return jwtUtils.extractUserIdFromToken(request);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<ImageRuResponse>> getImageById(@PathVariable String id) {
+        try {
+            ImageRuResponse response = imageRuService.getImageById(id);
+            if (response == null) {
+                return ResponseEntity.status(404).body(ApiResponse.error(404, "ImageRu not found", null));
+            }
+            return ResponseEntity.ok(ApiResponse.success(response, "ImageRu found"));
+        } catch (Exception e) {
+            log.error("Error fetching image", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error fetching image: " + e.getMessage(), null));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<ImageRuResponse>> updateImage(
+            @PathVariable String id,
+            @Valid @RequestBody ImageRuUpdateRequest request,
+            HttpServletRequest httpRequest) {
+        try {
+            String userId = extractUserIdFromRequest(httpRequest);
+            ImageRuResponse response = imageRuService.updateImage(id, request, userId);
+            if (response == null) {
+                return ResponseEntity.status(404).body(ApiResponse.error(404, "ImageRu not found", null));
+            }
+            return ResponseEntity.ok(ApiResponse.success(response, "ImageRu updated"));
+        } catch (Exception e) {
+            log.error("Error updating image", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error updating image: " + e.getMessage(), null));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteImage(
+            @PathVariable String id,
+            HttpServletRequest httpRequest) {
+        try {
+            String userId = extractUserIdFromRequest(httpRequest);
+            boolean deleted = imageRuService.deleteImage(id, userId);
+            if (!deleted) {
+                return ResponseEntity.status(404).body(ApiResponse.error(404, "ImageRu not found", null));
+            }
+            return ResponseEntity.ok(ApiResponse.success(null, "ImageRu deleted"));
+        } catch (Exception e) {
+            log.error("Error deleting image", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "Error deleting image: " + e.getMessage(), null));
+        }
+    }
+
+    /**
+     * View image file in browser by filename
+     * GET /v1/images/view/{filename}
+     * Returns the actual image file to be displayed in browser
+     */
+    @GetMapping("/view/{filename}")
+    public ResponseEntity<Resource> viewImage(@PathVariable String filename) {
+        try {
+            File imageFile = imageRuService.getImageFileByFilename(filename);
+            Resource resource = new FileSystemResource(imageFile);
+
+            // Determine content type based on file extension
+            String contentType = RubiUtil.determineContentType(filename);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (IllegalArgumentException e) {
+            log.error("ImageRu not found: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            log.error("Error reading image file: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+}

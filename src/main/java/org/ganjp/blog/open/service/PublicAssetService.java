@@ -46,6 +46,16 @@ public class PublicAssetService {
     private final org.ganjp.blog.rubi.service.QuestionImageRuService questionImageRuService;
     private final org.ganjp.blog.rubi.repository.VocabularyRuRepository vocabularyRuRepository;
     private final org.ganjp.blog.rubi.service.VocabularyRuService vocabularyRuService;
+    private final org.ganjp.blog.rubi.repository.ImageRuRepository imageRuRepository;
+    private final org.ganjp.blog.rubi.service.ImageRuService imageRuService;
+    private final org.ganjp.blog.rubi.repository.VideoRuRepository videoRuRepository;
+    private final org.ganjp.blog.rubi.service.VideoRuService videoRuService;
+    private final org.ganjp.blog.rubi.repository.AudioRuRepository audioRuRepository;
+    private final org.ganjp.blog.rubi.service.AudioRuService audioRuService;
+    private final org.ganjp.blog.rubi.repository.ArticleRuRepository articleRuRepository;
+    private final org.ganjp.blog.rubi.service.ArticleRuService articleRuService;
+    private final org.ganjp.blog.rubi.repository.ArticleImageRuRepository articleImageRuRepository;
+    private final org.ganjp.blog.rubi.service.ArticleImageRuService articleImageRuService;
     /**
      * Get image file by filename for public viewing
      * No authentication required
@@ -204,5 +214,59 @@ public class PublicAssetService {
             throw new IllegalArgumentException("Vocabulary image not found or not active with filename: " + filename);
         }
         return vocabularyRuService.getImageFile(filename);
+    }
+
+    /**
+     * Get Rubi image file by filename for public viewing
+     */
+    public File getImageRuFile(String filename) throws IOException {
+        log.debug("Fetching public Rubi image file: {}", filename);
+        imageRuRepository.findByFilenameAndIsActiveTrue(filename)
+                .orElseThrow(() -> new IllegalArgumentException("Rubi image not found or not active with filename: " + filename));
+        return imageRuService.getImageFile(filename);
+    }
+
+    /**
+     * Get Rubi video cover image file by filename for public viewing
+     */
+    public File getVideoRuCoverFile(String filename) throws IOException {
+        log.debug("Fetching public Rubi video cover image file: {}", filename);
+        if (!videoRuRepository.existsByFilename(filename)) {
+            throw new IllegalArgumentException("Rubi video cover image not found or not active with filename: " + filename);
+        }
+        return videoRuService.getCoverImageFileByFilename(filename);
+    }
+
+    /**
+     * Get Rubi audio cover image file by filename for public viewing
+     */
+    public File getAudioRuCoverFile(String filename) throws IOException {
+        log.debug("Fetching public Rubi audio cover image file: {}", filename);
+        if (!audioRuRepository.existsByFilename(filename)) {
+            throw new IllegalArgumentException("Rubi audio cover image not found or not active with filename: " + filename);
+        }
+        return audioRuService.getCoverImageFileByFilename(filename);
+    }
+
+    /**
+     * Get Rubi article cover image file by filename for public viewing
+     */
+    public File getArticleRuCoverFile(String filename) throws IOException {
+        log.debug("Fetching public Rubi article cover image file: {}", filename);
+        if (!articleRuRepository.existsByCoverImageFilename(filename)) {
+            throw new IllegalArgumentException("Rubi article cover image not found or not active with filename: " + filename);
+        }
+        return articleRuService.getCoverImageFileByFilename(filename);
+    }
+
+    /**
+     * Get Rubi article content image file by filename for public viewing
+     */
+    public File getArticleRuContentImageFile(String filename) throws IOException {
+        log.debug("Fetching public Rubi article content image file: {}", filename);
+        if (!articleImageRuRepository.existsByFilename(filename)) {
+            throw new IllegalArgumentException("Rubi article content image not found or not active with filename: " + filename);
+        }
+        return articleImageRuService.getImageFile(filename);
     }
 }

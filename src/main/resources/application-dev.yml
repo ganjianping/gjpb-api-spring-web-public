@@ -121,3 +121,43 @@ rubi:
       max-file-size: 10485760
       resize:
         max-size: 1024
+  # Image upload configuration for Rubi
+  image:
+    base-url: http://localhost:8082/blog/v1/public/image-rus
+    upload:
+      directory: /Users/ganjianping/Local/Rubi/images
+      max-file-size: 10485760
+      resize:
+        max-size: 2500
+        thumbnail-size: 600
+  # Video upload configuration for Rubi
+  video:
+    base-url: http://localhost:8082/blog/v1/public/video-rus
+    upload:
+      directory: /Users/ganjianping/Local/Rubi/videos
+      max-file-size: 1073741824
+      cover-image:
+        max-size: 600
+  # Audio upload configuration for Rubi
+  audio:
+    base-url: http://localhost:8082/blog/v1/public/audio-rus
+    upload:
+      directory: /Users/ganjianping/Local/Rubi/audios
+      max-file-size: 1073741824
+      cover-image:
+        max-size: 400
+  # Article configuration for Rubi
+  article:
+    content-image:
+      base-url: http://localhost:8082/blog/v1/public/article-rus/content-images
+      upload:
+        directory: /Users/ganjianping/Local/Rubi/articles/content-images
+        max-file-size: 10485760
+        resize:
+          max-size: 1024
+    cover-image:
+      base-url: http://localhost:8082/blog/v1/public/article-rus/cover-images
+      upload:
+        directory: /Users/ganjianping/Local/Rubi/articles/cover-images
+        resize:
+          max-size: 800

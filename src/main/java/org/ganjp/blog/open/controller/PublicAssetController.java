@@ -302,6 +302,117 @@ public class PublicAssetController {
         }
     }
 
+    @GetMapping("/image-rus/{filename}")
+    public ResponseEntity<Resource> viewImageRu(@PathVariable String filename) {
+        try {
+            File imageFile = publicAssetService.getImageRuFile(filename);
+            Resource resource = new FileSystemResource(imageFile);
+            String contentType = org.ganjp.blog.rubi.util.RubiUtil.determineContentType(filename);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (IllegalArgumentException e) {
+            log.error("Rubi image not found: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            log.error("Error reading Rubi image file: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/video-rus/cover-images/{filename}")
+    public ResponseEntity<Resource> viewVideoRuCoverImage(@PathVariable String filename) {
+        try {
+            File imageFile = publicAssetService.getVideoRuCoverFile(filename);
+            if (imageFile == null || !imageFile.exists()) {
+                log.error("Rubi video cover image not found: {}", filename);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            Resource resource = new FileSystemResource(imageFile);
+            String contentType = org.ganjp.blog.rubi.util.RubiUtil.determineContentType(filename);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (IllegalArgumentException e) {
+            log.error("Rubi video cover image not found: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            log.error("Error reading Rubi video cover image: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/audio-rus/cover-images/{filename}")
+    public ResponseEntity<Resource> viewAudioRuCoverImage(@PathVariable String filename) {
+        try {
+            File imageFile = publicAssetService.getAudioRuCoverFile(filename);
+            if (imageFile == null || !imageFile.exists()) {
+                log.error("Rubi audio cover image not found: {}", filename);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            Resource resource = new FileSystemResource(imageFile);
+            String contentType = org.ganjp.blog.rubi.util.RubiUtil.determineContentType(filename);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (IllegalArgumentException e) {
+            log.error("Rubi audio cover image not found: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            log.error("Error reading Rubi audio cover image: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/article-rus/cover-images/{filename}")
+    public ResponseEntity<Resource> viewArticleRuCoverImage(@PathVariable String filename) {
+        try {
+            File imageFile = publicAssetService.getArticleRuCoverFile(filename);
+            if (imageFile == null || !imageFile.exists()) {
+                log.error("Rubi article cover image not found: {}", filename);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            Resource resource = new FileSystemResource(imageFile);
+            String contentType = org.ganjp.blog.rubi.util.RubiUtil.determineContentType(filename);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (IllegalArgumentException e) {
+            log.error("Rubi article cover image not found: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            log.error("Error reading Rubi article cover image: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/article-rus/content-images/{filename}")
+    public ResponseEntity<Resource> viewArticleRuContentImage(@PathVariable String filename) {
+        try {
+            File imageFile = publicAssetService.getArticleRuContentImageFile(filename);
+            if (imageFile == null || !imageFile.exists()) {
+                log.error("Rubi article content image not found: {}", filename);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            Resource resource = new FileSystemResource(imageFile);
+            String contentType = org.ganjp.blog.rubi.util.RubiUtil.determineContentType(filename);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (IllegalArgumentException e) {
+            log.error("Rubi article content image not found: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (IOException e) {
+            log.error("Error reading Rubi article content image: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     /**
      * Public download of a generic CMS file
      * GET /v1/open/files/{filename}

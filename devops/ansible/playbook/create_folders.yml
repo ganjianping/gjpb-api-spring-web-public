@@ -5,12 +5,20 @@
   vars:
     # Sync these directories with production config in src/main/resources/application-prod.yml
     folders:
-      - /var/www/gjpb/resources/logos
-      - /var/www/gjpb/resources/images
-      - /var/www/gjpb/resources/videos
-      - /var/www/gjpb/resources/audios
-      - /var/www/gjpb/resources/articles
-      - /var/www/gjpb/resources/files
+      # - /var/www/gjpb/resources/logos
+      # - /var/www/gjpb/resources/images
+      # - /var/www/gjpb/resources/videos
+      # - /var/www/gjpb/resources/audios
+      # - /var/www/gjpb/resources/articles
+      # - /var/www/gjpb/resources/files
+      - /var/www/gjpb/resources/rubi/articles/cover-images
+      - /var/www/gjpb/resources/rubi/articles/content-images
+      - /var/www/gjpb/resources/rubi/images
+      - /var/www/gjpb/resources/rubi/videos
+      - /var/www/gjpb/resources/rubi/audios
+      - /var/www/gjpb/resources/rubi/question-images
+      - /var/www/gjpb/resources/rubi/vocabularies/images
+      - /var/www/gjpb/resources/rubi/vocabularies/audios
  
   tasks:
     - name: Ensure parent /var/www/gjpb exists
