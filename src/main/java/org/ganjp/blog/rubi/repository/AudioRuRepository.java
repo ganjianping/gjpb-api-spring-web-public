@@ -29,4 +29,6 @@ public interface AudioRuRepository extends JpaRepository<AudioRu, String> {
     default boolean existsByFilename(String filename) {
         return existsByFilenameOrCoverImageFilename(filename, filename);
     }
+
+    Optional<AudioRu> findByFilenameAndIsActiveTrue(String filename);
 }

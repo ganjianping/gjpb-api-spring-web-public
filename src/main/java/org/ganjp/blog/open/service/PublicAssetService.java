@@ -248,6 +248,16 @@ public class PublicAssetService {
     }
 
     /**
+     * Get Rubi audio file by filename for public viewing
+     */
+    public File getAudioRuFile(String filename) throws IOException {
+        log.debug("Fetching public Rubi audio file: {}", filename);
+        audioRuRepository.findByFilenameAndIsActiveTrue(filename)
+                .orElseThrow(() -> new IllegalArgumentException("Rubi audio not found or not active with filename: " + filename));
+        return audioRuService.getAudioFileByFilename(filename);
+    }
+
+    /**
      * Get Rubi audio cover image file by filename for public viewing
      */
     public File getAudioRuCoverFile(String filename) throws IOException {
