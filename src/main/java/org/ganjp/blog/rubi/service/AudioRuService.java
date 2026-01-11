@@ -1,7 +1,7 @@
 package org.ganjp.blog.rubi.service;
 
 import lombok.RequiredArgsConstructor;
-import org.ganjp.blog.rubi.config.AudioRuUploadProperties;
+import org.ganjp.blog.rubi.config.AudioRuProperties;
 import org.ganjp.blog.rubi.model.dto.AudioRuCreateRequest;
 import org.ganjp.blog.rubi.model.dto.AudioRuResponse;
 import org.ganjp.blog.rubi.model.dto.AudioRuUpdateRequest;
@@ -27,7 +27,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AudioRuService {
     private final AudioRuRepository audioRepository;
-    private final AudioRuUploadProperties uploadProperties;
+    private final AudioRuProperties audioProperties;
 
     public AudioRuResponse createAudio(AudioRuCreateRequest request, String userId) throws IOException {
         AudioRu audio = new AudioRu();
@@ -56,7 +56,7 @@ public class AudioRuService {
             } else {
                 filename = originalFilename.replaceAll("\\s+", "-");
             }
-            Path audioDir = Path.of(uploadProperties.getDirectory());
+            Path audioDir = Path.of(audioProperties.getUpload().getDirectory());
             Files.createDirectories(audioDir);
             Path target = audioDir.resolve(filename);
 
@@ -83,7 +83,7 @@ public class AudioRuService {
             } else {
                 coverFilename = coverOriginal.replaceAll("\\s+", "-");
             }
-            Path imagesDir = Path.of(uploadProperties.getDirectory(), "cover-images");
+            Path imagesDir = Path.of(audioProperties.getUpload().getDirectory(), "cover-images");
             Files.createDirectories(imagesDir);
             Path coverTarget = imagesDir.resolve(coverFilename);
 
@@ -94,7 +94,7 @@ public class AudioRuService {
             try {
                 BufferedImage original = ImageIO.read(cover.getInputStream());
                 if (original != null) {
-                    BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
+                    BufferedImage resized = resizeImageIfNeeded(original, audioProperties.getUpload().getCoverImage().getMaxSize());
                     String ext = "png";
                     int dot = coverFilename.lastIndexOf('.');
                     if (dot > 0 && dot < coverFilename.length() - 1) ext = coverFilename.substring(dot + 1).toLowerCase();
@@ -136,7 +136,7 @@ public class AudioRuService {
                 } else {
                     coverFilename = coverOriginal.replaceAll("\\s+", "-");
                 }
-                Path imagesDir = Path.of(uploadProperties.getDirectory(), "cover-images");
+                Path imagesDir = Path.of(audioProperties.getUpload().getDirectory(), "cover-images");
                 Files.createDirectories(imagesDir);
                 Path coverTarget = imagesDir.resolve(coverFilename);
 
@@ -161,7 +161,7 @@ public class AudioRuService {
                 try {
                     BufferedImage original = ImageIO.read(cover.getInputStream());
                     if (original != null) {
-                        BufferedImage resized = resizeImageIfNeeded(original, uploadProperties.getCoverImage().getMaxSize());
+                        BufferedImage resized = resizeImageIfNeeded(original, audioProperties.getUpload().getCoverImage().getMaxSize());
                         String writeExt = "png";
                         if (dot > 0 && dot < coverFilename.length() - 1) writeExt = coverFilename.substring(dot + 1).toLowerCase();
                         ImageIO.write(resized, writeExt, coverTarget.toFile());
@@ -179,7 +179,7 @@ public class AudioRuService {
                     request.getCoverImageFilename().lastIndexOf('.') > 0 &&
                     !request.getCoverImageFilename().equals(audio.getCoverImageFilename())) {
                 // change the image file name in local storage only (no re-download), implying a rename
-                Path coverImagesDir = Path.of(uploadProperties.getDirectory(), "cover-images");
+                Path coverImagesDir = Path.of(audioProperties.getUpload().getDirectory(), "cover-images");
                 Path oldPath = coverImagesDir.resolve(audio.getCoverImageFilename());
                 Path newPath = coverImagesDir.resolve(request.getCoverImageFilename());
                 // if newPath exists, it will not be overwritten
@@ -198,7 +198,7 @@ public class AudioRuService {
             if (request.getFilename() != null && 
                     request.getFilename().lastIndexOf('.') > 0 &&
                     !request.getFilename().equals(audio.getFilename())) {
-                Path audioDir = Path.of(uploadProperties.getDirectory());
+                Path audioDir = Path.of(audioProperties.getUpload().getDirectory());
                 Path oldPath = audioDir.resolve(audio.getFilename());
                 Path newPath = audioDir.resolve(request.getFilename());
                 // if newPath exists, it will not be overwritten
@@ -242,7 +242,7 @@ public class AudioRuService {
 
     public java.io.File getAudioFileByFilename(String filename) throws java.io.IOException {
         if (filename == null) throw new IllegalArgumentException("filename is null");
-        Path audioPath = Path.of(uploadProperties.getDirectory(), filename);
+        Path audioPath = Path.of(audioProperties.getUpload().getDirectory(), filename);
         if (!Files.exists(audioPath)) {
             throw new IllegalArgumentException("AudioRu file not found: " + filename);
         }
@@ -251,7 +251,7 @@ public class AudioRuService {
 
     public java.io.File getCoverImageFileByFilename(String filename) throws java.io.IOException {
         if (filename == null) throw new IllegalArgumentException("filename is null");
-        Path coverPath = Path.of(uploadProperties.getDirectory(), "cover-images", filename);
+        Path coverPath = Path.of(audioProperties.getUpload().getDirectory(), "cover-images", filename);
         if (!Files.exists(coverPath)) {
             throw new IllegalArgumentException("Cover image file not found: " + filename);
         }
@@ -275,12 +275,23 @@ public class AudioRuService {
     }
 
     private AudioRuResponse toResponse(AudioRu a) {
+        String fileUrl = null;
+        String coverImageFileUrl = null;
+        if (a.getFilename() != null) {
+            fileUrl = audioProperties.getBaseUrl() + "/" + a.getFilename();
+        }
+        if (a.getCoverImageFilename() != null) {
+            coverImageFileUrl = audioProperties.getBaseUrl() + "/cover-images/" + a.getCoverImageFilename();
+        }
+        
         AudioRuResponse r = new AudioRuResponse();
         r.setId(a.getId());
         r.setName(a.getName());
         r.setFilename(a.getFilename());
+        r.setFileUrl(fileUrl);
         r.setSizeBytes(a.getSizeBytes());
         r.setCoverImageFilename(a.getCoverImageFilename());
+        r.setCoverImageFileUrl(coverImageFileUrl);
         r.setOriginalUrl(a.getOriginalUrl());
         r.setSourceName(a.getSourceName());
         r.setSubtitle(a.getSubtitle());

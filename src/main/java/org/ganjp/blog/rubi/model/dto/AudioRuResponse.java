@@ -14,8 +14,10 @@ public class AudioRuResponse {
     private String id;
     private String name;
     private String filename;
+    private String fileUrl;
     private Long sizeBytes;
     private String coverImageFilename;
+    private String coverImageFileUrl;
     private String originalUrl;
     private String sourceName;
     private String subtitle;
