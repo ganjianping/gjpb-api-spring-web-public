@@ -49,6 +49,88 @@ CREATE TABLE `rubi_vocabulary` (
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Vocabulary words for language learning';
 
+
+-- Expressions Table
+CREATE TABLE `rubi_expression` (
+  `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
+  `name` varchar(100) NOT NULL COMMENT 'The phrase or idiom',
+  `phonetic` varchar(100) DEFAULT NULL COMMENT 'Phonetic transcription',
+
+  `translation` varchar(100) DEFAULT NULL COMMENT 'Translation of the phrase or idiom',
+  `explanation` varchar(500) DEFAULT NULL COMMENT 'Explanation the phrase or idiom',
+  `example` varchar(500) DEFAULT NULL COMMENT 'Example sentence using the phrase or idiom',
+  
+  `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
+  `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the phrase or idiom',
+  `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',
+  `display_order` int NOT NULL DEFAULT '0' COMMENT 'Order for display (lower = higher priority)',
+  
+  -- Audit Trail
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+  `created_by` char(36) DEFAULT NULL COMMENT 'Created by user ID',
+  `updated_by` char(36) DEFAULT NULL COMMENT 'Last updated by user ID',
+  
+  -- Soft Delete
+  `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Active status flag',
+  
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_rubi_expression_name_lang` (`name`, `lang`),
+
+  -- Indexes
+  KEY `idx_rubi_expression_name` (`name`),
+  KEY `idx_rubi_expression_tags` (`tags`),
+  KEY `idx_rubi_expression_lang` (`lang`),
+  KEY `idx_rubi_expression_is_active` (`is_active`),
+  KEY `idx_rubi_expression_difficulty` (`difficulty_level`),
+  
+  -- Foreign Key Constraints
+  CONSTRAINT `fk_rubi_expression_created_by` FOREIGN KEY (`created_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_rubi_expression_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Expressions for language learning';
+
+
+-- Sentences Table
+CREATE TABLE `rubi_sentence` (
+  `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
+  `name` varchar(400) NOT NULL COMMENT 'The sentence text',
+  `phonetic` varchar(400) DEFAULT NULL COMMENT 'Phonetic transcription',
+
+  `translation` varchar(400) DEFAULT NULL COMMENT 'Translation of the sentence',
+  `explanation` varchar(500) DEFAULT NULL COMMENT 'Explanation or context of the sentence',
+
+  `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
+  `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the sentence',
+  `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',
+  `display_order` int NOT NULL DEFAULT '0' COMMENT 'Order for display (lower = higher priority)',
+
+  -- Audit Trail
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+  `created_by` char(36) DEFAULT NULL COMMENT 'Created by user ID',
+  `updated_by` char(36) DEFAULT NULL COMMENT 'Last updated by user ID',
+
+  -- Soft Delete
+  `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Active status flag',
+
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_rubi_sentence_lang` (`name`(255), `lang`),
+
+  -- Indexes
+  KEY `idx_rubi_sentence_tags` (`tags`),
+  KEY `idx_rubi_sentence_lang` (`lang`),
+  KEY `idx_rubi_sentence_is_active` (`is_active`),
+  KEY `idx_rubi_sentence_difficulty` (`difficulty_level`),
+  KEY `idx_rubi_sentence_display_order` (`display_order`),
+
+  -- Foreign Key Constraints
+  CONSTRAINT `fk_rubi_sentence_created_by` FOREIGN KEY (`created_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_rubi_sentence_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Sentences for language learning';
+
+
 -- Multiple Choice Questions Table
 CREATE TABLE `rubi_multiple_choice_question` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
