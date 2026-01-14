@@ -51,31 +51,31 @@ public class VocabularyRu extends BaseEntity {
     @Column(name = "adjective_superlative_form", length = 100)
     private String adjectiveSuperlativeForm;
 
-    @Column(name = "verb_form", length = 500)
+    @Column(name = "verb_form", length = 100)
     private String verbForm;
 
-    @Column(name = "verb_meaning", length = 500)
+    @Column(name = "verb_meaning", length = 100)
     private String verbMeaning;
 
-    @Column(name = "verb_example", length = 2000)
+    @Column(name = "verb_example", length = 500)
     private String verbExample;
 
-    @Column(name = "adjective_form", length = 500)
+    @Column(name = "adjective_form", length = 100)
     private String adjectiveForm;
 
-    @Column(name = "adjective_meaning", length = 500)
+    @Column(name = "adjective_meaning", length = 100)
     private String adjectiveMeaning;
 
-    @Column(name = "adjective_example", length = 2000)
+    @Column(name = "adjective_example", length = 500)
     private String adjectiveExample;
 
-    @Column(name = "adverb_form", length = 500)
+    @Column(name = "adverb_form", length = 100)
     private String adverbForm;
 
-    @Column(name = "adverb_meaning", length = 500)
+    @Column(name = "adverb_meaning", length = 100)
     private String adverbMeaning;
 
-    @Column(name = "adverb_example", length = 2000)
+    @Column(name = "adverb_example", length = 500)
     private String adverbExample;
 
     @Column(name = "translation", length = 500)
