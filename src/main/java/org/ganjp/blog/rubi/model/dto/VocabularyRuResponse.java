@@ -15,23 +15,41 @@ import java.time.LocalDateTime;
 public class VocabularyRuResponse {
 
     private String id;
-    private String word;
-    private String wordImageFilename;
-    private String wordImageUrl;
-    private String wordImageOriginalUrl;
-    private String simplePastTense;
-    private String pastPerfectTense;
+    private String name;
+    private String phonetic;
+    private String partOfSpeech;
+
+    private String nounPluralForm;
+    private String verbSimplePastTense;
+    private String verbPastPerfectTense;
+    private String verbPresentParticiple;
+    private String adjectiveComparativeForm;
+    private String adjectiveSuperlativeForm;
+
+    private String verbForm;
+    private String verbMeaning;
+    private String verbExample;
+    private String adjectiveForm;
+    private String adjectiveMeaning;
+    private String adjectiveExample;
+    private String adverbForm;
+    private String adverbMeaning;
+    private String adverbExample;
+
     private String translation;
     private String synonyms;
-    private String pluralForm;
-    private String phonetic;
-    private String phoneticAudioFilename;
-    private String phoneticAudioUrl;
-    private String phoneticAudioOriginalUrl;
-    private String partOfSpeech;
     private String definition;
     private String example;
     private String dictionaryUrl;
+
+    private String imageFilename;
+    private String imageUrl;
+    private String imageOriginalUrl;
+
+    private String phoneticAudioFilename;
+    private String phoneticAudioUrl;
+    private String phoneticAudioOriginalUrl;
+
     private String tags;
     private String difficultyLevel;
     private VocabularyRu.Language lang;
@@ -48,21 +66,33 @@ public class VocabularyRuResponse {
         }
         return VocabularyRuResponse.builder()
                 .id(vocabulary.getId())
-                .word(vocabulary.getWord())
-                .wordImageFilename(vocabulary.getWordImageFilename())
-                .wordImageOriginalUrl(vocabulary.getWordImageOriginalUrl())
-                .simplePastTense(vocabulary.getSimplePastTense())
-                .pastPerfectTense(vocabulary.getPastPerfectTense())
+                .name(vocabulary.getName())
+                .phonetic(vocabulary.getPhonetic())
+                .partOfSpeech(vocabulary.getPartOfSpeech())
+                .nounPluralForm(vocabulary.getNounPluralForm())
+                .verbSimplePastTense(vocabulary.getVerbSimplePastTense())
+                .verbPastPerfectTense(vocabulary.getVerbPastPerfectTense())
+                .verbPresentParticiple(vocabulary.getVerbPresentParticiple())
+                .adjectiveComparativeForm(vocabulary.getAdjectiveComparativeForm())
+                .adjectiveSuperlativeForm(vocabulary.getAdjectiveSuperlativeForm())
+                .verbForm(vocabulary.getVerbForm())
+                .verbMeaning(vocabulary.getVerbMeaning())
+                .verbExample(vocabulary.getVerbExample())
+                .adjectiveForm(vocabulary.getAdjectiveForm())
+                .adjectiveMeaning(vocabulary.getAdjectiveMeaning())
+                .adjectiveExample(vocabulary.getAdjectiveExample())
+                .adverbForm(vocabulary.getAdverbForm())
+                .adverbMeaning(vocabulary.getAdverbMeaning())
+                .adverbExample(vocabulary.getAdverbExample())
                 .translation(vocabulary.getTranslation())
                 .synonyms(vocabulary.getSynonyms())
-                .pluralForm(vocabulary.getPluralForm())
-                .phonetic(vocabulary.getPhonetic())
-                .phoneticAudioFilename(vocabulary.getPhoneticAudioFilename())
-                .phoneticAudioOriginalUrl(vocabulary.getPhoneticAudioOriginalUrl())
-                .partOfSpeech(vocabulary.getPartOfSpeech())
                 .definition(vocabulary.getDefinition())
                 .example(vocabulary.getExample())
                 .dictionaryUrl(vocabulary.getDictionaryUrl())
+                .imageFilename(vocabulary.getImageFilename())
+                .imageOriginalUrl(vocabulary.getImageOriginalUrl())
+                .phoneticAudioFilename(vocabulary.getPhoneticAudioFilename())
+                .phoneticAudioOriginalUrl(vocabulary.getPhoneticAudioOriginalUrl())
                 .tags(vocabulary.getTags())
                 .difficultyLevel(vocabulary.getDifficultyLevel())
                 .lang(vocabulary.getLang())
@@ -81,25 +111,37 @@ public class VocabularyRuResponse {
         }
         return VocabularyRuResponse.builder()
                 .id(vocabulary.getId())
-                .word(vocabulary.getWord())
-                .wordImageFilename(vocabulary.getWordImageFilename())
-                .wordImageUrl(vocabulary.getWordImageFilename() != null && vocabularyBaseUrl != null ?
-                    vocabularyBaseUrl + "/images/" + vocabulary.getWordImageFilename() : null)
-                .wordImageOriginalUrl(vocabulary.getWordImageOriginalUrl())
-                .simplePastTense(vocabulary.getSimplePastTense())
-                .pastPerfectTense(vocabulary.getPastPerfectTense())
+                .name(vocabulary.getName())
+                .phonetic(vocabulary.getPhonetic())
+                .partOfSpeech(vocabulary.getPartOfSpeech())
+                .nounPluralForm(vocabulary.getNounPluralForm())
+                .verbSimplePastTense(vocabulary.getVerbSimplePastTense())
+                .verbPastPerfectTense(vocabulary.getVerbPastPerfectTense())
+                .verbPresentParticiple(vocabulary.getVerbPresentParticiple())
+                .adjectiveComparativeForm(vocabulary.getAdjectiveComparativeForm())
+                .adjectiveSuperlativeForm(vocabulary.getAdjectiveSuperlativeForm())
+                .verbForm(vocabulary.getVerbForm())
+                .verbMeaning(vocabulary.getVerbMeaning())
+                .verbExample(vocabulary.getVerbExample())
+                .adjectiveForm(vocabulary.getAdjectiveForm())
+                .adjectiveMeaning(vocabulary.getAdjectiveMeaning())
+                .adjectiveExample(vocabulary.getAdjectiveExample())
+                .adverbForm(vocabulary.getAdverbForm())
+                .adverbMeaning(vocabulary.getAdverbMeaning())
+                .adverbExample(vocabulary.getAdverbExample())
                 .translation(vocabulary.getTranslation())
                 .synonyms(vocabulary.getSynonyms())
-                .pluralForm(vocabulary.getPluralForm())
-                .phonetic(vocabulary.getPhonetic())
+                .definition(vocabulary.getDefinition())
+                .example(vocabulary.getExample())
+                .dictionaryUrl(vocabulary.getDictionaryUrl())
+                .imageFilename(vocabulary.getImageFilename())
+                .imageUrl(vocabulary.getImageFilename() != null && vocabularyBaseUrl != null ?
+                    vocabularyBaseUrl + "/images/" + vocabulary.getImageFilename() : null)
+                .imageOriginalUrl(vocabulary.getImageOriginalUrl())
                 .phoneticAudioFilename(vocabulary.getPhoneticAudioFilename())
                 .phoneticAudioUrl(vocabulary.getPhoneticAudioFilename() != null && vocabularyBaseUrl != null ?
                     vocabularyBaseUrl + "/audios/" + vocabulary.getPhoneticAudioFilename() : null)
                 .phoneticAudioOriginalUrl(vocabulary.getPhoneticAudioOriginalUrl())
-                .partOfSpeech(vocabulary.getPartOfSpeech())
-                .definition(vocabulary.getDefinition())
-                .example(vocabulary.getExample())
-                .dictionaryUrl(vocabulary.getDictionaryUrl())
                 .tags(vocabulary.getTags())
                 .difficultyLevel(vocabulary.getDifficultyLevel())
                 .lang(vocabulary.getLang())

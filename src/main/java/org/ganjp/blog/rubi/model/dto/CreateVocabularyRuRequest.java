@@ -15,30 +15,43 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 public class CreateVocabularyRuRequest {
 
-    @NotBlank(message = "Word is required")
-    private String word;
+    @NotBlank(message = "Name is required")
+    private String name;
 
-    private String wordImageFilename;
-    private String wordImageOriginalUrl;
-    private MultipartFile wordImageFile;
+    private String phonetic;
+    private String partOfSpeech;
 
-    private String simplePastTense;
-    private String pastPerfectTense;
+    private String nounPluralForm;
+    private String verbSimplePastTense;
+    private String verbPastPerfectTense;
+    private String verbPresentParticiple;
+    private String adjectiveComparativeForm;
+    private String adjectiveSuperlativeForm;
+
+    private String verbForm;
+    private String verbMeaning;
+    private String verbExample;
+    private String adjectiveForm;
+    private String adjectiveMeaning;
+    private String adjectiveExample;
+    private String adverbForm;
+    private String adverbMeaning;
+    private String adverbExample;
+
     private String translation;
     private String synonyms;
-    private String pluralForm;
-    private String phonetic;
+    private String definition;
+    private String example;
+    private String dictionaryUrl;
+
+    private String imageFilename;
+    private String imageOriginalUrl;
+    private MultipartFile imageFile;
 
     private String phoneticAudioFilename;
     private String phoneticAudioOriginalUrl;
     private MultipartFile phoneticAudioFile;
 
-    private String partOfSpeech;
-
-    private String definition;
-
-    private String example;
-    private String dictionaryUrl;
     private String tags;
     private String difficultyLevel;
 

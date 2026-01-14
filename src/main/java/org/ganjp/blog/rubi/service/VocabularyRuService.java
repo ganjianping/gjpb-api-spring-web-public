@@ -44,18 +44,30 @@ public class VocabularyRuService {
      */
     @Transactional
     public VocabularyRuResponse createVocabulary(CreateVocabularyRuRequest request, String createdBy) {
-        if (vocabularyRepository.existsByWordAndLang(request.getWord(), request.getLang())) {
-            throw new BusinessException("Vocabulary word already exists for this language: " + request.getWord());
+        if (vocabularyRepository.existsByNameAndLang(request.getName(), request.getLang())) {
+            throw new BusinessException("Vocabulary word already exists for this language: " + request.getName());
         }
 
         VocabularyRu dbVocabulary = VocabularyRu.builder()
                 .id(UUID.randomUUID().toString())
-                .word(request.getWord())
-                .simplePastTense(request.getSimplePastTense())
-                .pastPerfectTense(request.getPastPerfectTense())
+                .name(request.getName())
+                .nounPluralForm(request.getNounPluralForm())
+                .verbSimplePastTense(request.getVerbSimplePastTense())
+                .verbPastPerfectTense(request.getVerbPastPerfectTense())
+                .verbPresentParticiple(request.getVerbPresentParticiple())
+                .adjectiveComparativeForm(request.getAdjectiveComparativeForm())
+                .adjectiveSuperlativeForm(request.getAdjectiveSuperlativeForm())
+                .verbForm(request.getVerbForm())
+                .verbMeaning(request.getVerbMeaning())
+                .verbExample(request.getVerbExample())
+                .adjectiveForm(request.getAdjectiveForm())
+                .adjectiveMeaning(request.getAdjectiveMeaning())
+                .adjectiveExample(request.getAdjectiveExample())
+                .adverbForm(request.getAdverbForm())
+                .adverbMeaning(request.getAdverbMeaning())
+                .adverbExample(request.getAdverbExample())
                 .translation(request.getTranslation())
                 .synonyms(request.getSynonyms())
-                .pluralForm(request.getPluralForm())
                 .phonetic(request.getPhonetic())
                 .partOfSpeech(request.getPartOfSpeech())
                 .definition(request.getDefinition())
@@ -69,7 +81,7 @@ public class VocabularyRuService {
                 .build();
 
         // Handle Image Upload
-        handleImageUpload(dbVocabulary, request.getWordImageFile(), request.getWordImageOriginalUrl(), request.getWordImageFilename());
+        handleImageUpload(dbVocabulary, request.getImageFile(), request.getImageOriginalUrl(), request.getImageFilename());
 
         // Handle Audio Upload
         handleAudioUpload(dbVocabulary, request.getPhoneticAudioFile(), request.getPhoneticAudioOriginalUrl(), request.getPhoneticAudioFilename());
@@ -89,19 +101,19 @@ public class VocabularyRuService {
         VocabularyRu dbVocabulary = vocabularyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found with id: " + id));
 
-        if (request.getWord() != null && !request.getWord().equals(dbVocabulary.getWord())) {
-            if (vocabularyRepository.existsByWordAndLang(request.getWord(), 
+        if (request.getName() != null && !request.getName().equals(dbVocabulary.getName())) {
+            if (vocabularyRepository.existsByNameAndLang(request.getName(), 
                     request.getLang() != null ? request.getLang() : dbVocabulary.getLang())) {
-                throw new BusinessException("Vocabulary word already exists: " + request.getWord());
+                throw new BusinessException("Vocabulary word already exists: " + request.getName());
             }
-            dbVocabulary.setWord(request.getWord());
+            dbVocabulary.setName(request.getName());
         }
 
         // Handle Image Upload/Update
-        if (request.getWordImageFile() != null || request.getWordImageOriginalUrl() != null) {
-             handleImageUpload(dbVocabulary, request.getWordImageFile(), request.getWordImageOriginalUrl(), request.getWordImageFilename());
-        } else if (request.getWordImageFilename() != null) {
-            dbVocabulary.setWordImageFilename(request.getWordImageFilename());
+        if (request.getImageFile() != null || request.getImageOriginalUrl() != null) {
+             handleImageUpload(dbVocabulary, request.getImageFile(), request.getImageOriginalUrl(), request.getImageFilename());
+        } else if (request.getImageFilename() != null) {
+            dbVocabulary.setImageFilename(request.getImageFilename());
         }
 
         // Handle Audio Upload/Update
@@ -111,11 +123,23 @@ public class VocabularyRuService {
             dbVocabulary.setPhoneticAudioFilename(request.getPhoneticAudioFilename());
         }
 
-        if (request.getSimplePastTense() != null) dbVocabulary.setSimplePastTense(request.getSimplePastTense());
-        if (request.getPastPerfectTense() != null) dbVocabulary.setPastPerfectTense(request.getPastPerfectTense());
+        if (request.getNounPluralForm() != null) dbVocabulary.setNounPluralForm(request.getNounPluralForm());
+        if (request.getVerbSimplePastTense() != null) dbVocabulary.setVerbSimplePastTense(request.getVerbSimplePastTense());
+        if (request.getVerbPastPerfectTense() != null) dbVocabulary.setVerbPastPerfectTense(request.getVerbPastPerfectTense());
+        if (request.getVerbPresentParticiple() != null) dbVocabulary.setVerbPresentParticiple(request.getVerbPresentParticiple());
+        if (request.getAdjectiveComparativeForm() != null) dbVocabulary.setAdjectiveComparativeForm(request.getAdjectiveComparativeForm());
+        if (request.getAdjectiveSuperlativeForm() != null) dbVocabulary.setAdjectiveSuperlativeForm(request.getAdjectiveSuperlativeForm());
+        if (request.getVerbForm() != null) dbVocabulary.setVerbForm(request.getVerbForm());
+        if (request.getVerbMeaning() != null) dbVocabulary.setVerbMeaning(request.getVerbMeaning());
+        if (request.getVerbExample() != null) dbVocabulary.setVerbExample(request.getVerbExample());
+        if (request.getAdjectiveForm() != null) dbVocabulary.setAdjectiveForm(request.getAdjectiveForm());
+        if (request.getAdjectiveMeaning() != null) dbVocabulary.setAdjectiveMeaning(request.getAdjectiveMeaning());
+        if (request.getAdjectiveExample() != null) dbVocabulary.setAdjectiveExample(request.getAdjectiveExample());
+        if (request.getAdverbForm() != null) dbVocabulary.setAdverbForm(request.getAdverbForm());
+        if (request.getAdverbMeaning() != null) dbVocabulary.setAdverbMeaning(request.getAdverbMeaning());
+        if (request.getAdverbExample() != null) dbVocabulary.setAdverbExample(request.getAdverbExample());
         if (request.getTranslation() != null) dbVocabulary.setTranslation(request.getTranslation());
         if (request.getSynonyms() != null) dbVocabulary.setSynonyms(request.getSynonyms());
-        if (request.getPluralForm() != null) dbVocabulary.setPluralForm(request.getPluralForm());
         if (request.getPhonetic() != null) dbVocabulary.setPhonetic(request.getPhonetic());
         if (request.getPartOfSpeech() != null) dbVocabulary.setPartOfSpeech(request.getPartOfSpeech());
         if (request.getDefinition() != null) dbVocabulary.setDefinition(request.getDefinition());
@@ -137,7 +161,7 @@ public class VocabularyRuService {
         String imageDir = rubiProperties.getVocabulary().getImage().getDirectory();
         Long maxSize = rubiProperties.getVocabulary().getImage().getMaxSize();
 
-        String baseName = StringUtils.hasText(providedFilename) ? providedFilename : vocabulary.getWord();
+        String baseName = StringUtils.hasText(providedFilename) ? providedFilename : vocabulary.getName();
         baseName = baseName.trim().replaceAll("\\s+", "-").toLowerCase();
 
         if (file != null && !file.isEmpty()) {
@@ -156,13 +180,13 @@ public class VocabularyRuService {
                 } else {
                     Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
                 }
-                vocabulary.setWordImageFilename(filename);
+                vocabulary.setImageFilename(filename);
             } catch (IOException e) {
                 throw new BusinessException("Failed to save image file: " + e.getMessage());
             }
         } else if (StringUtils.hasText(originalUrl)) {
-            boolean isUrlChanged = !originalUrl.equals(vocabulary.getWordImageOriginalUrl());
-            vocabulary.setWordImageOriginalUrl(originalUrl);
+            boolean isUrlChanged = !originalUrl.equals(vocabulary.getImageOriginalUrl());
+            vocabulary.setImageOriginalUrl(originalUrl);
 
             if (isUrlChanged && originalUrl.toLowerCase().startsWith("http")) {
                 try {
@@ -184,12 +208,12 @@ public class VocabularyRuService {
                             }
                         }
                     }
-                    vocabulary.setWordImageFilename(filename);
+                    vocabulary.setImageFilename(filename);
                 } catch (Exception e) {
                     log.error("Failed to download image from URL: {}", originalUrl, e);
                 }
             } else {
-                String currentFilename = vocabulary.getWordImageFilename();
+                String currentFilename = vocabulary.getImageFilename();
                 if (StringUtils.hasText(currentFilename)) {
                     String ext = getFileExtension(currentFilename);
                     String newFilename = baseName.endsWith("." + ext) ? baseName : baseName + "." + ext;
@@ -199,14 +223,14 @@ public class VocabularyRuService {
                         try {
                             if (Files.exists(oldPath)) {
                                 Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
-                                vocabulary.setWordImageFilename(newFilename);
+                                vocabulary.setImageFilename(newFilename);
                             }
                         } catch (IOException e) {
                             log.error("Failed to rename image file from {} to {}", currentFilename, newFilename, e);
                         }
                     }
                 } else if (StringUtils.hasText(providedFilename)) {
-                    vocabulary.setWordImageFilename(providedFilename);
+                    vocabulary.setImageFilename(providedFilename);
                 }
             }
         }
@@ -215,7 +239,7 @@ public class VocabularyRuService {
     private void handleAudioUpload(VocabularyRu dbVocabulary, MultipartFile newFile, String newOriginalUrl, String newProvidedFilename) {
         String audioDir = rubiProperties.getVocabulary().getAudio().getDirectory();
 
-        String baseName = StringUtils.hasText(newProvidedFilename) ? newProvidedFilename : dbVocabulary.getWord();
+        String baseName = StringUtils.hasText(newProvidedFilename) ? newProvidedFilename : dbVocabulary.getName();
         baseName = baseName.trim().replaceAll("\\s+", "-").toLowerCase();
 
         if (newFile != null && !newFile.isEmpty()) {
@@ -357,7 +381,7 @@ public class VocabularyRuService {
             List<Predicate> predicates = new ArrayList<>();
 
             if (StringUtils.hasText(word)) {
-                predicates.add(cb.like(cb.lower(root.get("word")), "%" + word.toLowerCase() + "%"));
+                predicates.add(cb.like(cb.lower(root.get("name")), "%" + word.toLowerCase() + "%"));
             }
 
             if (lang != null) {

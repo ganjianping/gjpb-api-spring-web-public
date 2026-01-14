@@ -12,9 +12,9 @@ public interface VocabularyRuRepository extends JpaRepository<VocabularyRu, Stri
     
     List<VocabularyRu> findByLangAndIsActiveTrueOrderByDisplayOrderAsc(VocabularyRu.Language lang);
     
-    boolean existsByWordAndLang(String word, VocabularyRu.Language lang);
+    boolean existsByNameAndLang(String name, VocabularyRu.Language lang);
 
     boolean existsByPhoneticAudioFilenameAndIsActiveTrue(String phoneticAudioFilename);
 
-    boolean existsByWordImageFilenameAndIsActiveTrue(String wordImageFilename);
+    boolean existsByImageFilenameAndIsActiveTrue(String imageFilename);
 }

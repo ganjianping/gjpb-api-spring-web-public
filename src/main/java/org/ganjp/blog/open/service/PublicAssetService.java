@@ -210,7 +210,7 @@ public class PublicAssetService {
      */
     public File getVocabularyImageFile(String filename) throws IOException {
         log.debug("Fetching public vocabulary image file: {}", filename);
-        if (!vocabularyRuRepository.existsByWordImageFilenameAndIsActiveTrue(filename)) {
+        if (!vocabularyRuRepository.existsByImageFilenameAndIsActiveTrue(filename)) {
             throw new IllegalArgumentException("Vocabulary image not found or not active with filename: " + filename);
         }
         return vocabularyRuService.getImageFile(filename);

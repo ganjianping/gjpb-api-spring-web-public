@@ -24,20 +24,59 @@ public class VocabularyRu extends BaseEntity {
     @Column(name = "id", length = 36)
     private String id;
 
-    @Column(name = "word", length = 100, nullable = false)
-    private String word;
+    @Column(name = "name", length = 100, nullable = false)
+    private String name;
 
-    @Column(name = "word_image_filename", length = 100)
-    private String wordImageFilename;
+    @Column(name = "phonetic", length = 100)
+    private String phonetic;
 
-    @Column(name = "word_image_original_url", length = 500)
-    private String wordImageOriginalUrl;
+    @Column(name = "part_of_speech", length = 50)
+    private String partOfSpeech;
 
-    @Column(name = "simple_past_tense", length = 100)
-    private String simplePastTense;
+    @Column(name = "noun_plural_form", length = 100)
+    private String nounPluralForm;
 
-    @Column(name = "past_perfect_tense", length = 100)
-    private String pastPerfectTense;
+    @Column(name = "verb_simple_past_tense", length = 100)
+    private String verbSimplePastTense;
+
+    @Column(name = "verb_past_perfect_tense", length = 100)
+    private String verbPastPerfectTense;
+
+    @Column(name = "verb_present_participle", length = 100)
+    private String verbPresentParticiple;
+
+    @Column(name = "adjective_comparative_form", length = 100)
+    private String adjectiveComparativeForm;
+
+    @Column(name = "adjective_superlative_form", length = 100)
+    private String adjectiveSuperlativeForm;
+
+    @Column(name = "verb_form", length = 500)
+    private String verbForm;
+
+    @Column(name = "verb_meaning", length = 500)
+    private String verbMeaning;
+
+    @Column(name = "verb_example", length = 2000)
+    private String verbExample;
+
+    @Column(name = "adjective_form", length = 500)
+    private String adjectiveForm;
+
+    @Column(name = "adjective_meaning", length = 500)
+    private String adjectiveMeaning;
+
+    @Column(name = "adjective_example", length = 2000)
+    private String adjectiveExample;
+
+    @Column(name = "adverb_form", length = 500)
+    private String adverbForm;
+
+    @Column(name = "adverb_meaning", length = 500)
+    private String adverbMeaning;
+
+    @Column(name = "adverb_example", length = 2000)
+    private String adverbExample;
 
     @Column(name = "translation", length = 500)
     private String translation;
@@ -45,22 +84,7 @@ public class VocabularyRu extends BaseEntity {
     @Column(name = "synonyms", length = 200)
     private String synonyms;
 
-    @Column(name = "plural_form", length = 100)
-    private String pluralForm;
-
-    @Column(name = "phonetic", length = 100)
-    private String phonetic;
-
-    @Column(name = "phonetic_audio_filename", length = 100)
-    private String phoneticAudioFilename;
-
-    @Column(name = "phonetic_audio_original_url", length = 500)
-    private String phoneticAudioOriginalUrl;
-
-    @Column(name = "part_of_speech", length = 50)
-    private String partOfSpeech;
-
-    @Column(name = "definition", length = 2000, nullable = false)
+    @Column(name = "definition", length = 2000)
     private String definition;
 
     @Column(name = "example", length = 2000)
@@ -68,6 +92,18 @@ public class VocabularyRu extends BaseEntity {
 
     @Column(name = "dictionary_url", length = 500)
     private String dictionaryUrl;
+
+    @Column(name = "image_filename", length = 100)
+    private String imageFilename;
+
+    @Column(name = "image_original_url", length = 500)
+    private String imageOriginalUrl;
+
+    @Column(name = "phonetic_audio_filename", length = 100)
+    private String phoneticAudioFilename;
+
+    @Column(name = "phonetic_audio_original_url", length = 500)
+    private String phoneticAudioOriginalUrl;
 
     @Column(name = "tags", length = 500)
     private String tags;

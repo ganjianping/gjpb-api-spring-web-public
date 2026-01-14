@@ -3,20 +3,33 @@ USE gjpb;
 
 CREATE TABLE `rubi_vocabulary` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
-  `word` varchar(100) NOT NULL COMMENT 'The vocabulary word',
+  `name` varchar(100) NOT NULL COMMENT 'The vocabulary name',
   `phonetic` varchar(100) DEFAULT NULL COMMENT 'Phonetic transcription',
 
   `part_of_speech` varchar(50) DEFAULT NULL COMMENT 'Part of speech (noun, verb, etc.)',
-  `simple_past_tense` varchar(100) DEFAULT NULL COMMENT 'Past tense form (for verbs)',
-  `past_perfect_tense` varchar(100) DEFAULT NULL COMMENT 'Past perfect tense form (for verbs)',
-  `plural_form` varchar(100) DEFAULT NULL COMMENT 'Plural form (for nouns)',
+  `noun_plural_form` varchar(100) DEFAULT NULL COMMENT 'Plural form (for nouns)',
+  `verb_simple_past_tense` varchar(100) DEFAULT NULL COMMENT 'Past tense form (for verbs)',
+  `verb_past_perfect_tense` varchar(100) DEFAULT NULL COMMENT 'Past perfect tense form (for verbs)',
+  `verb_present_participle` varchar(100) DEFAULT NULL COMMENT 'Present participle form (for verbs)',
+  `adjective_comparative_form` varchar(100) DEFAULT NULL COMMENT 'Comparative form (for adjectives/adverbs)',
+  `adjective_superlative_form` varchar(100) DEFAULT NULL COMMENT 'Superlative form (for adjectives/adverbs)',
+  `verb_form` varchar(100) DEFAULT NULL COMMENT 'The v',
+  `verb_meaning` varchar(100) DEFAULT NULL COMMENT 'Meaning of the verb form',
+  `verb_example` varchar(500) DEFAULT NULL COMMENT 'Example sentence using the verb form',
+  `adjective_form` varchar(100) DEFAULT NULL COMMENT 'The adjective/adverb form',
+  `adjective_meaning` varchar(100) DEFAULT NULL COMMENT 'Meaning of the adjective/adverb form',
+  `adjective_example` varchar(500) DEFAULT NULL COMMENT 'Example sentence using the adjective/adverb form',
+  `adverb_form` varchar(100) DEFAULT NULL COMMENT 'The adverb form',
+  `adverb_meaning` varchar(100) DEFAULT NULL COMMENT 'Meaning of the adverb form',
+  `adverb_example` varchar(500) DEFAULT NULL COMMENT 'Example sentence using the adverb form',
+  
   `translation` varchar(500) DEFAULT NULL COMMENT 'translation of the word',
   `synonyms` varchar(200) DEFAULT NULL COMMENT 'Comma-separated synonyms',
   `definition` varchar(2000) DEFAULT NULL COMMENT 'Definition of the word',
   `example` varchar(2000) DEFAULT NULL COMMENT 'Example sentence using the word',
   `dictionary_url` varchar(500) DEFAULT NULL COMMENT 'Link to an online dictionary entry',
-  `word_image_filename` varchar(100) DEFAULT NULL COMMENT 'Word image file path',
-  `word_image_original_url` varchar(500) DEFAULT NULL COMMENT 'Word image original URL',
+  `image_filename` varchar(100) DEFAULT NULL COMMENT 'Vocabulary image file path',
+  `image_original_url` varchar(500) DEFAULT NULL COMMENT 'Vocabulary image original URL',
   `phonetic_audio_filename` varchar(100) DEFAULT NULL COMMENT 'Phonetic audio file path',
   `phonetic_audio_original_url` varchar(500) DEFAULT NULL COMMENT 'Phonetic audio original URL',
   
@@ -35,10 +48,10 @@ CREATE TABLE `rubi_vocabulary` (
   `is_active` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Active status flag',
   
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_rubi_vocab_word_lang` (`word`, `lang`),
+  UNIQUE KEY `uniq_rubi_vocab_name_lang` (`name`, `lang`),
 
   -- Indexes
-  KEY `idx_rubi_vocab_word` (`word`),
+  KEY `idx_rubi_vocab_name` (`name`),
   KEY `idx_rubi_vocab_tags` (`tags`),
   KEY `idx_rubi_vocab_lang` (`lang`),
   KEY `idx_rubi_vocab_is_active` (`is_active`),
