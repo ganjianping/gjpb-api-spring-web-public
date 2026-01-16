@@ -20,6 +20,9 @@ public class VocabularyRuResponse {
     private String partOfSpeech;
 
     private String nounPluralForm;
+    private String nounForm;
+    private String nounMeaning;
+    private String nounExample;
     private String verbSimplePastTense;
     private String verbPastPerfectTense;
     private String verbPresentParticiple;
@@ -70,6 +73,9 @@ public class VocabularyRuResponse {
                 .phonetic(vocabulary.getPhonetic())
                 .partOfSpeech(vocabulary.getPartOfSpeech())
                 .nounPluralForm(vocabulary.getNounPluralForm())
+                .nounForm(vocabulary.getNounForm())
+                .nounMeaning(vocabulary.getNounMeaning())
+                .nounExample(vocabulary.getNounExample())
                 .verbSimplePastTense(vocabulary.getVerbSimplePastTense())
                 .verbPastPerfectTense(vocabulary.getVerbPastPerfectTense())
                 .verbPresentParticiple(vocabulary.getVerbPresentParticiple())
@@ -115,6 +121,9 @@ public class VocabularyRuResponse {
                 .phonetic(vocabulary.getPhonetic())
                 .partOfSpeech(vocabulary.getPartOfSpeech())
                 .nounPluralForm(vocabulary.getNounPluralForm())
+                .nounForm(vocabulary.getNounForm())
+                .nounMeaning(vocabulary.getNounMeaning())
+                .nounExample(vocabulary.getNounExample())
                 .verbSimplePastTense(vocabulary.getVerbSimplePastTense())
                 .verbPastPerfectTense(vocabulary.getVerbPastPerfectTense())
                 .verbPresentParticiple(vocabulary.getVerbPresentParticiple())

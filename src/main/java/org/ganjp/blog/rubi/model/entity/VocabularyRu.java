@@ -36,6 +36,15 @@ public class VocabularyRu extends BaseEntity {
     @Column(name = "noun_plural_form", length = 100)
     private String nounPluralForm;
 
+    @Column(name = "noun_form", length = 100)
+    private String nounForm;
+
+    @Column(name = "noun_meaning", length = 100)
+    private String nounMeaning;
+
+    @Column(name = "noun_example", length = 500)
+    private String nounExample;
+
     @Column(name = "verb_simple_past_tense", length = 100)
     private String verbSimplePastTense;
 

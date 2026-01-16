@@ -52,6 +52,9 @@ public class VocabularyRuService {
                 .id(UUID.randomUUID().toString())
                 .name(request.getName())
                 .nounPluralForm(request.getNounPluralForm())
+                .nounForm(request.getNounForm())
+                .nounMeaning(request.getNounMeaning())
+                .nounExample(request.getNounExample())
                 .verbSimplePastTense(request.getVerbSimplePastTense())
                 .verbPastPerfectTense(request.getVerbPastPerfectTense())
                 .verbPresentParticiple(request.getVerbPresentParticiple())
@@ -124,6 +127,9 @@ public class VocabularyRuService {
         }
 
         if (request.getNounPluralForm() != null) dbVocabulary.setNounPluralForm(request.getNounPluralForm());
+        if (request.getNounForm() != null) dbVocabulary.setNounForm(request.getNounForm());
+        if (request.getNounMeaning() != null) dbVocabulary.setNounMeaning(request.getNounMeaning());
+        if (request.getNounExample() != null) dbVocabulary.setNounExample(request.getNounExample());
         if (request.getVerbSimplePastTense() != null) dbVocabulary.setVerbSimplePastTense(request.getVerbSimplePastTense());
         if (request.getVerbPastPerfectTense() != null) dbVocabulary.setVerbPastPerfectTense(request.getVerbPastPerfectTense());
         if (request.getVerbPresentParticiple() != null) dbVocabulary.setVerbPresentParticiple(request.getVerbPresentParticiple());

@@ -22,6 +22,9 @@ public class CreateVocabularyRuRequest {
     private String partOfSpeech;
 
     private String nounPluralForm;
+    private String nounForm;
+    private String nounMeaning;
+    private String nounExample;
     private String verbSimplePastTense;
     private String verbPastPerfectTense;
     private String verbPresentParticiple;
