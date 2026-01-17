@@ -114,6 +114,12 @@ public class VocabularyRu extends BaseEntity {
     @Column(name = "phonetic_audio_original_url", length = 500)
     private String phoneticAudioOriginalUrl;
 
+    @Column(name = "term")
+    private Integer term;
+
+    @Column(name = "week")
+    private Integer week;
+
     @Column(name = "tags", length = 500)
     private String tags;
 

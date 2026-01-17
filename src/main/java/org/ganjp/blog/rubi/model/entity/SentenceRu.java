@@ -36,6 +36,12 @@ public class SentenceRu extends BaseEntity {
     @Column(name = "explanation", length = 500)
     private String explanation;
 
+    @Column(name = "term")
+    private Integer term;
+
+    @Column(name = "week")
+    private Integer week;
+
     @Column(name = "tags", length = 500)
     private String tags;
 

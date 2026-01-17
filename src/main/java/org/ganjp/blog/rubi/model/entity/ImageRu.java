@@ -50,6 +50,12 @@ public class ImageRu {
     @Column(name = "alt_text", length = 500)
     private String altText;
 
+    @Column(name = "term")
+    private Integer term;
+
+    @Column(name = "week")
+    private Integer week;
+
     @Column(length = 500)
     private String tags;
 

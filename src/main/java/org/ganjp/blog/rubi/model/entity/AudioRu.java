@@ -44,6 +44,12 @@ public class AudioRu {
     @Column(length = 255)
     private String artist;
 
+    @Column(name = "term")
+    private Integer term;
+
+    @Column(name = "week")
+    private Integer week;
+
     @Column(length = 500)
     private String tags;
 

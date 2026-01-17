@@ -39,6 +39,12 @@ public class ArticleRu {
     @Column(name = "cover_image_original_url", length = 500)
     private String coverImageOriginalUrl;
 
+    @Column(name = "term")
+    private Integer term;
+
+    @Column(name = "week")
+    private Integer week;
+
     @Column(length = 500)
     private String tags;
 

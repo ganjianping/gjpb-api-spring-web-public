@@ -39,6 +39,12 @@ public class ExpressionRu extends BaseEntity {
     @Column(name = "example", length = 500)
     private String example;
 
+    @Column(name = "term")
+    private Integer term;
+
+    @Column(name = "week")
+    private Integer week;
+
     @Column(name = "tags", length = 500)
     private String tags;
 

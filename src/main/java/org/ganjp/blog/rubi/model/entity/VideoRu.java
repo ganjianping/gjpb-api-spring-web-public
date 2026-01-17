@@ -38,6 +38,12 @@ public class VideoRu {
     @Column(length = 500)
     private String description;
 
+    @Column(name = "term")
+    private Integer term;
+
+    @Column(name = "week")
+    private Integer week;
+
     @Column(length = 500)
     private String tags;
 

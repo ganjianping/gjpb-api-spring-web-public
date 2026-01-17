@@ -35,6 +35,9 @@ CREATE TABLE `rubi_vocabulary` (
   `image_original_url` varchar(500) DEFAULT NULL COMMENT 'Vocabulary image original URL',
   `phonetic_audio_filename` varchar(100) DEFAULT NULL COMMENT 'Phonetic audio file path',
   `phonetic_audio_original_url` varchar(500) DEFAULT NULL COMMENT 'Phonetic audio original URL',
+
+  `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
+  `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
   
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the vocabulary',
@@ -65,7 +68,6 @@ CREATE TABLE `rubi_vocabulary` (
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Vocabulary words for language learning';
 
-
 -- Expressions Table
 CREATE TABLE `rubi_expression` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
@@ -80,6 +82,9 @@ CREATE TABLE `rubi_expression` (
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the phrase or idiom',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Order for display (lower = higher priority)',
+
+  `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
+  `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
   
   -- Audit Trail
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
@@ -121,6 +126,9 @@ CREATE TABLE `rubi_sentence` (
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the website content',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Order for display (lower = higher priority)',
 
+  `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
+  `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
+
   -- Audit Trail
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
@@ -161,6 +169,9 @@ CREATE TABLE `rubi_multiple_choice_question` (
   `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
   `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
 
+  `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
+  `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
+
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Order for display (lower = higher priority)',
@@ -196,6 +207,9 @@ CREATE TABLE `rubi_free_text_question` (
   `answer` varchar(1000) NOT NULL COMMENT 'The correct answer',
   `explanation` varchar(2000) DEFAULT NULL COMMENT 'Explanation for the correct answer',  
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
+
+  `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
+  `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
 
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',
@@ -233,6 +247,9 @@ CREATE TABLE `rubi_true_false_question` (
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
   `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
   `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
+
+  `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
+  `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
 
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',
@@ -277,6 +294,9 @@ CREATE TABLE `rubi_fill_blank_question` (
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
   `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
   `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
+
+  `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
+  `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
 
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',
@@ -358,6 +378,10 @@ CREATE TABLE `rubi_image` (
   `width` smallint UNSIGNED DEFAULT NULL COMMENT 'Image width in pixels',
   `height` smallint UNSIGNED DEFAULT NULL COMMENT 'Image height in pixels',
   `alt_text` varchar(500) DEFAULT NULL COMMENT 'Alt text for accessibility',
+
+  `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
+  `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
+  
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
@@ -386,6 +410,10 @@ CREATE TABLE `rubi_video` (
   `original_url` varchar(500) DEFAULT NULL COMMENT 'Original source URL',
   `source_name` varchar(255) DEFAULT NULL COMMENT 'Video source name',
   `cover_image_filename` varchar(500) DEFAULT NULL COMMENT 'Cover image filename (stored in uploads)',
+
+  `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
+  `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
+
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
@@ -418,6 +446,10 @@ CREATE TABLE `rubi_audio` (
   `description` varchar(500) DEFAULT NULL COMMENT 'Audio description',
   `subtitle` text DEFAULT NULL COMMENT 'Subtitle or transcript',
   `artist` varchar(255) DEFAULT NULL COMMENT 'Artist or creator name',
+
+  `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
+  `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
+
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',
@@ -447,6 +479,10 @@ CREATE TABLE `rubi_article` (
   `source_name` varchar(255) DEFAULT NULL COMMENT 'Content source name',
   `cover_image_filename` varchar(500) DEFAULT NULL COMMENT 'Cover image file path',
   `cover_image_original_url` varchar(500) DEFAULT NULL COMMENT 'Cover image original URL',
+
+  `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
+  `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
+
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Content language',
   `display_order` int NOT NULL DEFAULT '0' COMMENT 'Display order (lower = higher priority)',

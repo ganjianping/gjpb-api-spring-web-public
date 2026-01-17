@@ -36,6 +36,12 @@ public class FreeTextQuestionRu extends BaseEntity {
     @Column(name = "difficulty_level", length = 20)
     private String difficultyLevel;
 
+    @Column(name = "term")
+    private Integer term;
+
+    @Column(name = "week")
+    private Integer week;
+
     @Column(name = "tags", length = 500)
     private String tags;
 

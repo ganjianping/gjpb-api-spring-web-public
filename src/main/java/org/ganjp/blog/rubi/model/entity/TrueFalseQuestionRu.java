@@ -45,6 +45,12 @@ public class TrueFalseQuestionRu extends BaseEntity {
     @Builder.Default
     private Integer successCount = 0;
 
+    @Column(name = "term")
+    private Integer term;
+
+    @Column(name = "week")
+    private Integer week;
+
     @Column(name = "tags", length = 500)
     private String tags;
 
