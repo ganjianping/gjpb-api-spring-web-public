@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.common.model.ApiResponse;
 import org.ganjp.blog.common.model.PaginatedResponse;
-import org.ganjp.blog.open.model.PublicVocabularyRuResponse;
+import org.ganjp.blog.open.model.*;
 import org.ganjp.blog.open.service.PublicRubiService;
-import org.ganjp.blog.rubi.model.entity.VocabularyRu;
+import org.ganjp.blog.rubi.model.entity.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Locale;
@@ -17,6 +17,21 @@ import java.util.Locale;
 @Slf4j
 public class PublicRubiController {
     private final PublicRubiService publicRubiService;
+
+    /**
+     * Validates and parses language parameter to enum.
+     * Returns null if lang is null or blank.
+     * @param lang the language string parameter
+     * @param enumClass the enum class to convert to
+     * @return the parsed Language enum, or null if input is null/blank
+     * @throws IllegalArgumentException if lang value is invalid
+     */
+    private <T extends Enum<T>> T validateAndParseLanguage(String lang, Class<T> enumClass) {
+        if (lang == null || lang.isBlank()) {
+            return null;
+        }
+        return Enum.valueOf(enumClass, lang.toUpperCase(Locale.ROOT));
+    }
 
     @GetMapping("/vocabulary-rus")
     public ApiResponse<PaginatedResponse<PublicVocabularyRuResponse>> getVocabularies(@RequestParam(required = false) String name,
@@ -29,15 +44,115 @@ public class PublicRubiController {
                                                              @RequestParam(defaultValue = "20") int size,
                                                              @RequestParam(defaultValue = "displayOrder") String sort,
                                                              @RequestParam(defaultValue = "asc") String direction) {
-        VocabularyRu.Language langEnum = null;
-        if (lang != null && !lang.isBlank()) {
-            try {
-                langEnum = VocabularyRu.Language.valueOf(lang.toUpperCase(Locale.ROOT));
-            } catch (IllegalArgumentException ex) {
-                return ApiResponse.error(400, "Invalid lang", null);
-            }
+        VocabularyRu.Language langEnum;
+        try {
+            langEnum = validateAndParseLanguage(lang, VocabularyRu.Language.class);
+        } catch (IllegalArgumentException ex) {
+            return ApiResponse.error(400, "Invalid lang", null);
         }
         var resp = publicRubiService.getVocabularies(name, langEnum, tags, term, week, difficultyLevel, page, size);
         return ApiResponse.success(resp, "Vocabularies retrieved");
+    }
+
+    @GetMapping("/expression-rus")
+    public ApiResponse<PaginatedResponse<PublicExpressionRuResponse>> getExpressions(@RequestParam(required = false) String name,
+                                                             @RequestParam(required = false) String lang,
+                                                             @RequestParam(required = false) String tags,
+                                                             @RequestParam(required = false) Integer term,
+                                                             @RequestParam(required = false) Integer week,
+                                                             @RequestParam(required = false) String difficultyLevel,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "20") int size,
+                                                             @RequestParam(defaultValue = "displayOrder") String sort,
+                                                             @RequestParam(defaultValue = "asc") String direction) {
+        ExpressionRu.Language langEnum;
+        try {
+            langEnum = validateAndParseLanguage(lang, ExpressionRu.Language.class);
+        } catch (IllegalArgumentException ex) {
+            return ApiResponse.error(400, "Invalid lang", null);
+        }
+        var resp = publicRubiService.getExpressions(name, langEnum, tags, term, week, difficultyLevel, page, size);
+        return ApiResponse.success(resp, "Expressions retrieved");
+    }
+
+    @GetMapping("/sentence-rus")
+    public ApiResponse<PaginatedResponse<PublicSentenceRuResponse>> getSentences(@RequestParam(required = false) String name,
+                                                             @RequestParam(required = false) String lang,
+                                                             @RequestParam(required = false) String tags,
+                                                             @RequestParam(required = false) Integer term,
+                                                             @RequestParam(required = false) Integer week,
+                                                             @RequestParam(required = false) String difficultyLevel,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "20") int size,
+                                                             @RequestParam(defaultValue = "displayOrder") String sort,
+                                                             @RequestParam(defaultValue = "asc") String direction) {
+        SentenceRu.Language langEnum;
+        try {
+            langEnum = validateAndParseLanguage(lang, SentenceRu.Language.class);
+        } catch (IllegalArgumentException ex) {
+            return ApiResponse.error(400, "Invalid lang", null);
+        }
+        var resp = publicRubiService.getSentences(name, langEnum, tags, term, week, difficultyLevel, page, size);
+        return ApiResponse.success(resp, "Sentences retrieved");
+    }
+
+    @GetMapping("/multiple-choice-question-rus")
+    public ApiResponse<PaginatedResponse<PublicMultipleChoiceQuestionRuResponse>> getMultipleChoiceQuestions(
+                                                             @RequestParam(required = false) String lang,
+                                                             @RequestParam(required = false) String tags,
+                                                             @RequestParam(required = false) Integer term,
+                                                             @RequestParam(required = false) Integer week,
+                                                             @RequestParam(required = false) String difficultyLevel,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "20") int size,
+                                                             @RequestParam(defaultValue = "displayOrder") String sort,
+                                                             @RequestParam(defaultValue = "asc") String direction) {
+        var resp = publicRubiService.getMultipleChoiceQuestions(lang, difficultyLevel, tags, term, week, page, size);
+        return ApiResponse.success(resp, "Multiple choice questions retrieved");
+    }
+
+    @GetMapping("/true-false-question-rus")
+    public ApiResponse<PaginatedResponse<PublicTrueFalseQuestionRuResponse>> getTrueFalseQuestions(
+                                                             @RequestParam(required = false) String lang,
+                                                             @RequestParam(required = false) String tags,
+                                                             @RequestParam(required = false) Integer term,
+                                                             @RequestParam(required = false) Integer week,
+                                                             @RequestParam(required = false) String difficultyLevel,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "20") int size,
+                                                             @RequestParam(defaultValue = "displayOrder") String sort,
+                                                             @RequestParam(defaultValue = "asc") String direction) {
+        var resp = publicRubiService.getTrueFalseQuestions(lang, difficultyLevel, tags, term, week, page, size);
+        return ApiResponse.success(resp, "True/False questions retrieved");
+    }
+
+    @GetMapping("/free-text-question-rus")
+    public ApiResponse<PaginatedResponse<PublicFreeTextQuestionRuResponse>> getFreeTextQuestions(
+                                                             @RequestParam(required = false) String lang,
+                                                             @RequestParam(required = false) String tags,
+                                                             @RequestParam(required = false) Integer term,
+                                                             @RequestParam(required = false) Integer week,
+                                                             @RequestParam(required = false) String difficultyLevel,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "20") int size,
+                                                             @RequestParam(defaultValue = "displayOrder") String sort,
+                                                             @RequestParam(defaultValue = "asc") String direction) {
+        var resp = publicRubiService.getFreeTextQuestions(lang, difficultyLevel, tags, term, week, page, size);
+        return ApiResponse.success(resp, "Free text questions retrieved");
+    }
+
+    @GetMapping("/fill-blank-question-rus")
+    public ApiResponse<PaginatedResponse<PublicFillBlankQuestionRuResponse>> getFillBlankQuestions(
+                                                             @RequestParam(required = false) String lang,
+                                                             @RequestParam(required = false) String tags,
+                                                             @RequestParam(required = false) Integer term,
+                                                             @RequestParam(required = false) Integer week,
+                                                             @RequestParam(required = false) String difficultyLevel,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "20") int size,
+                                                             @RequestParam(defaultValue = "displayOrder") String sort,
+                                                             @RequestParam(defaultValue = "asc") String direction) {
+        var resp = publicRubiService.getFillBlankQuestions(lang, difficultyLevel, tags, term, week, page, size);
+        return ApiResponse.success(resp, "Fill blank questions retrieved");
     }
 }

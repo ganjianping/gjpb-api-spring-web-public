@@ -90,12 +90,15 @@ public class VocabularyRuController {
             @RequestParam(required = false) String word,
             @RequestParam(required = false) VocabularyRu.Language lang,
             @RequestParam(required = false) String tags,
-            @RequestParam(required = false) Boolean isActive
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) Integer term,
+            @RequestParam(required = false) Integer week,
+            @RequestParam(required = false) String difficultyLevel
     ) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         
-        Page<VocabularyRuResponse> pageResult = vocabularyService.getVocabularies(word, lang, tags, isActive, pageable);
+        Page<VocabularyRuResponse> pageResult = vocabularyService.getVocabularies(word, lang, tags, isActive, term, week, difficultyLevel, pageable);
         
         PaginatedResponse<VocabularyRuResponse> response = PaginatedResponse.of(
                 pageResult.getContent(), 

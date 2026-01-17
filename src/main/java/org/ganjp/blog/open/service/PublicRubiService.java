@@ -3,10 +3,10 @@ package org.ganjp.blog.open.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.common.model.PaginatedResponse;
-import org.ganjp.blog.open.model.PublicVocabularyRuResponse;
-import org.ganjp.blog.rubi.model.dto.VocabularyRuResponse;
-import org.ganjp.blog.rubi.model.entity.VocabularyRu;
-import org.ganjp.blog.rubi.service.VocabularyRuService;
+import org.ganjp.blog.open.model.*;
+import org.ganjp.blog.rubi.model.dto.*;
+import org.ganjp.blog.rubi.model.entity.*;
+import org.ganjp.blog.rubi.service.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +21,12 @@ import java.util.List;
 @Slf4j
 public class PublicRubiService {
     private final VocabularyRuService vocabularyRuService;
+    private final ExpressionRuService expressionRuService;
+    private final SentenceRuService sentenceRuService;
+    private final MultipleChoiceQuestionRuService multipleChoiceQuestionRuService;
+    private final TrueFalseQuestionRuService trueFalseQuestionRuService;
+    private final FreeTextQuestionRuService freeTextQuestionRuService;
+    private final FillBlankQuestionRuService fillBlankQuestionRuService;
     
     @Value("${rubi.vocabulary.base-url:}")
     private String vocabularyBaseUrl;
@@ -77,6 +83,157 @@ public class PublicRubiService {
 
             return b.build();
         }).toList();
+
+        return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
+    }
+
+    public PaginatedResponse<PublicExpressionRuResponse> getExpressions(String name, ExpressionRu.Language lang, String tags, Integer term, Integer week, String difficultyLevel, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+        Page<ExpressionRuResponse> pageResult = expressionRuService.getExpressions(name, lang, tags, true, pageable);
+
+        List<PublicExpressionRuResponse> publicList = pageResult.getContent().stream().map(r ->
+            PublicExpressionRuResponse.builder()
+                .id(r.getId())
+                .name(r.getName())
+                .phonetic(r.getPhonetic())
+                .translation(r.getTranslation())
+                .explanation(r.getExplanation())
+                .example(r.getExample())
+                .term(r.getTerm())
+                .week(r.getWeek())
+                .tags(r.getTags())
+                .difficultyLevel(r.getDifficultyLevel())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
+                .build()
+        ).toList();
+
+        return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
+    }
+
+    public PaginatedResponse<PublicSentenceRuResponse> getSentences(String name, SentenceRu.Language lang, String tags, Integer term, Integer week, String difficultyLevel, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+        Page<SentenceRuResponse> pageResult = sentenceRuService.getSentences(name, lang, tags, true, pageable);
+
+        List<PublicSentenceRuResponse> publicList = pageResult.getContent().stream().map(r ->
+            PublicSentenceRuResponse.builder()
+                .id(r.getId())
+                .name(r.getName())
+                .phonetic(r.getPhonetic())
+                .translation(r.getTranslation())
+                .explanation(r.getExplanation())
+                .term(r.getTerm())
+                .week(r.getWeek())
+                .tags(r.getTags())
+                .difficultyLevel(r.getDifficultyLevel())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
+                .build()
+        ).toList();
+
+        return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
+    }
+
+    public PaginatedResponse<PublicMultipleChoiceQuestionRuResponse> getMultipleChoiceQuestions(String lang, String difficultyLevel, String tags, Integer term, Integer week, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+        Page<MultipleChoiceQuestionRuResponse> pageResult = multipleChoiceQuestionRuService.getAllMultipleChoiceQuestionRus(pageable, lang, difficultyLevel, tags, true);
+
+        List<PublicMultipleChoiceQuestionRuResponse> publicList = pageResult.getContent().stream().map(r ->
+            PublicMultipleChoiceQuestionRuResponse.builder()
+                .id(r.getId())
+                .question(r.getQuestion())
+                .optionA(r.getOptionA())
+                .optionB(r.getOptionB())
+                .optionC(r.getOptionC())
+                .optionD(r.getOptionD())
+                .answer(r.getAnswer())
+                .explanation(r.getExplanation())
+                .difficultyLevel(r.getDifficultyLevel())
+                .failCount(r.getFailCount())
+                .successCount(r.getSuccessCount())
+                .term(r.getTerm())
+                .week(r.getWeek())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
+                .build()
+        ).toList();
+
+        return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
+    }
+
+    public PaginatedResponse<PublicTrueFalseQuestionRuResponse> getTrueFalseQuestions(String lang, String difficultyLevel, String tags, Integer term, Integer week, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+        Page<TrueFalseQuestionRuResponse> pageResult = trueFalseQuestionRuService.getAllTrueFalseQuestionRus(pageable, lang, difficultyLevel, tags, true);
+
+        List<PublicTrueFalseQuestionRuResponse> publicList = pageResult.getContent().stream().map(r ->
+            PublicTrueFalseQuestionRuResponse.builder()
+                .id(r.getId())
+                .question(r.getQuestion())
+                .answer(r.getAnswer())
+                .explanation(r.getExplanation())
+                .difficultyLevel(r.getDifficultyLevel())
+                .failCount(r.getFailCount())
+                .successCount(r.getSuccessCount())
+                .term(r.getTerm())
+                .week(r.getWeek())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
+                .build()
+        ).toList();
+
+        return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
+    }
+
+    public PaginatedResponse<PublicFreeTextQuestionRuResponse> getFreeTextQuestions(String lang, String difficultyLevel, String tags, Integer term, Integer week, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+        Page<FreeTextQuestionRuResponse> pageResult = freeTextQuestionRuService.getAllFreeTextQuestionRus(pageable, lang, difficultyLevel, tags, true);
+
+        List<PublicFreeTextQuestionRuResponse> publicList = pageResult.getContent().stream().map(r ->
+            PublicFreeTextQuestionRuResponse.builder()
+                .id(r.getId())
+                .question(r.getQuestion())
+                .answer(r.getAnswer())
+                .explanation(r.getExplanation())
+                .difficultyLevel(r.getDifficultyLevel())
+                .term(r.getTerm())
+                .week(r.getWeek())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
+                .build()
+        ).toList();
+
+        return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
+    }
+
+    public PaginatedResponse<PublicFillBlankQuestionRuResponse> getFillBlankQuestions(String lang, String difficultyLevel, String tags, Integer term, Integer week, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+        Page<FillBlankQuestionRuResponse> pageResult = fillBlankQuestionRuService.getAllFillBlankQuestionRus(pageable, lang, difficultyLevel, tags, true);
+
+        List<PublicFillBlankQuestionRuResponse> publicList = pageResult.getContent().stream().map(r ->
+            PublicFillBlankQuestionRuResponse.builder()
+                .id(r.getId())
+                .question(r.getQuestion())
+                .answer(r.getAnswer())
+                .explanation(r.getExplanation())
+                .difficultyLevel(r.getDifficultyLevel())
+                .failCount(r.getFailCount())
+                .successCount(r.getSuccessCount())
+                .term(r.getTerm())
+                .week(r.getWeek())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
+                .build()
+        ).toList();
 
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
