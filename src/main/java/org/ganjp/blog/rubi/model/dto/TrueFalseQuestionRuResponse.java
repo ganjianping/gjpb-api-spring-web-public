@@ -21,6 +21,8 @@ public class TrueFalseQuestionRuResponse {
     private String difficultyLevel;
     private Integer failCount;
     private Integer successCount;
+    private Integer term;
+    private Integer week;
     private String tags;
     private TrueFalseQuestionRu.Language lang;
     private Integer displayOrder;

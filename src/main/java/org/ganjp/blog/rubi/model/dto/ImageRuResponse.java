@@ -25,6 +25,8 @@ public class ImageRuResponse {
     private Integer width;
     private Integer height;
     private String altText;
+    private Integer term;
+    private Integer week;
     private String tags;
     private Language lang;
     private Integer displayOrder;

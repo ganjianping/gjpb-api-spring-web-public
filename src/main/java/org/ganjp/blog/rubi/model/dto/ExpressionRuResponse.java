@@ -20,6 +20,8 @@ public class ExpressionRuResponse {
     private String translation;
     private String explanation;
     private String example;
+    private Integer term;
+    private Integer week;
     private String tags;
     private String difficultyLevel;
     private ExpressionRu.Language lang;
@@ -41,6 +43,8 @@ public class ExpressionRuResponse {
                 .translation(expression.getTranslation())
                 .explanation(expression.getExplanation())
                 .example(expression.getExample())
+                .term(expression.getTerm())
+                .week(expression.getWeek())
                 .tags(expression.getTags())
                 .difficultyLevel(expression.getDifficultyLevel())
                 .lang(expression.getLang())

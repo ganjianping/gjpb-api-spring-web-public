@@ -16,6 +16,8 @@ public class UpdateTrueFalseQuestionRuRequest {
     private TrueFalseQuestionRu.Answer answer;
     private String explanation;
     private String difficultyLevel;
+    private Integer term;
+    private Integer week;
     private String tags;
     private TrueFalseQuestionRu.Language lang;
     private Integer displayOrder;

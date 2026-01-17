@@ -16,6 +16,8 @@ public class UpdateFillBlankQuestionRuRequest {
     private String answer;
     private String explanation;
     private String difficultyLevel;
+    private Integer term;
+    private Integer week;
     private String tags;
     private FillBlankQuestionRu.Language lang;
     private Integer displayOrder;

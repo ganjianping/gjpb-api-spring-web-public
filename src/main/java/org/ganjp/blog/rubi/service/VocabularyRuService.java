@@ -76,6 +76,8 @@ public class VocabularyRuService {
                 .definition(request.getDefinition())
                 .example(request.getExample())
                 .dictionaryUrl(request.getDictionaryUrl())
+                .term(request.getTerm())
+                .week(request.getWeek())
                 .tags(request.getTags())
                 .difficultyLevel(request.getDifficultyLevel())
                 .lang(request.getLang())
@@ -151,6 +153,8 @@ public class VocabularyRuService {
         if (request.getDefinition() != null) dbVocabulary.setDefinition(request.getDefinition());
         if (request.getExample() != null) dbVocabulary.setExample(request.getExample());
         if (request.getDictionaryUrl() != null) dbVocabulary.setDictionaryUrl(request.getDictionaryUrl());
+        if (request.getTerm() != null) dbVocabulary.setTerm(request.getTerm());
+        if (request.getWeek() != null) dbVocabulary.setWeek(request.getWeek());
         if (request.getTags() != null) dbVocabulary.setTags(request.getTags());
         if (request.getDifficultyLevel() != null) dbVocabulary.setDifficultyLevel(request.getDifficultyLevel());
         if (request.getLang() != null) dbVocabulary.setLang(request.getLang());

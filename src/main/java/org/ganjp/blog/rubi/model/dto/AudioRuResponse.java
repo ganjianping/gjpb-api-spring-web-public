@@ -23,6 +23,8 @@ public class AudioRuResponse {
     private String subtitle;
     private String description;
     private String artist;
+    private Integer term;
+    private Integer week;
     private String tags;
     private AudioRu.Language lang;
     private Integer displayOrder;

@@ -21,6 +21,8 @@ public class AudioRuCreateRequest {
     private String description;
     private String subtitle;
     private String artist;
+    private Integer term;
+    private Integer week;
     private String tags;
     private org.ganjp.blog.rubi.model.entity.AudioRu.Language lang;
     private Integer displayOrder;

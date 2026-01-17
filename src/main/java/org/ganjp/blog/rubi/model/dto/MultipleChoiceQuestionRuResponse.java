@@ -25,6 +25,8 @@ public class MultipleChoiceQuestionRuResponse {
     private String difficultyLevel;
     private Integer failCount;
     private Integer successCount;
+    private Integer term;
+    private Integer week;
     private String tags;
     private MultipleChoiceQuestionRu.Language lang;
     private Integer displayOrder;

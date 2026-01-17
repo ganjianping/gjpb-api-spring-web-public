@@ -141,6 +141,8 @@ public class ImageRuService {
         }
         if (request.getMimeType() != null) image.setMimeType(request.getMimeType());
         if (request.getAltText() != null) image.setAltText(request.getAltText());
+        if (request.getTerm() != null) image.setTerm(request.getTerm());
+        if (request.getWeek() != null) image.setWeek(request.getWeek());
         if (request.getTags() != null) image.setTags(request.getTags());
         if (request.getLang() != null) image.setLang(request.getLang());
         if (request.getDisplayOrder() != null) image.setDisplayOrder(request.getDisplayOrder());
@@ -244,6 +246,8 @@ public class ImageRuService {
         image.setWidth(resizedImage.getWidth());
         image.setHeight(resizedImage.getHeight());
         image.setAltText(request.getAltText());
+        image.setTerm(request.getTerm());
+        image.setWeek(request.getWeek());
         image.setTags(request.getTags());
         image.setLang(request.getLang());
         image.setDisplayOrder(request.getDisplayOrder());
@@ -372,6 +376,8 @@ public class ImageRuService {
         resp.setWidth(image.getWidth());
         resp.setHeight(image.getHeight());
         resp.setAltText(image.getAltText());
+        resp.setTerm(image.getTerm());
+        resp.setWeek(image.getWeek());
         resp.setTags(image.getTags());
         resp.setLang(image.getLang());
         resp.setDisplayOrder(image.getDisplayOrder());

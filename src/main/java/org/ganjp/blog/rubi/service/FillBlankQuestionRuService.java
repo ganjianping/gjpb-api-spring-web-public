@@ -39,6 +39,8 @@ public class FillBlankQuestionRuService {
                 .answer(request.getAnswer())
                 .explanation(request.getExplanation())
                 .difficultyLevel(request.getDifficultyLevel())
+                .term(request.getTerm())
+                .week(request.getWeek())
                 .tags(request.getTags())
                 .lang(request.getLang())
                 .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
@@ -90,6 +92,12 @@ public class FillBlankQuestionRuService {
         }
         if (request.getDifficultyLevel() != null) {
             fillBlankQuestionRu.setDifficultyLevel(request.getDifficultyLevel());
+        }
+        if (request.getTerm() != null) {
+            fillBlankQuestionRu.setTerm(request.getTerm());
+        }
+        if (request.getWeek() != null) {
+            fillBlankQuestionRu.setWeek(request.getWeek());
         }
         if (request.getTags() != null) {
             fillBlankQuestionRu.setTags(request.getTags());

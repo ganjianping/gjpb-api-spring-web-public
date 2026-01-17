@@ -40,6 +40,8 @@ public class AudioRuService {
         audio.setDescription(request.getDescription());
         if (request.getSubtitle() != null) audio.setSubtitle(request.getSubtitle());
         if (request.getArtist() != null) audio.setArtist(request.getArtist());
+        audio.setTerm(request.getTerm());
+        audio.setWeek(request.getWeek());
         audio.setTags(request.getTags());
         if (request.getLang() != null) audio.setLang(request.getLang());
         if (request.getDisplayOrder() != null) audio.setDisplayOrder(request.getDisplayOrder());
@@ -219,6 +221,8 @@ public class AudioRuService {
         if (request.getDescription() != null) audio.setDescription(request.getDescription());
         if (request.getSubtitle() != null) audio.setSubtitle(request.getSubtitle());
         if (request.getArtist() != null) audio.setArtist(request.getArtist());
+        if (request.getTerm() != null) audio.setTerm(request.getTerm());
+        if (request.getWeek() != null) audio.setWeek(request.getWeek());
         if (request.getTags() != null) audio.setTags(request.getTags());
         if (request.getLang() != null) audio.setLang(request.getLang());
         if (request.getDisplayOrder() != null) audio.setDisplayOrder(request.getDisplayOrder());
@@ -297,6 +301,8 @@ public class AudioRuService {
         r.setSubtitle(a.getSubtitle());
         r.setDescription(a.getDescription());
         r.setArtist(a.getArtist());
+        r.setTerm(a.getTerm());
+        r.setWeek(a.getWeek());
         r.setTags(a.getTags());
         r.setLang(a.getLang());
         r.setDisplayOrder(a.getDisplayOrder());

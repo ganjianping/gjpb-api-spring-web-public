@@ -19,6 +19,8 @@ public class FreeTextQuestionRuResponse {
     private String answer;
     private String explanation;
     private String difficultyLevel;
+    private Integer term;
+    private Integer week;
     private String tags;
     private FreeTextQuestionRu.Language lang;
     private Integer displayOrder;

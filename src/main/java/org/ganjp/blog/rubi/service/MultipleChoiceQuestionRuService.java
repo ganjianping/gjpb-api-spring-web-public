@@ -43,6 +43,8 @@ public class MultipleChoiceQuestionRuService {
                 .answer(request.getAnswer())
                 .explanation(request.getExplanation())
                 .difficultyLevel(request.getDifficultyLevel())
+                .term(request.getTerm())
+                .week(request.getWeek())
                 .tags(request.getTags())
                 .lang(request.getLang())
                 .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
@@ -104,6 +106,12 @@ public class MultipleChoiceQuestionRuService {
         }
         if (request.getDifficultyLevel() != null) {
             multipleChoiceQuestionRu.setDifficultyLevel(request.getDifficultyLevel());
+        }
+        if (request.getTerm() != null) {
+            multipleChoiceQuestionRu.setTerm(request.getTerm());
+        }
+        if (request.getWeek() != null) {
+            multipleChoiceQuestionRu.setWeek(request.getWeek());
         }
         if (request.getTags() != null) {
             multipleChoiceQuestionRu.setTags(request.getTags());

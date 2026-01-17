@@ -39,6 +39,8 @@ public class FreeTextQuestionRuService {
                 .answer(request.getAnswer())
                 .explanation(request.getExplanation())
                 .difficultyLevel(request.getDifficultyLevel())
+                .term(request.getTerm())
+                .week(request.getWeek())
                 .tags(request.getTags())
                 .lang(request.getLang())
                 .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
@@ -88,6 +90,12 @@ public class FreeTextQuestionRuService {
         }
         if (request.getDifficultyLevel() != null) {
             freeTextQuestionRu.setDifficultyLevel(request.getDifficultyLevel());
+        }
+        if (request.getTerm() != null) {
+            freeTextQuestionRu.setTerm(request.getTerm());
+        }
+        if (request.getWeek() != null) {
+            freeTextQuestionRu.setWeek(request.getWeek());
         }
         if (request.getTags() != null) {
             freeTextQuestionRu.setTags(request.getTags());

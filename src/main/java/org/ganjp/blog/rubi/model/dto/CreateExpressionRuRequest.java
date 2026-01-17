@@ -21,6 +21,8 @@ public class CreateExpressionRuRequest {
     private String translation;
     private String explanation;
     private String example;
+    private Integer term;
+    private Integer week;
     private String tags;
     private String difficultyLevel;
 

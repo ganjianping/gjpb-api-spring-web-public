@@ -21,6 +21,8 @@ public class FillBlankQuestionRuResponse {
     private String difficultyLevel;
     private Integer failCount;
     private Integer successCount;
+    private Integer term;
+    private Integer week;
     private String tags;
     private FillBlankQuestionRu.Language lang;
     private Integer displayOrder;

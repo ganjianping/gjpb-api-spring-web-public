@@ -20,6 +20,8 @@ public class ArticleRuUpdateRequest {
     private String coverImageFilename;
     private String coverImageOriginalUrl;
     private MultipartFile coverImageFile;
+    private Integer term;
+    private Integer week;
     private String tags;
     private ArticleRu.Language lang;
     private Integer displayOrder;

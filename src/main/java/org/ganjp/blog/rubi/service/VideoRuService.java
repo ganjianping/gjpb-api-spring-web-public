@@ -41,6 +41,8 @@ public class VideoRuService {
         if (request.getOriginalUrl() != null) video.setOriginalUrl(request.getOriginalUrl());
         if (request.getSourceName() != null) video.setSourceName(request.getSourceName());
         video.setDescription(request.getDescription());
+        video.setTerm(request.getTerm());
+        video.setWeek(request.getWeek());
         video.setTags(request.getTags());
         if (request.getLang() != null) video.setLang(request.getLang());
         if (request.getDisplayOrder() != null) video.setDisplayOrder(request.getDisplayOrder());
@@ -233,6 +235,8 @@ public class VideoRuService {
         }
     // width/height/duration fields removed
         if (request.getDescription() != null) video.setDescription(request.getDescription());
+        if (request.getTerm() != null) video.setTerm(request.getTerm());
+        if (request.getWeek() != null) video.setWeek(request.getWeek());
         if (request.getTags() != null) video.setTags(request.getTags());
         if (request.getLang() != null) video.setLang(request.getLang());
         if (request.getDisplayOrder() != null) video.setDisplayOrder(request.getDisplayOrder());
@@ -323,6 +327,8 @@ public class VideoRuService {
     r.setOriginalUrl(v.getOriginalUrl());
     r.setSourceName(v.getSourceName());
         r.setDescription(v.getDescription());
+        r.setTerm(v.getTerm());
+        r.setWeek(v.getWeek());
         r.setTags(v.getTags());
         r.setLang(v.getLang());
         r.setDisplayOrder(v.getDisplayOrder());

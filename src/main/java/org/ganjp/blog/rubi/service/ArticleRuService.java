@@ -38,6 +38,8 @@ public class ArticleRuService {
         a.setContent(request.getContent());
         a.setOriginalUrl(request.getOriginalUrl());
         a.setSourceName(request.getSourceName());
+        a.setTerm(request.getTerm());
+        a.setWeek(request.getWeek());
         a.setTags(request.getTags());
         if (request.getLang() != null) a.setLang(request.getLang());
         if (request.getDisplayOrder() != null) a.setDisplayOrder(request.getDisplayOrder());
@@ -329,6 +331,8 @@ public class ArticleRuService {
             throw new IllegalArgumentException("Failed to save cover image: " + e.getMessage());
         }
 
+        if (request.getTerm() != null) a.setTerm(request.getTerm());
+        if (request.getWeek() != null) a.setWeek(request.getWeek());
         if (request.getTags() != null) a.setTags(request.getTags());
         if (request.getLang() != null) a.setLang(request.getLang());
         if (request.getDisplayOrder() != null) a.setDisplayOrder(request.getDisplayOrder());
@@ -388,6 +392,8 @@ public class ArticleRuService {
             r.setCoverImageFileUrl(articleProperties.getCoverImage().getBaseUrl() + "/" + a.getCoverImageFilename());
         }
     r.setCoverImageOriginalUrl(a.getCoverImageOriginalUrl());
+        r.setTerm(a.getTerm());
+        r.setWeek(a.getWeek());
         r.setTags(a.getTags());
         r.setLang(a.getLang());
         r.setDisplayOrder(a.getDisplayOrder());

@@ -34,6 +34,8 @@ public class CreateMultipleChoiceQuestionRuRequest {
 
     private String explanation;
     private String difficultyLevel;
+    private Integer term;
+    private Integer week;
     private String tags;
 
     @NotNull(message = "Language is required")

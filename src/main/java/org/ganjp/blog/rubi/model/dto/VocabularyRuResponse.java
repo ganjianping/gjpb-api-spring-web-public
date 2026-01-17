@@ -53,6 +53,8 @@ public class VocabularyRuResponse {
     private String phoneticAudioUrl;
     private String phoneticAudioOriginalUrl;
 
+    private Integer term;
+    private Integer week;
     private String tags;
     private String difficultyLevel;
     private VocabularyRu.Language lang;
@@ -99,6 +101,8 @@ public class VocabularyRuResponse {
                 .imageOriginalUrl(vocabulary.getImageOriginalUrl())
                 .phoneticAudioFilename(vocabulary.getPhoneticAudioFilename())
                 .phoneticAudioOriginalUrl(vocabulary.getPhoneticAudioOriginalUrl())
+                .term(vocabulary.getTerm())
+                .week(vocabulary.getWeek())
                 .tags(vocabulary.getTags())
                 .difficultyLevel(vocabulary.getDifficultyLevel())
                 .lang(vocabulary.getLang())
@@ -151,6 +155,8 @@ public class VocabularyRuResponse {
                 .phoneticAudioUrl(vocabulary.getPhoneticAudioFilename() != null && vocabularyBaseUrl != null ?
                     vocabularyBaseUrl + "/audios/" + vocabulary.getPhoneticAudioFilename() : null)
                 .phoneticAudioOriginalUrl(vocabulary.getPhoneticAudioOriginalUrl())
+                .term(vocabulary.getTerm())
+                .week(vocabulary.getWeek())
                 .tags(vocabulary.getTags())
                 .difficultyLevel(vocabulary.getDifficultyLevel())
                 .lang(vocabulary.getLang())

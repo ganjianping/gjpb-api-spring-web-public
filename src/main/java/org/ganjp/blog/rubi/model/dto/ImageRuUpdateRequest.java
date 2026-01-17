@@ -36,6 +36,9 @@ public class ImageRuUpdateRequest {
     @Size(max = 500)
     private String altText;
 
+    private Integer term;
+    private Integer week;
+
     @Size(max = 500)
     private String tags;
 

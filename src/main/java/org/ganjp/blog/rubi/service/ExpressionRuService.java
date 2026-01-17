@@ -45,6 +45,8 @@ public class ExpressionRuService {
                 .translation(request.getTranslation())
                 .explanation(request.getExplanation())
                 .example(request.getExample())
+                .term(request.getTerm())
+                .week(request.getWeek())
                 .tags(request.getTags())
                 .difficultyLevel(request.getDifficultyLevel())
                 .lang(request.getLang())
@@ -79,6 +81,8 @@ public class ExpressionRuService {
         if (request.getTranslation() != null) dbExpression.setTranslation(request.getTranslation());
         if (request.getExplanation() != null) dbExpression.setExplanation(request.getExplanation());
         if (request.getExample() != null) dbExpression.setExample(request.getExample());
+        if (request.getTerm() != null) dbExpression.setTerm(request.getTerm());
+        if (request.getWeek() != null) dbExpression.setWeek(request.getWeek());
         if (request.getTags() != null) dbExpression.setTags(request.getTags());
         if (request.getDifficultyLevel() != null) dbExpression.setDifficultyLevel(request.getDifficultyLevel());
         if (request.getLang() != null) dbExpression.setLang(request.getLang());

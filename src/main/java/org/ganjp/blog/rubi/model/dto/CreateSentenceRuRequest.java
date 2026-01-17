@@ -20,6 +20,8 @@ public class CreateSentenceRuRequest {
     private String phonetic;
     private String translation;
     private String explanation;
+    private Integer term;
+    private Integer week;
     private String tags;
     private String difficultyLevel;
 

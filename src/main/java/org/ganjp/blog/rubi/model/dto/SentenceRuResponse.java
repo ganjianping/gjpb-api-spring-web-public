@@ -19,6 +19,8 @@ public class SentenceRuResponse {
     private String phonetic;
     private String translation;
     private String explanation;
+    private Integer term;
+    private Integer week;
     private String tags;
     private String difficultyLevel;
     private SentenceRu.Language lang;
@@ -39,6 +41,8 @@ public class SentenceRuResponse {
                 .phonetic(sentence.getPhonetic())
                 .translation(sentence.getTranslation())
                 .explanation(sentence.getExplanation())
+                .term(sentence.getTerm())
+                .week(sentence.getWeek())
                 .tags(sentence.getTags())
                 .difficultyLevel(sentence.getDifficultyLevel())
                 .lang(sentence.getLang())

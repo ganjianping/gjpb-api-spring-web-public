@@ -44,6 +44,8 @@ public class SentenceRuService {
                 .phonetic(request.getPhonetic())
                 .translation(request.getTranslation())
                 .explanation(request.getExplanation())
+                .term(request.getTerm())
+                .week(request.getWeek())
                 .tags(request.getTags())
                 .difficultyLevel(request.getDifficultyLevel())
                 .lang(request.getLang())
@@ -77,6 +79,8 @@ public class SentenceRuService {
         if (request.getPhonetic() != null) dbSentence.setPhonetic(request.getPhonetic());
         if (request.getTranslation() != null) dbSentence.setTranslation(request.getTranslation());
         if (request.getExplanation() != null) dbSentence.setExplanation(request.getExplanation());
+        if (request.getTerm() != null) dbSentence.setTerm(request.getTerm());
+        if (request.getWeek() != null) dbSentence.setWeek(request.getWeek());
         if (request.getTags() != null) dbSentence.setTags(request.getTags());
         if (request.getDifficultyLevel() != null) dbSentence.setDifficultyLevel(request.getDifficultyLevel());
         if (request.getLang() != null) dbSentence.setLang(request.getLang());

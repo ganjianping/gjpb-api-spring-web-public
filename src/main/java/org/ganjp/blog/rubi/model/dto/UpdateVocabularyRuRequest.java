@@ -51,6 +51,9 @@ public class UpdateVocabularyRuRequest {
     private String phoneticAudioOriginalUrl;
     private MultipartFile phoneticAudioFile;
 
+    private Integer term;
+    private Integer week;
+
     private String tags;
     private String difficultyLevel;
     private VocabularyRu.Language lang;

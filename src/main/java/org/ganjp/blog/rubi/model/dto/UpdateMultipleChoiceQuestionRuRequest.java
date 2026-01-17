@@ -20,6 +20,8 @@ public class UpdateMultipleChoiceQuestionRuRequest {
     private String answer;
     private String explanation;
     private String difficultyLevel;
+    private Integer term;
+    private Integer week;
     private String tags;
     private MultipleChoiceQuestionRu.Language lang;
     private Integer displayOrder;

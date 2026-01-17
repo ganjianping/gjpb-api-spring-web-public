@@ -19,6 +19,8 @@ public class VideoRuUpdateRequest {
     // allow uploading a new cover image when updating
     private MultipartFile coverImageFile;
     private String description;
+    private Integer term;
+    private Integer week;
     private String tags;
 
     private org.ganjp.blog.rubi.model.entity.VideoRu.Language lang;

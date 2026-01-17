@@ -20,6 +20,8 @@ public class VideoRuCreateRequest {
     private String coverImageFilename;
     private MultipartFile coverImageFile;
     private String description;
+    private Integer term;
+    private Integer week;
     private String tags;
     private org.ganjp.blog.rubi.model.entity.VideoRu.Language lang;
     private Integer displayOrder;
