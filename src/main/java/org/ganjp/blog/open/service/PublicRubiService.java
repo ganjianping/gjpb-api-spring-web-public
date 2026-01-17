@@ -27,9 +27,25 @@ public class PublicRubiService {
     private final TrueFalseQuestionRuService trueFalseQuestionRuService;
     private final FreeTextQuestionRuService freeTextQuestionRuService;
     private final FillBlankQuestionRuService fillBlankQuestionRuService;
+    private final ArticleRuService articleRuService;
+    private final AudioRuService audioRuService;
+    private final ImageRuService imageRuService;
+    private final VideoRuService videoRuService;
     
     @Value("${rubi.vocabulary.base-url:}")
     private String vocabularyBaseUrl;
+    
+    @Value("${rubi.article.cover-image.base-url:}")
+    private String articleCoverImageBaseUrl;
+    
+    @Value("${rubi.audio.base-url:}")
+    private String audioBaseUrl;
+    
+    @Value("${rubi.image.base-url:}")
+    private String imageBaseUrl;
+    
+    @Value("${rubi.video.base-url:}")
+    private String videoBaseUrl;
 
     public PaginatedResponse<PublicVocabularyRuResponse> getVocabularies(String word, VocabularyRu.Language lang, String tags, Integer term, Integer week, String difficultyLevel, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
@@ -226,6 +242,127 @@ public class PublicRubiService {
                 .difficultyLevel(r.getDifficultyLevel())
                 .failCount(r.getFailCount())
                 .successCount(r.getSuccessCount())
+                .term(r.getTerm())
+                .week(r.getWeek())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
+                .build()
+        ).toList();
+
+        return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
+    }
+
+    public PaginatedResponse<PublicArticleRuResponse> getArticles(String title, String lang, String tags, Integer term, Integer week, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+        ArticleRu.Language language = lang != null ? ArticleRu.Language.valueOf(lang.toUpperCase()) : null;
+        Page<ArticleRuResponse> pageResult = articleRuService.searchArticles(title, language, tags, true, pageable);
+
+        List<PublicArticleRuResponse> publicList = pageResult.getContent().stream().map(r ->
+            PublicArticleRuResponse.builder()
+                .id(r.getId())
+                .title(r.getTitle())
+                .summary(r.getSummary())
+                .content(r.getContent())
+                .originalUrl(r.getOriginalUrl())
+                .sourceName(r.getSourceName())
+                .coverImageFilename(r.getCoverImageFilename())
+                .coverImageFileUrl(r.getCoverImageFileUrl())
+                .coverImageOriginalUrl(r.getCoverImageOriginalUrl())
+                .term(r.getTerm())
+                .week(r.getWeek())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
+                .build()
+        ).toList();
+
+        return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
+    }
+
+    public PaginatedResponse<PublicAudioRuResponse> getAudios(String name, String lang, String tags, Integer term, Integer week, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+        AudioRu.Language language = lang != null ? AudioRu.Language.valueOf(lang.toUpperCase()) : null;
+        Page<AudioRuResponse> pageResult = audioRuService.searchAudios(name, language, tags, true, pageable);
+
+        List<PublicAudioRuResponse> publicList = pageResult.getContent().stream().map(r ->
+            PublicAudioRuResponse.builder()
+                .id(r.getId())
+                .name(r.getName())
+                .filename(r.getFilename())
+                .fileUrl(r.getFileUrl())
+                .sizeBytes(r.getSizeBytes())
+                .coverImageFilename(r.getCoverImageFilename())
+                .coverImageFileUrl(r.getCoverImageFileUrl())
+                .originalUrl(r.getOriginalUrl())
+                .sourceName(r.getSourceName())
+                .description(r.getDescription())
+                .subtitle(r.getSubtitle())
+                .artist(r.getArtist())
+                .term(r.getTerm())
+                .week(r.getWeek())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
+                .build()
+        ).toList();
+
+        return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
+    }
+
+    public PaginatedResponse<PublicImageRuResponse> getImages(String name, String lang, String tags, Integer term, Integer week, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+        ImageRu.Language language = lang != null ? ImageRu.Language.valueOf(lang.toUpperCase()) : null;
+        Page<ImageRuResponse> pageResult = imageRuService.searchImages(name, language, tags, true, pageable);
+
+        List<PublicImageRuResponse> publicList = pageResult.getContent().stream().map(r ->
+            PublicImageRuResponse.builder()
+                .id(r.getId())
+                .name(r.getName())
+                .originalUrl(r.getOriginalUrl())
+                .sourceName(r.getSourceName())
+                .filename(r.getFilename())
+                .fileUrl(r.getFileUrl())
+                .thumbnailFilename(r.getThumbnailFilename())
+                .thumbnailFileUrl(r.getThumbnailFileUrl())
+                .extension(r.getExtension())
+                .mimeType(r.getMimeType())
+                .sizeBytes(r.getSizeBytes())
+                .width(r.getWidth())
+                .height(r.getHeight())
+                .altText(r.getAltText())
+                .term(r.getTerm())
+                .week(r.getWeek())
+                .tags(r.getTags())
+                .lang(r.getLang())
+                .displayOrder(r.getDisplayOrder())
+                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
+                .build()
+        ).toList();
+
+        return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
+    }
+
+    public PaginatedResponse<PublicVideoRuResponse> getVideos(String name, String lang, String tags, Integer term, Integer week, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+        VideoRu.Language language = lang != null ? VideoRu.Language.valueOf(lang.toUpperCase()) : null;
+        Page<VideoRuResponse> pageResult = videoRuService.searchVideos(name, language, tags, true, pageable);
+
+        List<PublicVideoRuResponse> publicList = pageResult.getContent().stream().map(r ->
+            PublicVideoRuResponse.builder()
+                .id(r.getId())
+                .name(r.getName())
+                .filename(r.getFilename())
+                .fileUrl(r.getFileUrl())
+                .sizeBytes(r.getSizeBytes())
+                .coverImageFilename(r.getCoverImageFilename())
+                .coverImageFileUrl(r.getCoverImageFileUrl())
+                .originalUrl(r.getOriginalUrl())
+                .sourceName(r.getSourceName())
+                .description(r.getDescription())
                 .term(r.getTerm())
                 .week(r.getWeek())
                 .tags(r.getTags())

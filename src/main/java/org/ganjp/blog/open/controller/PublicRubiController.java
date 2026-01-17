@@ -155,4 +155,64 @@ public class PublicRubiController {
         var resp = publicRubiService.getFillBlankQuestions(lang, difficultyLevel, tags, term, week, page, size);
         return ApiResponse.success(resp, "Fill blank questions retrieved");
     }
+
+    @GetMapping("/article-rus")
+    public ApiResponse<PaginatedResponse<PublicArticleRuResponse>> getArticles(
+                                                             @RequestParam(required = false) String title,
+                                                             @RequestParam(required = false) String lang,
+                                                             @RequestParam(required = false) String tags,
+                                                             @RequestParam(required = false) Integer term,
+                                                             @RequestParam(required = false) Integer week,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "20") int size,
+                                                             @RequestParam(defaultValue = "displayOrder") String sort,
+                                                             @RequestParam(defaultValue = "asc") String direction) {
+        var resp = publicRubiService.getArticles(title, lang, tags, term, week, page, size);
+        return ApiResponse.success(resp, "Articles retrieved");
+    }
+
+    @GetMapping("/audio-rus")
+    public ApiResponse<PaginatedResponse<PublicAudioRuResponse>> getAudios(
+                                                             @RequestParam(required = false) String name,
+                                                             @RequestParam(required = false) String lang,
+                                                             @RequestParam(required = false) String tags,
+                                                             @RequestParam(required = false) Integer term,
+                                                             @RequestParam(required = false) Integer week,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "20") int size,
+                                                             @RequestParam(defaultValue = "displayOrder") String sort,
+                                                             @RequestParam(defaultValue = "asc") String direction) {
+        var resp = publicRubiService.getAudios(name, lang, tags, term, week, page, size);
+        return ApiResponse.success(resp, "Audios retrieved");
+    }
+
+    @GetMapping("/image-rus")
+    public ApiResponse<PaginatedResponse<PublicImageRuResponse>> getImages(
+                                                             @RequestParam(required = false) String name,
+                                                             @RequestParam(required = false) String lang,
+                                                             @RequestParam(required = false) String tags,
+                                                             @RequestParam(required = false) Integer term,
+                                                             @RequestParam(required = false) Integer week,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "20") int size,
+                                                             @RequestParam(defaultValue = "displayOrder") String sort,
+                                                             @RequestParam(defaultValue = "asc") String direction) {
+        var resp = publicRubiService.getImages(name, lang, tags, term, week, page, size);
+        return ApiResponse.success(resp, "Images retrieved");
+    }
+
+    @GetMapping("/video-rus")
+    public ApiResponse<PaginatedResponse<PublicVideoRuResponse>> getVideos(
+                                                             @RequestParam(required = false) String name,
+                                                             @RequestParam(required = false) String lang,
+                                                             @RequestParam(required = false) String tags,
+                                                             @RequestParam(required = false) Integer term,
+                                                             @RequestParam(required = false) Integer week,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "20") int size,
+                                                             @RequestParam(defaultValue = "displayOrder") String sort,
+                                                             @RequestParam(defaultValue = "asc") String direction) {
+        var resp = publicRubiService.getVideos(name, lang, tags, term, week, page, size);
+        return ApiResponse.success(resp, "Videos retrieved");
+    }
 }
