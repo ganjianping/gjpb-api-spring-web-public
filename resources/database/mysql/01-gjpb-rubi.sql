@@ -119,7 +119,7 @@ CREATE TABLE `rubi_sentence` (
   `phonetic` varchar(400) DEFAULT NULL COMMENT 'Phonetic transcription',
 
   `translation` varchar(400) DEFAULT NULL COMMENT 'Translation of the sentence',
-  `explanation` varchar(500) DEFAULT NULL COMMENT 'Explanation or context of the sentence',
+  `explanation` varchar(1000) DEFAULT NULL COMMENT 'Explanation or context of the sentence',
 
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search (e.g., Tech,Programming,Tutorial)',
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the sentence',

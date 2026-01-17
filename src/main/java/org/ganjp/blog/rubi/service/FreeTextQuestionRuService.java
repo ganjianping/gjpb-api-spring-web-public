@@ -192,6 +192,8 @@ public class FreeTextQuestionRuService {
                 .answer(freeTextQuestionRu.getAnswer())
                 .explanation(freeTextQuestionRu.getExplanation())
                 .difficultyLevel(freeTextQuestionRu.getDifficultyLevel())
+                .term(freeTextQuestionRu.getTerm())
+                .week(freeTextQuestionRu.getWeek())
                 .tags(freeTextQuestionRu.getTags())
                 .lang(freeTextQuestionRu.getLang())
                 .displayOrder(freeTextQuestionRu.getDisplayOrder())

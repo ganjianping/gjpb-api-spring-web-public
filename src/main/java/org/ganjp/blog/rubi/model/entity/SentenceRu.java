@@ -33,7 +33,7 @@ public class SentenceRu extends BaseEntity {
     @Column(name = "translation", length = 400)
     private String translation;
 
-    @Column(name = "explanation", length = 500)
+    @Column(name = "explanation", length = 1000)
     private String explanation;
 
     @Column(name = "term")

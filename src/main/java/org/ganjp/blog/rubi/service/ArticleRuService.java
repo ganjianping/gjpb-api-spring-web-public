@@ -391,7 +391,7 @@ public class ArticleRuService {
         if (a.getCoverImageFilename() != null) {
             r.setCoverImageFileUrl(articleProperties.getCoverImage().getBaseUrl() + "/" + a.getCoverImageFilename());
         }
-    r.setCoverImageOriginalUrl(a.getCoverImageOriginalUrl());
+        r.setCoverImageOriginalUrl(a.getCoverImageOriginalUrl());
         r.setTerm(a.getTerm());
         r.setWeek(a.getWeek());
         r.setTags(a.getTags());

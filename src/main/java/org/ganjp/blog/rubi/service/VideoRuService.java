@@ -322,10 +322,10 @@ public class VideoRuService {
         r.setFilename(v.getFilename());
         r.setFileUrl(fileUrl);
         r.setSizeBytes(v.getSizeBytes());
-    r.setCoverImageFilename(v.getCoverImageFilename());
-    r.setCoverImageFileUrl(coverImageFileUrl);
-    r.setOriginalUrl(v.getOriginalUrl());
-    r.setSourceName(v.getSourceName());
+        r.setCoverImageFilename(v.getCoverImageFilename());
+        r.setCoverImageFileUrl(coverImageFileUrl);
+        r.setOriginalUrl(v.getOriginalUrl());
+        r.setSourceName(v.getSourceName());
         r.setDescription(v.getDescription());
         r.setTerm(v.getTerm());
         r.setWeek(v.getWeek());

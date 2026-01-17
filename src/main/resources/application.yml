@@ -8,7 +8,7 @@ spring:
     name: GJPB
   profiles:
     active: dev
-    # active: prod
+#    active: prod
   jackson:
     serialization:
       write-dates-as-timestamps: false

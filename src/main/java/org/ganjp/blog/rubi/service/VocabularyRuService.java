@@ -386,7 +386,7 @@ public class VocabularyRuService {
     /**
      * Get vocabularies with filtering
      */
-    public Page<VocabularyRuResponse> getVocabularies(String word, VocabularyRu.Language lang, String tags, Boolean isActive, Pageable pageable) {
+    public Page<VocabularyRuResponse> getVocabularies(String word, VocabularyRu.Language lang, String tags, Boolean isActive, Integer term, Integer week, String difficultyLevel, Pageable pageable) {
         Specification<VocabularyRu> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -399,11 +399,34 @@ public class VocabularyRuService {
             }
 
             if (StringUtils.hasText(tags)) {
-                predicates.add(cb.like(root.get("tags"), "%" + tags + "%"));
+                // Split tags by comma and create AND conditions for each tag
+                String[] tagArray = tags.split(",");
+                List<Predicate> tagPredicates = new ArrayList<>();
+                for (String tag : tagArray) {
+                    String trimmedTag = tag.trim();
+                    if (StringUtils.hasText(trimmedTag)) {
+                        tagPredicates.add(cb.like(root.get("tags"), "%" + trimmedTag + "%"));
+                    }
+                }
+                if (!tagPredicates.isEmpty()) {
+                    predicates.add(cb.and(tagPredicates.toArray(new Predicate[0])));
+                }
             }
 
             if (isActive != null) {
                 predicates.add(cb.equal(root.get("isActive"), isActive));
+            }
+
+            if (term != null) {
+                predicates.add(cb.equal(root.get("term"), term));
+            }
+
+            if (week != null) {
+                predicates.add(cb.equal(root.get("week"), week));
+            }
+
+            if (StringUtils.hasText(difficultyLevel)) {
+                predicates.add(cb.equal(root.get("difficultyLevel"), difficultyLevel));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

@@ -214,6 +214,8 @@ public class MultipleChoiceQuestionRuService {
                 .difficultyLevel(multipleChoiceQuestionRu.getDifficultyLevel())
                 .failCount(multipleChoiceQuestionRu.getFailCount())
                 .successCount(multipleChoiceQuestionRu.getSuccessCount())
+                .term(multipleChoiceQuestionRu.getTerm())
+                .week(multipleChoiceQuestionRu.getWeek())
                 .tags(multipleChoiceQuestionRu.getTags())
                 .lang(multipleChoiceQuestionRu.getLang())
                 .displayOrder(multipleChoiceQuestionRu.getDisplayOrder())

@@ -196,6 +196,8 @@ public class TrueFalseQuestionRuService {
                 .difficultyLevel(trueFalseQuestionRu.getDifficultyLevel())
                 .failCount(trueFalseQuestionRu.getFailCount())
                 .successCount(trueFalseQuestionRu.getSuccessCount())
+                .term(trueFalseQuestionRu.getTerm())
+                .week(trueFalseQuestionRu.getWeek())
                 .tags(trueFalseQuestionRu.getTags())
                 .lang(trueFalseQuestionRu.getLang())
                 .displayOrder(trueFalseQuestionRu.getDisplayOrder())

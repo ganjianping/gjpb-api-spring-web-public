@@ -196,6 +196,8 @@ public class FillBlankQuestionRuService {
                 .difficultyLevel(fillBlankQuestionRu.getDifficultyLevel())
                 .failCount(fillBlankQuestionRu.getFailCount())
                 .successCount(fillBlankQuestionRu.getSuccessCount())
+                .term(fillBlankQuestionRu.getTerm())
+                .week(fillBlankQuestionRu.getWeek())
                 .tags(fillBlankQuestionRu.getTags())
                 .lang(fillBlankQuestionRu.getLang())
                 .displayOrder(fillBlankQuestionRu.getDisplayOrder())
