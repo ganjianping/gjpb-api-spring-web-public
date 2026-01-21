@@ -107,7 +107,7 @@ public class PublicRubiService {
     public PaginatedResponse<PublicExpressionRuResponse> getExpressions(String name, ExpressionRu.Language lang, String tags, Integer term, Integer week, String difficultyLevel, int page, int size, String sort, String direction) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-        Page<ExpressionRuResponse> pageResult = expressionRuService.getExpressions(name, lang, tags, true, pageable);
+        Page<ExpressionRuResponse> pageResult = expressionRuService.getExpressions(name, lang, tags, true, term, week, difficultyLevel, pageable);
 
         List<PublicExpressionRuResponse> publicList = pageResult.getContent().stream().map(r ->
             PublicExpressionRuResponse.builder()

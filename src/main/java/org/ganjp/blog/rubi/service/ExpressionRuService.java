@@ -120,7 +120,7 @@ public class ExpressionRuService {
     /**
      * Get expressions with filtering
      */
-    public Page<ExpressionRuResponse> getExpressions(String name, ExpressionRu.Language lang, String tags, Boolean isActive, Pageable pageable) {
+    public Page<ExpressionRuResponse> getExpressions(String name, ExpressionRu.Language lang, String tags, Boolean isActive, Integer term, Integer week, String difficultyLevel, Pageable pageable) {
         Specification<ExpressionRu> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -138,6 +138,18 @@ public class ExpressionRuService {
 
             if (isActive != null) {
                 predicates.add(cb.equal(root.get("isActive"), isActive));
+            }
+
+            if (term != null) {
+                predicates.add(cb.equal(root.get("term"), term));
+            }
+
+            if (week != null) {
+                predicates.add(cb.equal(root.get("week"), week));
+            }
+
+            if (StringUtils.hasText(difficultyLevel)) {
+                predicates.add(cb.equal(root.get("difficultyLevel"), difficultyLevel));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
