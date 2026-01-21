@@ -70,12 +70,15 @@ public class ExpressionRuController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) ExpressionRu.Language lang,
             @RequestParam(required = false) String tags,
-            @RequestParam(required = false) Boolean isActive
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) Integer term,
+            @RequestParam(required = false) Integer week,
+            @RequestParam(required = false) String difficultyLevel
     ) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         
-        Page<ExpressionRuResponse> pageResult = expressionService.getExpressions(name, lang, tags, isActive, pageable);
+        Page<ExpressionRuResponse> pageResult = expressionService.getExpressions(name, lang, tags, isActive, term, week, difficultyLevel, pageable);
         
         PaginatedResponse<ExpressionRuResponse> response = PaginatedResponse.of(
                 pageResult.getContent(), 
