@@ -70,12 +70,15 @@ public class SentenceRuController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) SentenceRu.Language lang,
             @RequestParam(required = false) String tags,
-            @RequestParam(required = false) Boolean isActive
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) Integer term,
+            @RequestParam(required = false) Integer week,
+            @RequestParam(required = false) String difficultyLevel
     ) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, sortDirection, sort);
         
-        Page<SentenceRuResponse> pageResult = sentenceService.getSentences(name, lang, tags, isActive, pageable);
+        Page<SentenceRuResponse> pageResult = sentenceService.getSentences(name, lang, tags, isActive, term, week, difficultyLevel, pageable);
         
         PaginatedResponse<SentenceRuResponse> response = PaginatedResponse.of(
                 pageResult.getContent(), 
