@@ -47,8 +47,9 @@ public class PublicRubiService {
     @Value("${rubi.video.base-url:}")
     private String videoBaseUrl;
 
-    public PaginatedResponse<PublicVocabularyRuResponse> getVocabularies(String word, VocabularyRu.Language lang, String tags, Integer term, Integer week, String difficultyLevel, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+    public PaginatedResponse<PublicVocabularyRuResponse> getVocabularies(String word, VocabularyRu.Language lang, String tags, Integer term, Integer week, String difficultyLevel, int page, int size, String sort, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         Page<VocabularyRuResponse> pageResult = vocabularyRuService.getVocabularies(word, lang, tags, true, term, week, difficultyLevel, pageable);
 
         // Map internal VocabularyRuResponse -> PublicVocabularyRuResponse and compute urls
@@ -103,8 +104,9 @@ public class PublicRubiService {
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
 
-    public PaginatedResponse<PublicExpressionRuResponse> getExpressions(String name, ExpressionRu.Language lang, String tags, Integer term, Integer week, String difficultyLevel, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+    public PaginatedResponse<PublicExpressionRuResponse> getExpressions(String name, ExpressionRu.Language lang, String tags, Integer term, Integer week, String difficultyLevel, int page, int size, String sort, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         Page<ExpressionRuResponse> pageResult = expressionRuService.getExpressions(name, lang, tags, true, pageable);
 
         List<PublicExpressionRuResponse> publicList = pageResult.getContent().stream().map(r ->
@@ -128,8 +130,9 @@ public class PublicRubiService {
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
 
-    public PaginatedResponse<PublicSentenceRuResponse> getSentences(String name, SentenceRu.Language lang, String tags, Integer term, Integer week, String difficultyLevel, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+    public PaginatedResponse<PublicSentenceRuResponse> getSentences(String name, SentenceRu.Language lang, String tags, Integer term, Integer week, String difficultyLevel, int page, int size, String sort, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         Page<SentenceRuResponse> pageResult = sentenceRuService.getSentences(name, lang, tags, true, pageable);
 
         List<PublicSentenceRuResponse> publicList = pageResult.getContent().stream().map(r ->
@@ -152,8 +155,9 @@ public class PublicRubiService {
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
 
-    public PaginatedResponse<PublicMultipleChoiceQuestionRuResponse> getMultipleChoiceQuestions(String lang, String difficultyLevel, String tags, Integer term, Integer week, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+    public PaginatedResponse<PublicMultipleChoiceQuestionRuResponse> getMultipleChoiceQuestions(String lang, String difficultyLevel, String tags, Integer term, Integer week, int page, int size, String sort, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         Page<MultipleChoiceQuestionRuResponse> pageResult = multipleChoiceQuestionRuService.getAllMultipleChoiceQuestionRus(pageable, lang, difficultyLevel, tags, true);
 
         List<PublicMultipleChoiceQuestionRuResponse> publicList = pageResult.getContent().stream().map(r ->
@@ -181,8 +185,9 @@ public class PublicRubiService {
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
 
-    public PaginatedResponse<PublicTrueFalseQuestionRuResponse> getTrueFalseQuestions(String lang, String difficultyLevel, String tags, Integer term, Integer week, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+    public PaginatedResponse<PublicTrueFalseQuestionRuResponse> getTrueFalseQuestions(String lang, String difficultyLevel, String tags, Integer term, Integer week, int page, int size, String sort, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         Page<TrueFalseQuestionRuResponse> pageResult = trueFalseQuestionRuService.getAllTrueFalseQuestionRus(pageable, lang, difficultyLevel, tags, true);
 
         List<PublicTrueFalseQuestionRuResponse> publicList = pageResult.getContent().stream().map(r ->
@@ -206,8 +211,9 @@ public class PublicRubiService {
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
 
-    public PaginatedResponse<PublicFreeTextQuestionRuResponse> getFreeTextQuestions(String lang, String difficultyLevel, String tags, Integer term, Integer week, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+    public PaginatedResponse<PublicFreeTextQuestionRuResponse> getFreeTextQuestions(String lang, String difficultyLevel, String tags, Integer term, Integer week, int page, int size, String sort, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         Page<FreeTextQuestionRuResponse> pageResult = freeTextQuestionRuService.getAllFreeTextQuestionRus(pageable, lang, difficultyLevel, tags, true);
 
         List<PublicFreeTextQuestionRuResponse> publicList = pageResult.getContent().stream().map(r ->
@@ -229,8 +235,9 @@ public class PublicRubiService {
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
 
-    public PaginatedResponse<PublicFillBlankQuestionRuResponse> getFillBlankQuestions(String lang, String difficultyLevel, String tags, Integer term, Integer week, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+    public PaginatedResponse<PublicFillBlankQuestionRuResponse> getFillBlankQuestions(String lang, String difficultyLevel, String tags, Integer term, Integer week, int page, int size, String sort, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         Page<FillBlankQuestionRuResponse> pageResult = fillBlankQuestionRuService.getAllFillBlankQuestionRus(pageable, lang, difficultyLevel, tags, true);
 
         List<PublicFillBlankQuestionRuResponse> publicList = pageResult.getContent().stream().map(r ->
@@ -254,8 +261,9 @@ public class PublicRubiService {
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
 
-    public PaginatedResponse<PublicArticleRuResponse> getArticles(String title, String lang, String tags, Integer term, Integer week, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+    public PaginatedResponse<PublicArticleRuResponse> getArticles(String title, String lang, String tags, Integer term, Integer week, int page, int size, String sort, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         ArticleRu.Language language = lang != null ? ArticleRu.Language.valueOf(lang.toUpperCase()) : null;
         Page<ArticleRuResponse> pageResult = articleRuService.searchArticles(title, language, tags, true, pageable);
 
@@ -282,8 +290,9 @@ public class PublicRubiService {
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
 
-    public PaginatedResponse<PublicAudioRuResponse> getAudios(String name, String lang, String tags, Integer term, Integer week, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+    public PaginatedResponse<PublicAudioRuResponse> getAudios(String name, String lang, String tags, Integer term, Integer week, int page, int size, String sort, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         AudioRu.Language language = lang != null ? AudioRu.Language.valueOf(lang.toUpperCase()) : null;
         Page<AudioRuResponse> pageResult = audioRuService.searchAudios(name, language, tags, true, pageable);
 
@@ -313,8 +322,9 @@ public class PublicRubiService {
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
 
-    public PaginatedResponse<PublicImageRuResponse> getImages(String name, String lang, String tags, Integer term, Integer week, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+    public PaginatedResponse<PublicImageRuResponse> getImages(String name, String lang, String tags, Integer term, Integer week, int page, int size, String sort, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         ImageRu.Language language = lang != null ? ImageRu.Language.valueOf(lang.toUpperCase()) : null;
         Page<ImageRuResponse> pageResult = imageRuService.searchImages(name, language, tags, true, pageable);
 
@@ -346,8 +356,9 @@ public class PublicRubiService {
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
 
-    public PaginatedResponse<PublicVideoRuResponse> getVideos(String name, String lang, String tags, Integer term, Integer week, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "displayOrder"));
+    public PaginatedResponse<PublicVideoRuResponse> getVideos(String name, String lang, String tags, Integer term, Integer week, int page, int size, String sort, String direction) {
+        Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         VideoRu.Language language = lang != null ? VideoRu.Language.valueOf(lang.toUpperCase()) : null;
         Page<VideoRuResponse> pageResult = videoRuService.searchVideos(name, language, tags, true, pageable);
 

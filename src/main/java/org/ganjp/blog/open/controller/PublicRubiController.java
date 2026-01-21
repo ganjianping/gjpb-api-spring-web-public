@@ -50,7 +50,7 @@ public class PublicRubiController {
         } catch (IllegalArgumentException ex) {
             return ApiResponse.error(400, "Invalid lang", null);
         }
-        var resp = publicRubiService.getVocabularies(name, langEnum, tags, term, week, difficultyLevel, page, size);
+        var resp = publicRubiService.getVocabularies(name, langEnum, tags, term, week, difficultyLevel, page, size, sort, direction);
         return ApiResponse.success(resp, "Vocabularies retrieved");
     }
 
@@ -71,7 +71,7 @@ public class PublicRubiController {
         } catch (IllegalArgumentException ex) {
             return ApiResponse.error(400, "Invalid lang", null);
         }
-        var resp = publicRubiService.getExpressions(name, langEnum, tags, term, week, difficultyLevel, page, size);
+        var resp = publicRubiService.getExpressions(name, langEnum, tags, term, week, difficultyLevel, page, size, sort, direction);
         return ApiResponse.success(resp, "Expressions retrieved");
     }
 
@@ -92,7 +92,7 @@ public class PublicRubiController {
         } catch (IllegalArgumentException ex) {
             return ApiResponse.error(400, "Invalid lang", null);
         }
-        var resp = publicRubiService.getSentences(name, langEnum, tags, term, week, difficultyLevel, page, size);
+        var resp = publicRubiService.getSentences(name, langEnum, tags, term, week, difficultyLevel, page, size, sort, direction);
         return ApiResponse.success(resp, "Sentences retrieved");
     }
 
@@ -107,7 +107,7 @@ public class PublicRubiController {
                                                              @RequestParam(defaultValue = "20") int size,
                                                              @RequestParam(defaultValue = "displayOrder") String sort,
                                                              @RequestParam(defaultValue = "asc") String direction) {
-        var resp = publicRubiService.getMultipleChoiceQuestions(lang, difficultyLevel, tags, term, week, page, size);
+        var resp = publicRubiService.getMultipleChoiceQuestions(lang, difficultyLevel, tags, term, week, page, size, sort, direction);
         return ApiResponse.success(resp, "Multiple choice questions retrieved");
     }
 
@@ -122,7 +122,7 @@ public class PublicRubiController {
                                                              @RequestParam(defaultValue = "20") int size,
                                                              @RequestParam(defaultValue = "displayOrder") String sort,
                                                              @RequestParam(defaultValue = "asc") String direction) {
-        var resp = publicRubiService.getTrueFalseQuestions(lang, difficultyLevel, tags, term, week, page, size);
+        var resp = publicRubiService.getTrueFalseQuestions(lang, difficultyLevel, tags, term, week, page, size, sort, direction);
         return ApiResponse.success(resp, "True/False questions retrieved");
     }
 
@@ -137,7 +137,7 @@ public class PublicRubiController {
                                                              @RequestParam(defaultValue = "20") int size,
                                                              @RequestParam(defaultValue = "displayOrder") String sort,
                                                              @RequestParam(defaultValue = "asc") String direction) {
-        var resp = publicRubiService.getFreeTextQuestions(lang, difficultyLevel, tags, term, week, page, size);
+        var resp = publicRubiService.getFreeTextQuestions(lang, difficultyLevel, tags, term, week, page, size, sort, direction);
         return ApiResponse.success(resp, "Free text questions retrieved");
     }
 
@@ -152,7 +152,7 @@ public class PublicRubiController {
                                                              @RequestParam(defaultValue = "20") int size,
                                                              @RequestParam(defaultValue = "displayOrder") String sort,
                                                              @RequestParam(defaultValue = "asc") String direction) {
-        var resp = publicRubiService.getFillBlankQuestions(lang, difficultyLevel, tags, term, week, page, size);
+        var resp = publicRubiService.getFillBlankQuestions(lang, difficultyLevel, tags, term, week, page, size, sort, direction);
         return ApiResponse.success(resp, "Fill blank questions retrieved");
     }
 
@@ -167,7 +167,7 @@ public class PublicRubiController {
                                                              @RequestParam(defaultValue = "20") int size,
                                                              @RequestParam(defaultValue = "displayOrder") String sort,
                                                              @RequestParam(defaultValue = "asc") String direction) {
-        var resp = publicRubiService.getArticles(title, lang, tags, term, week, page, size);
+        var resp = publicRubiService.getArticles(title, lang, tags, term, week, page, size, sort, direction);
         return ApiResponse.success(resp, "Articles retrieved");
     }
 
@@ -182,7 +182,7 @@ public class PublicRubiController {
                                                              @RequestParam(defaultValue = "20") int size,
                                                              @RequestParam(defaultValue = "displayOrder") String sort,
                                                              @RequestParam(defaultValue = "asc") String direction) {
-        var resp = publicRubiService.getAudios(name, lang, tags, term, week, page, size);
+        var resp = publicRubiService.getAudios(name, lang, tags, term, week, page, size, sort, direction);
         return ApiResponse.success(resp, "Audios retrieved");
     }
 
@@ -197,7 +197,7 @@ public class PublicRubiController {
                                                              @RequestParam(defaultValue = "20") int size,
                                                              @RequestParam(defaultValue = "displayOrder") String sort,
                                                              @RequestParam(defaultValue = "asc") String direction) {
-        var resp = publicRubiService.getImages(name, lang, tags, term, week, page, size);
+        var resp = publicRubiService.getImages(name, lang, tags, term, week, page, size, sort, direction);
         return ApiResponse.success(resp, "Images retrieved");
     }
 
@@ -212,7 +212,7 @@ public class PublicRubiController {
                                                              @RequestParam(defaultValue = "20") int size,
                                                              @RequestParam(defaultValue = "displayOrder") String sort,
                                                              @RequestParam(defaultValue = "asc") String direction) {
-        var resp = publicRubiService.getVideos(name, lang, tags, term, week, page, size);
+        var resp = publicRubiService.getVideos(name, lang, tags, term, week, page, size, sort, direction);
         return ApiResponse.success(resp, "Videos retrieved");
     }
 }
