@@ -118,7 +118,7 @@ public class SentenceRuService {
     /**
      * Get sentences with filtering
      */
-    public Page<SentenceRuResponse> getSentences(String name, SentenceRu.Language lang, String tags, Boolean isActive, Pageable pageable) {
+    public Page<SentenceRuResponse> getSentences(String name, SentenceRu.Language lang, String tags, Boolean isActive, Integer term, Integer week, String difficultyLevel, Pageable pageable) {
         Specification<SentenceRu> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -136,6 +136,18 @@ public class SentenceRuService {
 
             if (isActive != null) {
                 predicates.add(cb.equal(root.get("isActive"), isActive));
+            }
+
+            if (term != null) {
+                predicates.add(cb.equal(root.get("term"), term));
+            }
+
+            if (week != null) {
+                predicates.add(cb.equal(root.get("week"), week));
+            }
+
+            if (StringUtils.hasText(difficultyLevel)) {
+                predicates.add(cb.equal(root.get("difficultyLevel"), difficultyLevel));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
