@@ -47,10 +47,10 @@ public class PublicRubiService {
     @Value("${rubi.video.base-url:}")
     private String videoBaseUrl;
 
-    public PaginatedResponse<PublicVocabularyRuResponse> getVocabularies(String word, VocabularyRu.Language lang, String tags, Integer term, Integer week, String difficultyLevel, int page, int size, String sort, String direction) {
+    public PaginatedResponse<PublicVocabularyRuResponse> getVocabularies(String word, VocabularyRu.Language lang, String tags, Integer term, Integer week, String difficultyLevel, String partOfSpeech, int page, int size, String sort, String direction) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-        Page<VocabularyRuResponse> pageResult = vocabularyRuService.getVocabularies(word, lang, tags, true, term, week, difficultyLevel, pageable);
+        Page<VocabularyRuResponse> pageResult = vocabularyRuService.getVocabularies(word, lang, tags, true, term, week, difficultyLevel, partOfSpeech, pageable);
 
         // Map internal VocabularyRuResponse -> PublicVocabularyRuResponse and compute urls
         List<PublicVocabularyRuResponse> publicList = pageResult.getContent().stream().map(r -> {

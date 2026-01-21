@@ -386,7 +386,7 @@ public class VocabularyRuService {
     /**
      * Get vocabularies with filtering
      */
-    public Page<VocabularyRuResponse> getVocabularies(String word, VocabularyRu.Language lang, String tags, Boolean isActive, Integer term, Integer week, String difficultyLevel, Pageable pageable) {
+    public Page<VocabularyRuResponse> getVocabularies(String word, VocabularyRu.Language lang, String tags, Boolean isActive, Integer term, Integer week, String difficultyLevel, String partOfSpeech, Pageable pageable) {
         Specification<VocabularyRu> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -427,6 +427,10 @@ public class VocabularyRuService {
 
             if (StringUtils.hasText(difficultyLevel)) {
                 predicates.add(cb.equal(root.get("difficultyLevel"), difficultyLevel));
+            }
+
+            if (StringUtils.hasText(partOfSpeech)) {
+                predicates.add(cb.like(cb.lower(root.get("partOfSpeech")), "%" + partOfSpeech.toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

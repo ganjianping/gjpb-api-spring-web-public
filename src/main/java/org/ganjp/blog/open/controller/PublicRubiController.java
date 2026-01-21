@@ -40,6 +40,7 @@ public class PublicRubiController {
                                                              @RequestParam(required = false) Integer term,
                                                              @RequestParam(required = false) Integer week,
                                                              @RequestParam(required = false) String difficultyLevel,
+                                                             @RequestParam(required = false) String partOfSpeech,
                                                              @RequestParam(defaultValue = "0") int page,
                                                              @RequestParam(defaultValue = "20") int size,
                                                              @RequestParam(defaultValue = "displayOrder") String sort,
@@ -50,7 +51,7 @@ public class PublicRubiController {
         } catch (IllegalArgumentException ex) {
             return ApiResponse.error(400, "Invalid lang", null);
         }
-        var resp = publicRubiService.getVocabularies(name, langEnum, tags, term, week, difficultyLevel, page, size, sort, direction);
+        var resp = publicRubiService.getVocabularies(name, langEnum, tags, term, week, difficultyLevel, partOfSpeech, page, size, sort, direction);
         return ApiResponse.success(resp, "Vocabularies retrieved");
     }
 
