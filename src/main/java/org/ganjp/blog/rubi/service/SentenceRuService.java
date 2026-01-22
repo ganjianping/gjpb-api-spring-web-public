@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.common.exception.BusinessException;
 import org.ganjp.blog.common.exception.ResourceNotFoundException;
+import org.ganjp.blog.rubi.config.RubiProperties;
 import org.ganjp.blog.rubi.model.dto.CreateSentenceRuRequest;
 import org.ganjp.blog.rubi.model.dto.UpdateSentenceRuRequest;
 import org.ganjp.blog.rubi.model.dto.SentenceRuResponse;
@@ -16,7 +17,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +36,7 @@ import java.util.stream.Collectors;
 public class SentenceRuService {
 
     private final SentenceRuRepository sentenceRepository;
+    private final RubiProperties rubiProperties;
 
     /**
      * Create a new sentence
@@ -56,8 +65,11 @@ public class SentenceRuService {
         dbSentence.setCreatedBy(createdBy);
         dbSentence.setUpdatedBy(createdBy);
 
+        // Handle audio file upload
+        handleAudioUpload(dbSentence, request.getPhoneticAudioFile(), request.getPhoneticAudioOriginalUrl(), request.getPhoneticAudioFilename());
+
         SentenceRu savedSentence = sentenceRepository.save(dbSentence);
-        return SentenceRuResponse.fromEntity(savedSentence);
+        return SentenceRuResponse.fromEntity(savedSentence, rubiProperties.getSentence().getBaseUrl());
     }
 
     /**
@@ -87,10 +99,13 @@ public class SentenceRuService {
         if (request.getDisplayOrder() != null) dbSentence.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) dbSentence.setIsActive(request.getIsActive());
 
+        // Handle audio file upload
+        handleAudioUpload(dbSentence, request.getPhoneticAudioFile(), request.getPhoneticAudioOriginalUrl(), request.getPhoneticAudioFilename());
+
         dbSentence.setUpdatedBy(updatedBy);
 
         SentenceRu updatedSentence = sentenceRepository.save(dbSentence);
-        return SentenceRuResponse.fromEntity(updatedSentence);
+        return SentenceRuResponse.fromEntity(updatedSentence, rubiProperties.getSentence().getBaseUrl());
     }
 
     /**
@@ -99,7 +114,7 @@ public class SentenceRuService {
     public SentenceRuResponse getSentenceById(String id) {
         SentenceRu sentence = sentenceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Sentence not found with id: " + id));
-        return SentenceRuResponse.fromEntity(sentence);
+        return SentenceRuResponse.fromEntity(sentence, rubiProperties.getSentence().getBaseUrl());
     }
 
     /**
@@ -153,7 +168,7 @@ public class SentenceRuService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        return sentenceRepository.findAll(spec, pageable).map(SentenceRuResponse::fromEntity);
+        return sentenceRepository.findAll(spec, pageable).map(sentence -> SentenceRuResponse.fromEntity(sentence, rubiProperties.getSentence().getBaseUrl()));
     }
     
     /**
@@ -162,7 +177,98 @@ public class SentenceRuService {
     public List<SentenceRuResponse> getSentencesByLanguage(SentenceRu.Language lang) {
         return sentenceRepository.findByLangAndIsActiveTrueOrderByDisplayOrderAsc(lang)
                 .stream()
-                .map(SentenceRuResponse::fromEntity)
+                .map(sentence -> SentenceRuResponse.fromEntity(sentence, rubiProperties.getSentence().getBaseUrl()))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Handle audio file upload for sentence phonetic audio
+     */
+    private void handleAudioUpload(SentenceRu sentence, MultipartFile newFile, String newOriginalUrl, String newProvidedFilename) {
+        String audioDir = rubiProperties.getSentence().getAudio().getDirectory();
+
+        String baseName = StringUtils.hasText(newProvidedFilename) ? newProvidedFilename : sentence.getName();
+        baseName = baseName.trim().replaceAll("\\s+", "-").toLowerCase();
+        // Limit filename length to avoid filesystem issues
+        if (baseName.length() > 100) {
+            baseName = baseName.substring(0, 100);
+        }
+
+        if (newFile != null && !newFile.isEmpty()) {
+            String ext = getFileExtension(newFile.getOriginalFilename());
+            if (!StringUtils.hasText(ext)) ext = "mp3";
+            String filename = baseName.endsWith("." + ext) ? baseName : baseName + "." + ext;
+
+            Path targetPath = Path.of(audioDir).resolve(filename);
+            try {
+                Files.createDirectories(targetPath.getParent());
+                Files.copy(newFile.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+                sentence.setPhoneticAudioFilename(filename);
+            } catch (IOException e) {
+                throw new BusinessException("Failed to save audio file: " + e.getMessage());
+            }
+        } else if (StringUtils.hasText(newOriginalUrl)) {
+            boolean isUrlChanged = !newOriginalUrl.equals(sentence.getPhoneticAudioOriginalUrl());
+            sentence.setPhoneticAudioOriginalUrl(newOriginalUrl);
+
+            if (isUrlChanged && newOriginalUrl.toLowerCase().startsWith("http")) {
+                try {
+                    java.net.URL url = new java.net.URL(newOriginalUrl);
+                    String ext = getFileExtension(url.getPath());
+                    if (!StringUtils.hasText(ext)) ext = "mp3";
+                    String filename = baseName.endsWith("." + ext) ? baseName : baseName + "." + ext;
+                    Path targetPath = Path.of(audioDir).resolve(filename);
+                    Files.createDirectories(targetPath.getParent());
+
+                    try (InputStream in = url.openStream()) {
+                        Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                        sentence.setPhoneticAudioFilename(filename);
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to download audio from URL: {}", newOriginalUrl, e);
+                    throw new BusinessException("Failed to download audio file: " + e.getMessage());
+                }
+            } else if (StringUtils.hasText(sentence.getPhoneticAudioFilename())) {
+                String currentFilename = sentence.getPhoneticAudioFilename();
+                if (StringUtils.hasText(newProvidedFilename)) {
+                    String newExt = getFileExtension(currentFilename);
+                    if (!StringUtils.hasText(newExt)) newExt = "mp3";
+                    String newFilename = baseName.endsWith("." + newExt) ? baseName : baseName + "." + newExt;
+                    
+                    if (!newFilename.equals(currentFilename)) {
+                        Path oldPath = Path.of(audioDir).resolve(currentFilename);
+                        Path newPath = Path.of(audioDir).resolve(newFilename);
+                        try {
+                            if (Files.exists(oldPath)) {
+                                Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                                sentence.setPhoneticAudioFilename(newFilename);
+                            }
+                        } catch (IOException e) {
+                            log.error("Failed to rename audio file from {} to {}", currentFilename, newFilename, e);
+                        }
+                    }
+                } else if (StringUtils.hasText(newProvidedFilename)) {
+                    sentence.setPhoneticAudioFilename(newProvidedFilename);
+                }
+            }
+        }
+    }
+
+    /**
+     * Extract file extension from filename
+     */
+    private String getFileExtension(String filename) {
+        if (filename == null || filename.isEmpty()) return "";
+        int dotIndex = filename.lastIndexOf('.');
+        return dotIndex > 0 ? filename.substring(dotIndex + 1) : "";
+    }
+
+    /**
+     * Get sentence audio file by filename
+     */
+    public java.io.File getAudioFile(String filename) {
+        Path audioPath = Path.of(rubiProperties.getSentence().getAudio().getDirectory());
+        Path filePath = audioPath.resolve(filename);
+        return filePath.toFile();
     }
 }

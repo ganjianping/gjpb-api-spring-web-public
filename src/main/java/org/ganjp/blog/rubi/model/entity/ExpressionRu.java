@@ -30,6 +30,12 @@ public class ExpressionRu extends BaseEntity {
     @Column(name = "phonetic", length = 100)
     private String phonetic;
 
+    @Column(name = "phonetic_audio_filename", length = 500)
+    private String phoneticAudioFilename;
+
+    @Column(name = "phonetic_audio_original_url", length = 1000)
+    private String phoneticAudioOriginalUrl;
+
     @Column(name = "translation", length = 100)
     private String translation;
 

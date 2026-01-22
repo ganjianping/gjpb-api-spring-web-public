@@ -13,4 +13,6 @@ public interface ExpressionRuRepository extends JpaRepository<ExpressionRu, Stri
     List<ExpressionRu> findByLangAndIsActiveTrueOrderByDisplayOrderAsc(ExpressionRu.Language lang);
     
     boolean existsByNameAndLang(String name, ExpressionRu.Language lang);
+    
+    boolean existsByPhoneticAudioFilenameAndIsActiveTrue(String phoneticAudioFilename);
 }

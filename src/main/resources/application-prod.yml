@@ -113,6 +113,14 @@ rubi:
       max-size: 800
     audio:
       directory: /var/www/gjpb/resources/rubi/vocabularies/audios
+  expression:
+    base-url: https://www.ganjianping.com/resources/rubi/expressions
+    audio:
+      directory: /var/www/gjpb/resources/rubi/expressions/audios
+  sentence:
+    base-url: https://www.ganjianping.com/resources/rubi/sentences
+    audio:
+      directory: /var/www/gjpb/resources/rubi/sentences/audios
   question-image:
     base-url: https://www.ganjianping.com/resources/rubi/question-images
     upload:

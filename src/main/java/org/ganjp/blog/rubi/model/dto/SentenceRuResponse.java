@@ -17,6 +17,9 @@ public class SentenceRuResponse {
     private String id;
     private String name;
     private String phonetic;
+    private String phoneticAudioFilename;
+    private String phoneticAudioUrl;
+    private String phoneticAudioOriginalUrl;
     private String translation;
     private String explanation;
     private Integer term;
@@ -39,6 +42,36 @@ public class SentenceRuResponse {
                 .id(sentence.getId())
                 .name(sentence.getName())
                 .phonetic(sentence.getPhonetic())
+                .phoneticAudioFilename(sentence.getPhoneticAudioFilename())
+                .phoneticAudioOriginalUrl(sentence.getPhoneticAudioOriginalUrl())
+                .translation(sentence.getTranslation())
+                .explanation(sentence.getExplanation())
+                .term(sentence.getTerm())
+                .week(sentence.getWeek())
+                .tags(sentence.getTags())
+                .difficultyLevel(sentence.getDifficultyLevel())
+                .lang(sentence.getLang())
+                .displayOrder(sentence.getDisplayOrder())
+                .isActive(sentence.getIsActive())
+                .createdAt(sentence.getCreatedAt())
+                .updatedAt(sentence.getUpdatedAt())
+                .createdBy(sentence.getCreatedBy())
+                .updatedBy(sentence.getUpdatedBy())
+                .build();
+    }
+
+    public static SentenceRuResponse fromEntity(SentenceRu sentence, String sentenceBaseUrl) {
+        if (sentence == null) {
+            return null;
+        }
+        return SentenceRuResponse.builder()
+                .id(sentence.getId())
+                .name(sentence.getName())
+                .phonetic(sentence.getPhonetic())
+                .phoneticAudioFilename(sentence.getPhoneticAudioFilename())
+                .phoneticAudioUrl(sentence.getPhoneticAudioFilename() != null && sentenceBaseUrl != null ?
+                    sentenceBaseUrl + "/audios/" + sentence.getPhoneticAudioFilename() : null)
+                .phoneticAudioOriginalUrl(sentence.getPhoneticAudioOriginalUrl())
                 .translation(sentence.getTranslation())
                 .explanation(sentence.getExplanation())
                 .term(sentence.getTerm())

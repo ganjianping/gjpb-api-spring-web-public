@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ganjp.blog.common.exception.BusinessException;
 import org.ganjp.blog.common.exception.ResourceNotFoundException;
+import org.ganjp.blog.rubi.config.RubiProperties;
 import org.ganjp.blog.rubi.model.dto.CreateExpressionRuRequest;
 import org.ganjp.blog.rubi.model.dto.UpdateExpressionRuRequest;
 import org.ganjp.blog.rubi.model.dto.ExpressionRuResponse;
@@ -16,7 +17,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +36,7 @@ import java.util.stream.Collectors;
 public class ExpressionRuService {
 
     private final ExpressionRuRepository expressionRepository;
+    private final RubiProperties rubiProperties;
 
     /**
      * Create a new expression
@@ -57,8 +66,11 @@ public class ExpressionRuService {
         dbExpression.setCreatedBy(createdBy);
         dbExpression.setUpdatedBy(createdBy);
 
+        // Handle audio file upload
+        handleAudioUpload(dbExpression, request.getPhoneticAudioFile(), request.getPhoneticAudioOriginalUrl(), request.getPhoneticAudioFilename());
+
         ExpressionRu savedExpression = expressionRepository.save(dbExpression);
-        return ExpressionRuResponse.fromEntity(savedExpression);
+        return ExpressionRuResponse.fromEntity(savedExpression, rubiProperties.getExpression().getBaseUrl());
     }
 
     /**
@@ -89,10 +101,13 @@ public class ExpressionRuService {
         if (request.getDisplayOrder() != null) dbExpression.setDisplayOrder(request.getDisplayOrder());
         if (request.getIsActive() != null) dbExpression.setIsActive(request.getIsActive());
 
+        // Handle audio file upload
+        handleAudioUpload(dbExpression, request.getPhoneticAudioFile(), request.getPhoneticAudioOriginalUrl(), request.getPhoneticAudioFilename());
+
         dbExpression.setUpdatedBy(updatedBy);
 
         ExpressionRu updatedExpression = expressionRepository.save(dbExpression);
-        return ExpressionRuResponse.fromEntity(updatedExpression);
+        return ExpressionRuResponse.fromEntity(updatedExpression, rubiProperties.getExpression().getBaseUrl());
     }
 
     /**
@@ -101,7 +116,7 @@ public class ExpressionRuService {
     public ExpressionRuResponse getExpressionById(String id) {
         ExpressionRu expression = expressionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Expression not found with id: " + id));
-        return ExpressionRuResponse.fromEntity(expression);
+        return ExpressionRuResponse.fromEntity(expression, rubiProperties.getExpression().getBaseUrl());
     }
 
     /**
@@ -155,7 +170,7 @@ public class ExpressionRuService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        return expressionRepository.findAll(spec, pageable).map(ExpressionRuResponse::fromEntity);
+        return expressionRepository.findAll(spec, pageable).map(expression -> ExpressionRuResponse.fromEntity(expression, rubiProperties.getExpression().getBaseUrl()));
     }
     
     /**
@@ -166,5 +181,92 @@ public class ExpressionRuService {
                 .stream()
                 .map(ExpressionRuResponse::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Handle audio file upload for expression phonetic audio
+     */
+    private void handleAudioUpload(ExpressionRu expression, MultipartFile newFile, String newOriginalUrl, String newProvidedFilename) {
+        String audioDir = rubiProperties.getExpression().getAudio().getDirectory();
+
+        String baseName = StringUtils.hasText(newProvidedFilename) ? newProvidedFilename : expression.getName();
+        baseName = baseName.trim().replaceAll("\\s+", "-").toLowerCase();
+
+        if (newFile != null && !newFile.isEmpty()) {
+            String ext = getFileExtension(newFile.getOriginalFilename());
+            if (!StringUtils.hasText(ext)) ext = "mp3";
+            String filename = baseName.endsWith("." + ext) ? baseName : baseName + "." + ext;
+
+            Path targetPath = Path.of(audioDir).resolve(filename);
+            try {
+                Files.createDirectories(targetPath.getParent());
+                Files.copy(newFile.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+                expression.setPhoneticAudioFilename(filename);
+            } catch (IOException e) {
+                throw new BusinessException("Failed to save audio file: " + e.getMessage());
+            }
+        } else if (StringUtils.hasText(newOriginalUrl)) {
+            boolean isUrlChanged = !newOriginalUrl.equals(expression.getPhoneticAudioOriginalUrl());
+            expression.setPhoneticAudioOriginalUrl(newOriginalUrl);
+
+            if (isUrlChanged && newOriginalUrl.toLowerCase().startsWith("http")) {
+                try {
+                    java.net.URL url = new java.net.URL(newOriginalUrl);
+                    String ext = getFileExtension(url.getPath());
+                    if (!StringUtils.hasText(ext)) ext = "mp3";
+                    String filename = baseName.endsWith("." + ext) ? baseName : baseName + "." + ext;
+                    Path targetPath = Path.of(audioDir).resolve(filename);
+                    Files.createDirectories(targetPath.getParent());
+
+                    try (InputStream in = url.openStream()) {
+                        Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                        expression.setPhoneticAudioFilename(filename);
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to download audio from URL: {}", newOriginalUrl, e);
+                    throw new BusinessException("Failed to download audio file: " + e.getMessage());
+                }
+            } else if (StringUtils.hasText(expression.getPhoneticAudioFilename())) {
+                String currentFilename = expression.getPhoneticAudioFilename();
+                if (StringUtils.hasText(newProvidedFilename)) {
+                    String newExt = getFileExtension(currentFilename);
+                    if (!StringUtils.hasText(newExt)) newExt = "mp3";
+                    String newFilename = baseName.endsWith("." + newExt) ? baseName : baseName + "." + newExt;
+                    
+                    if (!newFilename.equals(currentFilename)) {
+                        Path oldPath = Path.of(audioDir).resolve(currentFilename);
+                        Path newPath = Path.of(audioDir).resolve(newFilename);
+                        try {
+                            if (Files.exists(oldPath)) {
+                                Files.move(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+                                expression.setPhoneticAudioFilename(newFilename);
+                            }
+                        } catch (IOException e) {
+                            log.error("Failed to rename audio file from {} to {}", currentFilename, newFilename, e);
+                        }
+                    }
+                } else if (StringUtils.hasText(newProvidedFilename)) {
+                    expression.setPhoneticAudioFilename(newProvidedFilename);
+                }
+            }
+        }
+    }
+
+    /**
+     * Extract file extension from filename
+     */
+    private String getFileExtension(String filename) {
+        if (filename == null || filename.isEmpty()) return "";
+        int dotIndex = filename.lastIndexOf('.');
+        return dotIndex > 0 ? filename.substring(dotIndex + 1) : "";
+    }
+
+    /**
+     * Get expression audio file by filename
+     */
+    public java.io.File getAudioFile(String filename) {
+        Path audioPath = Path.of(rubiProperties.getExpression().getAudio().getDirectory());
+        Path filePath = audioPath.resolve(filename);
+        return filePath.toFile();
     }
 }

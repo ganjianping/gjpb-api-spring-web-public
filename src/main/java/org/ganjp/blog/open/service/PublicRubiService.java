@@ -35,6 +35,12 @@ public class PublicRubiService {
     @Value("${rubi.vocabulary.base-url:}")
     private String vocabularyBaseUrl;
     
+    @Value("${rubi.expression.base-url:}")
+    private String expressionBaseUrl;
+    
+    @Value("${rubi.sentence.base-url:}")
+    private String sentenceBaseUrl;
+    
     @Value("${rubi.article.cover-image.base-url:}")
     private String articleCoverImageBaseUrl;
     
@@ -109,8 +115,8 @@ public class PublicRubiService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         Page<ExpressionRuResponse> pageResult = expressionRuService.getExpressions(name, lang, tags, true, term, week, difficultyLevel, pageable);
 
-        List<PublicExpressionRuResponse> publicList = pageResult.getContent().stream().map(r ->
-            PublicExpressionRuResponse.builder()
+        List<PublicExpressionRuResponse> publicList = pageResult.getContent().stream().map(r -> {
+            PublicExpressionRuResponse.PublicExpressionRuResponseBuilder b = PublicExpressionRuResponse.builder()
                 .id(r.getId())
                 .name(r.getName())
                 .phonetic(r.getPhonetic())
@@ -123,9 +129,14 @@ public class PublicRubiService {
                 .difficultyLevel(r.getDifficultyLevel())
                 .lang(r.getLang())
                 .displayOrder(r.getDisplayOrder())
-                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
-                .build()
-        ).toList();
+                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null);
+
+            // Build phoneticAudioUrl from phoneticAudioFilename
+            String audioFilename = r.getPhoneticAudioFilename();
+            b.phoneticAudioUrl(joinBasePathWithSegment(expressionBaseUrl, "audios", audioFilename));
+
+            return b.build();
+        }).toList();
 
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
@@ -135,8 +146,8 @@ public class PublicRubiService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         Page<SentenceRuResponse> pageResult = sentenceRuService.getSentences(name, lang, tags, true, term, week, difficultyLevel, pageable);
 
-        List<PublicSentenceRuResponse> publicList = pageResult.getContent().stream().map(r ->
-            PublicSentenceRuResponse.builder()
+        List<PublicSentenceRuResponse> publicList = pageResult.getContent().stream().map(r -> {
+            PublicSentenceRuResponse.PublicSentenceRuResponseBuilder b = PublicSentenceRuResponse.builder()
                 .id(r.getId())
                 .name(r.getName())
                 .phonetic(r.getPhonetic())
@@ -148,9 +159,14 @@ public class PublicRubiService {
                 .difficultyLevel(r.getDifficultyLevel())
                 .lang(r.getLang())
                 .displayOrder(r.getDisplayOrder())
-                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
-                .build()
-        ).toList();
+                .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null);
+
+            // Build phoneticAudioUrl from phoneticAudioFilename
+            String audioFilename = r.getPhoneticAudioFilename();
+            b.phoneticAudioUrl(joinBasePathWithSegment(sentenceBaseUrl, "audios", audioFilename));
+
+            return b.build();
+        }).toList();
 
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }

@@ -114,6 +114,14 @@ rubi:
       max-size: 800
     audio:
       directory: /Users/ganjianping/Local/Rubi/vocabularies/audios
+  expression:
+    base-url: http://localhost:8082/blog/v1/public/expression-rus
+    audio:
+      directory: /Users/ganjianping/Local/Rubi/expressions/audios
+  sentence:
+    base-url: http://localhost:8082/blog/v1/public/sentence-rus
+    audio:
+      directory: /Users/ganjianping/Local/Rubi/sentences/audios
   question-image:
     base-url: http://localhost:8082/blog/v1/public/question-rus/images
     upload:

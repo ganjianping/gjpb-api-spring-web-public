@@ -17,6 +17,9 @@ public class ExpressionRuResponse {
     private String id;
     private String name;
     private String phonetic;
+    private String phoneticAudioFilename;
+    private String phoneticAudioUrl;
+    private String phoneticAudioOriginalUrl;
     private String translation;
     private String explanation;
     private String example;
@@ -40,6 +43,37 @@ public class ExpressionRuResponse {
                 .id(expression.getId())
                 .name(expression.getName())
                 .phonetic(expression.getPhonetic())
+                .phoneticAudioFilename(expression.getPhoneticAudioFilename())
+                .phoneticAudioOriginalUrl(expression.getPhoneticAudioOriginalUrl())
+                .translation(expression.getTranslation())
+                .explanation(expression.getExplanation())
+                .example(expression.getExample())
+                .term(expression.getTerm())
+                .week(expression.getWeek())
+                .tags(expression.getTags())
+                .difficultyLevel(expression.getDifficultyLevel())
+                .lang(expression.getLang())
+                .displayOrder(expression.getDisplayOrder())
+                .isActive(expression.getIsActive())
+                .createdAt(expression.getCreatedAt())
+                .updatedAt(expression.getUpdatedAt())
+                .createdBy(expression.getCreatedBy())
+                .updatedBy(expression.getUpdatedBy())
+                .build();
+    }
+
+    public static ExpressionRuResponse fromEntity(ExpressionRu expression, String expressionBaseUrl) {
+        if (expression == null) {
+            return null;
+        }
+        return ExpressionRuResponse.builder()
+                .id(expression.getId())
+                .name(expression.getName())
+                .phonetic(expression.getPhonetic())
+                .phoneticAudioFilename(expression.getPhoneticAudioFilename())
+                .phoneticAudioUrl(expression.getPhoneticAudioFilename() != null && expressionBaseUrl != null ?
+                    expressionBaseUrl + "/audios/" + expression.getPhoneticAudioFilename() : null)
+                .phoneticAudioOriginalUrl(expression.getPhoneticAudioOriginalUrl())
                 .translation(expression.getTranslation())
                 .explanation(expression.getExplanation())
                 .example(expression.getExample())

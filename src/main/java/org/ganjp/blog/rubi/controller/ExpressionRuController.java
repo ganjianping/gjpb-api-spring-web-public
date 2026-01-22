@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +30,17 @@ public class ExpressionRuController {
     private final ExpressionRuService expressionService;
     private final JwtUtils jwtUtils;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ExpressionRuResponse>> createExpression(
+            @Valid @ModelAttribute CreateExpressionRuRequest request,
+            HttpServletRequest httpRequest) {
+        String createdBy = extractUserIdFromRequest(httpRequest);
+        ExpressionRuResponse response = expressionService.createExpression(request, createdBy);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "Expression created successfully"));
+    }
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<ExpressionRuResponse>> createExpressionJson(
             @Valid @RequestBody CreateExpressionRuRequest request,
             HttpServletRequest httpRequest) {
         String createdBy = extractUserIdFromRequest(httpRequest);
@@ -38,8 +48,18 @@ public class ExpressionRuController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "Expression created successfully"));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ExpressionRuResponse>> updateExpression(
+            @PathVariable String id,
+            @Valid @ModelAttribute UpdateExpressionRuRequest request,
+            HttpServletRequest httpRequest) {
+        String updatedBy = extractUserIdFromRequest(httpRequest);
+        ExpressionRuResponse response = expressionService.updateExpression(id, request, updatedBy);
+        return ResponseEntity.ok(ApiResponse.success(response, "Expression updated successfully"));
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<ExpressionRuResponse>> updateExpressionJson(
             @PathVariable String id,
             @Valid @RequestBody UpdateExpressionRuRequest request,
             HttpServletRequest httpRequest) {

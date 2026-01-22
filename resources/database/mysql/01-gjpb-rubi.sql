@@ -73,6 +73,8 @@ CREATE TABLE `rubi_expression` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
   `name` varchar(100) NOT NULL COMMENT 'The phrase or idiom',
   `phonetic` varchar(100) DEFAULT NULL COMMENT 'Phonetic transcription',
+  `phonetic_audio_filename` varchar(100) DEFAULT NULL COMMENT 'Phonetic audio file path',
+  `phonetic_audio_original_url` varchar(500) DEFAULT NULL COMMENT 'Phonetic audio original URL',
 
   `translation` varchar(100) DEFAULT NULL COMMENT 'Translation of the phrase or idiom',
   `explanation` varchar(500) DEFAULT NULL COMMENT 'Explanation the phrase or idiom',
@@ -117,6 +119,8 @@ CREATE TABLE `rubi_sentence` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
   `name` varchar(400) NOT NULL COMMENT 'The sentence text',
   `phonetic` varchar(400) DEFAULT NULL COMMENT 'Phonetic transcription',
+  `phonetic_audio_filename` varchar(100) DEFAULT NULL COMMENT 'Phonetic audio file path',
+  `phonetic_audio_original_url` varchar(500) DEFAULT NULL COMMENT 'Phonetic audio original URL',
 
   `translation` varchar(400) DEFAULT NULL COMMENT 'Translation of the sentence',
   `explanation` varchar(1000) DEFAULT NULL COMMENT 'Explanation or context of the sentence',

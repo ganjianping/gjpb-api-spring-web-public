@@ -9,12 +9,26 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "rubi")
 public class RubiProperties {
     private VocabularyConfig vocabulary = new VocabularyConfig();
+    private ExpressionConfig expression = new ExpressionConfig();
+    private SentenceConfig sentence = new SentenceConfig();
     private QuestionImageConfig questionImage = new QuestionImageConfig();
 
     @Data
     public static class VocabularyConfig {
         private String baseUrl;
         private ImageConfig image = new ImageConfig();
+        private AudioConfig audio = new AudioConfig();
+    }
+
+    @Data
+    public static class ExpressionConfig {
+        private String baseUrl;
+        private AudioConfig audio = new AudioConfig();
+    }
+
+    @Data
+    public static class SentenceConfig {
+        private String baseUrl;
         private AudioConfig audio = new AudioConfig();
     }
 

@@ -46,6 +46,10 @@ public class PublicAssetService {
     private final org.ganjp.blog.rubi.service.QuestionImageRuService questionImageRuService;
     private final org.ganjp.blog.rubi.repository.VocabularyRuRepository vocabularyRuRepository;
     private final org.ganjp.blog.rubi.service.VocabularyRuService vocabularyRuService;
+    private final org.ganjp.blog.rubi.repository.ExpressionRuRepository expressionRuRepository;
+    private final org.ganjp.blog.rubi.service.ExpressionRuService expressionRuService;
+    private final org.ganjp.blog.rubi.repository.SentenceRuRepository sentenceRuRepository;
+    private final org.ganjp.blog.rubi.service.SentenceRuService sentenceRuService;
     private final org.ganjp.blog.rubi.repository.ImageRuRepository imageRuRepository;
     private final org.ganjp.blog.rubi.service.ImageRuService imageRuService;
     private final org.ganjp.blog.rubi.repository.VideoRuRepository videoRuRepository;
@@ -202,6 +206,30 @@ public class PublicAssetService {
             throw new IllegalArgumentException("Vocabulary audio not found or not active with filename: " + filename);
         }
         return vocabularyRuService.getAudioFile(filename);
+    }
+
+    /**
+     * Get expression audio file by filename for public viewing
+     * Ensures the expression record exists and is active before returning the file
+     */
+    public File getExpressionAudioFile(String filename) throws IOException {
+        log.debug("Fetching public expression audio file: {}", filename);
+        if (!expressionRuRepository.existsByPhoneticAudioFilenameAndIsActiveTrue(filename)) {
+            throw new IllegalArgumentException("Expression audio not found or not active with filename: " + filename);
+        }
+        return expressionRuService.getAudioFile(filename);
+    }
+
+    /**
+     * Get sentence audio file by filename for public viewing
+     * Ensures the sentence record exists and is active before returning the file
+     */
+    public File getSentenceAudioFile(String filename) throws IOException {
+        log.debug("Fetching public sentence audio file: {}", filename);
+        if (!sentenceRuRepository.existsByPhoneticAudioFilenameAndIsActiveTrue(filename)) {
+            throw new IllegalArgumentException("Sentence audio not found or not active with filename: " + filename);
+        }
+        return sentenceRuService.getAudioFile(filename);
     }
 
     /**

@@ -13,4 +13,6 @@ public interface SentenceRuRepository extends JpaRepository<SentenceRu, String>,
     List<SentenceRu> findByLangAndIsActiveTrueOrderByDisplayOrderAsc(SentenceRu.Language lang);
     
     boolean existsByNameAndLang(String name, SentenceRu.Language lang);
+    
+    boolean existsByPhoneticAudioFilenameAndIsActiveTrue(String phoneticAudioFilename);
 }

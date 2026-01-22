@@ -14,6 +14,7 @@ public class PublicExpressionRuResponse {
     private String id;
     private String name;
     private String phonetic;
+    private String phoneticAudioUrl;
     private String translation;
     private String explanation;
     private String example;

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.ganjp.blog.rubi.model.entity.ExpressionRu;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Builder
@@ -14,6 +15,10 @@ public class UpdateExpressionRuRequest {
 
     private String name;
     private String phonetic;
+    private String phoneticAudioFilename;
+    private String phoneticAudioOriginalUrl;
+    private MultipartFile phoneticAudioFile;
+    
     private String translation;
     private String explanation;
     private String example;

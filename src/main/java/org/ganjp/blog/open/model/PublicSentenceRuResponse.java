@@ -14,6 +14,7 @@ public class PublicSentenceRuResponse {
     private String id;
     private String name;
     private String phonetic;
+    private String phoneticAudioUrl;
     private String translation;
     private String explanation;
     private Integer term;

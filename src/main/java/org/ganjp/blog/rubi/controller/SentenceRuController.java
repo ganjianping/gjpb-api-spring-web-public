@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +30,17 @@ public class SentenceRuController {
     private final SentenceRuService sentenceService;
     private final JwtUtils jwtUtils;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<SentenceRuResponse>> createSentence(
+            @Valid @ModelAttribute CreateSentenceRuRequest request,
+            HttpServletRequest httpRequest) {
+        String createdBy = extractUserIdFromRequest(httpRequest);
+        SentenceRuResponse response = sentenceService.createSentence(request, createdBy);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "Sentence created successfully"));
+    }
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<SentenceRuResponse>> createSentenceJson(
             @Valid @RequestBody CreateSentenceRuRequest request,
             HttpServletRequest httpRequest) {
         String createdBy = extractUserIdFromRequest(httpRequest);
@@ -38,8 +48,18 @@ public class SentenceRuController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "Sentence created successfully"));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<SentenceRuResponse>> updateSentence(
+            @PathVariable String id,
+            @Valid @ModelAttribute UpdateSentenceRuRequest request,
+            HttpServletRequest httpRequest) {
+        String updatedBy = extractUserIdFromRequest(httpRequest);
+        SentenceRuResponse response = sentenceService.updateSentence(id, request, updatedBy);
+        return ResponseEntity.ok(ApiResponse.success(response, "Sentence updated successfully"));
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<SentenceRuResponse>> updateSentenceJson(
             @PathVariable String id,
             @Valid @RequestBody UpdateSentenceRuRequest request,
             HttpServletRequest httpRequest) {
