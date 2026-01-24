@@ -130,7 +130,7 @@ rubi:
         max-size: 1024
   # Image upload configuration for Rubi
   image:
-    base-url: https://www.ganjianping.com/resources/image-rus
+    base-url: https://www.ganjianping.com/resources/rubi/images
     upload:
       directory: /var/www/gjpb/resources/rubi/images
       max-file-size: 10485760
@@ -139,7 +139,7 @@ rubi:
         thumbnail-size: 600
   # Video upload configuration for Rubi
   video:
-    base-url: https://www.ganjianping.com/resources/video-rus
+    base-url: https://www.ganjianping.com/resources/rubi/videos
     upload:
       directory: /var/www/gjpb/resources/rubi/videos
       max-file-size: 1073741824
@@ -147,7 +147,7 @@ rubi:
         max-size: 600
   # Audio upload configuration for Rubi
   audio:
-    base-url: https://www.ganjianping.com/resources/audio-rus
+    base-url: https://www.ganjianping.com/resources/rubi/audios
     upload:
       directory: /var/www/gjpb/resources/rubi/audios
       max-file-size: 1073741824
@@ -156,14 +156,14 @@ rubi:
   # Article configuration for Rubi
   article:
     content-image:
-      base-url: https://www.ganjianping.com/resources/article-rus/content-images
+      base-url: https://www.ganjianping.com/resources/rubi/articles/content-images
       upload:
         directory: /var/www/gjpb/resources/rubi/articles/content-images
         max-file-size: 10485760
         resize:
           max-size: 1024
     cover-image:
-      base-url: https://www.ganjianping.com/resources/article-rus/cover-images
+      base-url: https://www.ganjianping.com/resources/rubi/articles/cover-images
       upload:
         directory: /var/www/gjpb/resources/rubi/articles/cover-images
         resize:

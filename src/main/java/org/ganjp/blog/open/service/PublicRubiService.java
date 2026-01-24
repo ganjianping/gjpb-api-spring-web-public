@@ -306,6 +306,27 @@ public class PublicRubiService {
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
 
+    public PublicArticleRuResponse getArticleById(String id) {
+        ArticleRuResponse articleResponse = articleRuService.getArticleById(id);
+        return PublicArticleRuResponse.builder()
+            .id(articleResponse.getId())
+            .title(articleResponse.getTitle())
+            .summary(articleResponse.getSummary())
+            .content(articleResponse.getContent())
+            .originalUrl(articleResponse.getOriginalUrl())
+            .sourceName(articleResponse.getSourceName())
+            .coverImageFilename(articleResponse.getCoverImageFilename())
+            .coverImageFileUrl(articleResponse.getCoverImageFileUrl())
+            .coverImageOriginalUrl(articleResponse.getCoverImageOriginalUrl())
+            .term(articleResponse.getTerm())
+            .week(articleResponse.getWeek())
+            .tags(articleResponse.getTags())
+            .lang(articleResponse.getLang())
+            .displayOrder(articleResponse.getDisplayOrder())
+            .updatedAt(articleResponse.getUpdatedAt() != null ? articleResponse.getUpdatedAt().toString() : null)
+            .build();
+    }
+
     public PaginatedResponse<PublicAudioRuResponse> getAudios(String name, String lang, String tags, Integer term, Integer week, int page, int size, String sort, String direction) {
         Sort.Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));

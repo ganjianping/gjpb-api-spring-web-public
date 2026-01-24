@@ -172,6 +172,12 @@ public class PublicRubiController {
         return ApiResponse.success(resp, "Articles retrieved");
     }
 
+    @GetMapping("/article-rus/{id}")
+    public ApiResponse<PublicArticleRuResponse> getArticleById(@PathVariable String id) {
+        var resp = publicRubiService.getArticleById(id);
+        return ApiResponse.success(resp, "Article retrieved");
+    }
+
     @GetMapping("/audio-rus")
     public ApiResponse<PaginatedResponse<PublicAudioRuResponse>> getAudios(
                                                              @RequestParam(required = false) String name,
