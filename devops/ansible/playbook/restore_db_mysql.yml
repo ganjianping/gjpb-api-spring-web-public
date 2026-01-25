@@ -1,0 +1,40 @@
+---
+- name: Restore MySQL Database from Local Backup
+  become: yes
+  hosts: all
+  vars:
+    local_backup_file: ~/Library/CloudStorage/OneDrive-Personal/Backup/gjpb/backup_gjpb_2025-11-27_002401.sql
+    remote_backup_file: /home/ubuntu/database/mysql/backup_gjpb.sql
+    db_user: "{{ vault_db_user }}"
+    db_pass: "{{ vault_db_pass }}"
+    backup_file_name: "backup_{{ db_name }}_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }}.sql"
+
+  tasks:
+    - name: Create directory if it doesn't exist
+      ansible.builtin.file:
+        path: /home/ubuntu/database/mysql
+        state: directory
+        mode: '0755'
+        
+    - name: Copy backup file to remote server
+      copy:
+        src: "{{ local_backup_file }}"
+        dest: "{{ remote_backup_file }}"
+        
+    - name: Restore MySQL Database
+      mysql_db:
+        name: "{{ db_name }}"
+        state: import
+        target: "{{ remote_backup_file }}"
+        login_host: "{{db_host}}"
+        login_user: "{{db_user}}"
+        login_password: "{{db_pass}}"
+      environment:
+        PATH: /usr/local/bin:{{ ansible_facts.env.PATH }}
+      notify: Flush privileges
+
+  
+  handlers:
+    - name: Flush privileges
+      become: yes
+      command: mysql -u{{ db_user }} -p{{ db_pass }} -e "FLUSH PRIVILEGES;"

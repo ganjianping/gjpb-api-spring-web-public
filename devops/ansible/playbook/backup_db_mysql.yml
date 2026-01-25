@@ -3,7 +3,7 @@
   hosts: all
   vars:
     backup_dir_remote: /home/ubuntu/database/mysql
-    local_backup_dir: ~/Backup/gjpb/mysql
+    local_backup_dir: ~/Library/CloudStorage/OneDrive-Personal/Backup/gjpb/mysql
     db_user: "{{ vault_db_user }}"
     db_pass: "{{ vault_db_pass }}"
     backup_file_name: "backup_{{ db_name }}_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }}.sql"

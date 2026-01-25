@@ -1,0 +1,47 @@
+- name: Update DB_PASSWORD environment variable
+  hosts: ubuntu_server
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Ensure DB_PASSWORD is defined
+      assert:
+        that:
+          - DB_PASSWORD is defined
+        fail_msg: "DB_PASSWORD must be defined in group_vars"
+
+    - name: Display local DB_PASSWORD value
+      debug:
+        msg: "Local DB_PASSWORD: {{ DB_PASSWORD }}"
+      no_log: false
+
+    - name: Update DB_PASSWORD in /etc/environment
+      lineinfile:
+        dest: /etc/environment
+        regexp: "^DB_PASSWORD="
+        line: "DB_PASSWORD={{ DB_PASSWORD }}"
+        create: yes
+        mode: '0644'
+      no_log: true  # Don't log sensitive values
+
+    - name: Update DB_PASSWORD in /etc/profile.d/app_env.sh
+      lineinfile:
+        dest: /etc/profile.d/app_env.sh
+        regexp: "^export DB_PASSWORD="
+        line: "export DB_PASSWORD=\"{{ DB_PASSWORD }}\""
+        create: yes
+        mode: '0644'
+      no_log: true  # Don't log sensitive values
+
+    - name: Verify DB_PASSWORD is set
+      shell: |
+        source /etc/profile.d/app_env.sh
+        echo "DB_PASSWORD is set: $([ -n \"$DB_PASSWORD\" ] && echo 'yes' || echo 'no')"
+      args:
+        executable: /bin/bash
+      register: verify_env
+      changed_when: false
+
+    - name: Display verification result
+      debug:
+        msg: "{{ verify_env.stdout_lines }}"
