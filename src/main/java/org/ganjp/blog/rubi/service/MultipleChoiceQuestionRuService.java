@@ -199,6 +199,28 @@ public class MultipleChoiceQuestionRuService {
     }
 
     /**
+     * Increment success count for a multiple choice question
+     */
+    @Transactional
+    public void incrementSuccessCount(String id) {
+        MultipleChoiceQuestionRu question = multipleChoiceQuestionRuRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("MultipleChoiceQuestion not found with id: " + id));
+        question.setSuccessCount(question.getSuccessCount() + 1);
+        multipleChoiceQuestionRuRepository.save(question);
+    }
+
+    /**
+     * Increment fail count for a multiple choice question
+     */
+    @Transactional
+    public void incrementFailCount(String id) {
+        MultipleChoiceQuestionRu question = multipleChoiceQuestionRuRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("MultipleChoiceQuestion not found with id: " + id));
+        question.setFailCount(question.getFailCount() + 1);
+        multipleChoiceQuestionRuRepository.save(question);
+    }
+
+    /**
      * Map entity to response DTO
      */
     private MultipleChoiceQuestionRuResponse mapToResponse(MultipleChoiceQuestionRu multipleChoiceQuestionRu) {

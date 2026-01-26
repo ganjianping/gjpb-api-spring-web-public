@@ -185,6 +185,28 @@ public class FillBlankQuestionRuService {
     }
 
     /**
+     * Increment success count for a fill blank question
+     */
+    @Transactional
+    public void incrementSuccessCount(String id) {
+        FillBlankQuestionRu question = fillBlankQuestionRuRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("FillBlankQuestion not found with id: " + id));
+        question.setSuccessCount(question.getSuccessCount() + 1);
+        fillBlankQuestionRuRepository.save(question);
+    }
+
+    /**
+     * Increment fail count for a fill blank question
+     */
+    @Transactional
+    public void incrementFailCount(String id) {
+        FillBlankQuestionRu question = fillBlankQuestionRuRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("FillBlankQuestion not found with id: " + id));
+        question.setFailCount(question.getFailCount() + 1);
+        fillBlankQuestionRuRepository.save(question);
+    }
+
+    /**
      * Map entity to response DTO
      */
     private FillBlankQuestionRuResponse mapToResponse(FillBlankQuestionRu fillBlankQuestionRu) {

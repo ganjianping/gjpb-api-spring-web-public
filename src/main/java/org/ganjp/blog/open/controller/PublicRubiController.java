@@ -222,4 +222,40 @@ public class PublicRubiController {
         var resp = publicRubiService.getVideos(name, lang, tags, term, week, page, size, sort, direction);
         return ApiResponse.success(resp, "Videos retrieved");
     }
+
+    @PutMapping("/multiple-choice-question-rus/{id}/success")
+    public ApiResponse<Void> incrementMultipleChoiceQuestionSuccess(@PathVariable String id) {
+        publicRubiService.incrementMultipleChoiceQuestionSuccessCount(id);
+        return ApiResponse.success(null, "Success count incremented");
+    }
+
+    @PutMapping("/multiple-choice-question-rus/{id}/fail")
+    public ApiResponse<Void> incrementMultipleChoiceQuestionFail(@PathVariable String id) {
+        publicRubiService.incrementMultipleChoiceQuestionFailCount(id);
+        return ApiResponse.success(null, "Fail count incremented");
+    }
+
+    @PutMapping("/true-false-question-rus/{id}/success")
+    public ApiResponse<Void> incrementTrueFalseQuestionSuccess(@PathVariable String id) {
+        publicRubiService.incrementTrueFalseQuestionSuccessCount(id);
+        return ApiResponse.success(null, "Success count incremented");
+    }
+
+    @PutMapping("/true-false-question-rus/{id}/fail")
+    public ApiResponse<Void> incrementTrueFalseQuestionFail(@PathVariable String id) {
+        publicRubiService.incrementTrueFalseQuestionFailCount(id);
+        return ApiResponse.success(null, "Fail count incremented");
+    }
+
+    @PutMapping("/fill-blank-question-rus/{id}/success")
+    public ApiResponse<Void> incrementFillBlankQuestionSuccess(@PathVariable String id) {
+        publicRubiService.incrementFillBlankQuestionSuccessCount(id);
+        return ApiResponse.success(null, "Success count incremented");
+    }
+
+    @PutMapping("/fill-blank-question-rus/{id}/fail")
+    public ApiResponse<Void> incrementFillBlankQuestionFail(@PathVariable String id) {
+        publicRubiService.incrementFillBlankQuestionFailCount(id);
+        return ApiResponse.success(null, "Fail count incremented");
+    }
 }

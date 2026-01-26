@@ -423,6 +423,48 @@ public class PublicRubiService {
         return PaginatedResponse.of(publicList, page, size, pageResult.getTotalElements());
     }
 
+    /**
+     * Increment success count for multiple choice question
+     */
+    public void incrementMultipleChoiceQuestionSuccessCount(String id) {
+        multipleChoiceQuestionRuService.incrementSuccessCount(id);
+    }
+
+    /**
+     * Increment fail count for multiple choice question
+     */
+    public void incrementMultipleChoiceQuestionFailCount(String id) {
+        multipleChoiceQuestionRuService.incrementFailCount(id);
+    }
+
+    /**
+     * Increment success count for true false question
+     */
+    public void incrementTrueFalseQuestionSuccessCount(String id) {
+        trueFalseQuestionRuService.incrementSuccessCount(id);
+    }
+
+    /**
+     * Increment fail count for true false question
+     */
+    public void incrementTrueFalseQuestionFailCount(String id) {
+        trueFalseQuestionRuService.incrementFailCount(id);
+    }
+
+    /**
+     * Increment success count for fill blank question
+     */
+    public void incrementFillBlankQuestionSuccessCount(String id) {
+        fillBlankQuestionRuService.incrementSuccessCount(id);
+    }
+
+    /**
+     * Increment fail count for fill blank question
+     */
+    public void incrementFillBlankQuestionFailCount(String id) {
+        fillBlankQuestionRuService.incrementFailCount(id);
+    }
+
      /**
      * Join base + segment + path. Segment should not be null (e.g. "images").
      */
