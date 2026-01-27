@@ -30,11 +30,58 @@ public class FreeTextQuestionRu extends BaseEntity {
     @Column(name = "answer", length = 1000, nullable = false)
     private String answer;
 
+    @Column(name = "description", length = 1000)
+    private String description;
+
+    @Column(name = "questiona", length = 500)
+    private String questiona;
+
+    @Column(name = "answera", length = 1000)
+    private String answera;
+
+    @Column(name = "questionb", length = 500)
+    private String questionb;
+
+    @Column(name = "answerb", length = 1000)
+    private String answerb;
+
+    @Column(name = "questionc", length = 500)
+    private String questionc;
+
+    @Column(name = "answerc", length = 1000)
+    private String answerc;
+
+    @Column(name = "questiond", length = 500)
+    private String questiond;
+
+    @Column(name = "answerd", length = 1000)
+    private String answerd;
+
+    @Column(name = "questione", length = 500)
+    private String questione;
+
+    @Column(name = "answere", length = 1000)
+    private String answere;
+
+    @Column(name = "questionf", length = 500)
+    private String questionf;
+
+    @Column(name = "answerf", length = 1000)
+    private String answerf;
+
     @Column(name = "explanation", length = 2000)
     private String explanation;
 
     @Column(name = "difficulty_level", length = 20)
     private String difficultyLevel;
+
+    @Column(name = "fail_count", nullable = false)
+    @Builder.Default
+    private Integer failCount = 0;
+
+    @Column(name = "success_count", nullable = false)
+    @Builder.Default
+    private Integer successCount = 0;
 
     @Column(name = "term")
     private Integer term;

@@ -237,8 +237,23 @@ public class PublicRubiService {
                 .id(r.getId())
                 .question(r.getQuestion())
                 .answer(r.getAnswer())
+                .description(r.getDescription())
+                .questiona(r.getQuestiona())
+                .answera(r.getAnswera())
+                .questionb(r.getQuestionb())
+                .answerb(r.getAnswerb())
+                .questionc(r.getQuestionc())
+                .answerc(r.getAnswerc())
+                .questiond(r.getQuestiond())
+                .answerd(r.getAnswerd())
+                .questione(r.getQuestione())
+                .answere(r.getAnswere())
+                .questionf(r.getQuestionf())
+                .answerf(r.getAnswerf())
                 .explanation(r.getExplanation())
                 .difficultyLevel(r.getDifficultyLevel())
+                .failCount(r.getFailCount())
+                .successCount(r.getSuccessCount())
                 .term(r.getTerm())
                 .week(r.getWeek())
                 .tags(r.getTags())
@@ -463,6 +478,20 @@ public class PublicRubiService {
      */
     public void incrementFillBlankQuestionFailCount(String id) {
         fillBlankQuestionRuService.incrementFailCount(id);
+    }
+
+    /**
+     * Increment success count for free text question
+     */
+    public void incrementFreeTextQuestionSuccessCount(String id) {
+        freeTextQuestionRuService.incrementSuccessCount(id);
+    }
+
+    /**
+     * Increment fail count for free text question
+     */
+    public void incrementFreeTextQuestionFailCount(String id) {
+        freeTextQuestionRuService.incrementFailCount(id);
     }
 
      /**

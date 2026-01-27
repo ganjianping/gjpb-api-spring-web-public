@@ -37,8 +37,23 @@ public class FreeTextQuestionRuService {
                 .id(UUID.randomUUID().toString())
                 .question(request.getQuestion())
                 .answer(request.getAnswer())
+                .description(request.getDescription())
+                .questiona(request.getQuestiona())
+                .answera(request.getAnswera())
+                .questionb(request.getQuestionb())
+                .answerb(request.getAnswerb())
+                .questionc(request.getQuestionc())
+                .answerc(request.getAnswerc())
+                .questiond(request.getQuestiond())
+                .answerd(request.getAnswerd())
+                .questione(request.getQuestione())
+                .answere(request.getAnswere())
+                .questionf(request.getQuestionf())
+                .answerf(request.getAnswerf())
                 .explanation(request.getExplanation())
                 .difficultyLevel(request.getDifficultyLevel())
+                .failCount(0)
+                .successCount(0)
                 .term(request.getTerm())
                 .week(request.getWeek())
                 .tags(request.getTags())
@@ -84,6 +99,45 @@ public class FreeTextQuestionRuService {
         }
         if (StringUtils.hasText(request.getAnswer())) {
             freeTextQuestionRu.setAnswer(request.getAnswer());
+        }
+        if (request.getDescription() != null) {
+            freeTextQuestionRu.setDescription(request.getDescription());
+        }
+        if (request.getQuestiona() != null) {
+            freeTextQuestionRu.setQuestiona(request.getQuestiona());
+        }
+        if (request.getAnswera() != null) {
+            freeTextQuestionRu.setAnswera(request.getAnswera());
+        }
+        if (request.getQuestionb() != null) {
+            freeTextQuestionRu.setQuestionb(request.getQuestionb());
+        }
+        if (request.getAnswerb() != null) {
+            freeTextQuestionRu.setAnswerb(request.getAnswerb());
+        }
+        if (request.getQuestionc() != null) {
+            freeTextQuestionRu.setQuestionc(request.getQuestionc());
+        }
+        if (request.getAnswerc() != null) {
+            freeTextQuestionRu.setAnswerc(request.getAnswerc());
+        }
+        if (request.getQuestiond() != null) {
+            freeTextQuestionRu.setQuestiond(request.getQuestiond());
+        }
+        if (request.getAnswerd() != null) {
+            freeTextQuestionRu.setAnswerd(request.getAnswerd());
+        }
+        if (request.getQuestione() != null) {
+            freeTextQuestionRu.setQuestione(request.getQuestione());
+        }
+        if (request.getAnswere() != null) {
+            freeTextQuestionRu.setAnswere(request.getAnswere());
+        }
+        if (request.getQuestionf() != null) {
+            freeTextQuestionRu.setQuestionf(request.getQuestionf());
+        }
+        if (request.getAnswerf() != null) {
+            freeTextQuestionRu.setAnswerf(request.getAnswerf());
         }
         if (request.getExplanation() != null) {
             freeTextQuestionRu.setExplanation(request.getExplanation());
@@ -156,6 +210,28 @@ public class FreeTextQuestionRuService {
     }
 
     /**
+     * Increment success count for a free text question
+     */
+    @Transactional
+    public void incrementSuccessCount(String id) {
+        FreeTextQuestionRu question = freeTextQuestionRuRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("FreeTextQuestion not found with id: " + id));
+        question.setSuccessCount(question.getSuccessCount() + 1);
+        freeTextQuestionRuRepository.save(question);
+    }
+
+    /**
+     * Increment fail count for a free text question
+     */
+    @Transactional
+    public void incrementFailCount(String id) {
+        FreeTextQuestionRu question = freeTextQuestionRuRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("FreeTextQuestion not found with id: " + id));
+        question.setFailCount(question.getFailCount() + 1);
+        freeTextQuestionRuRepository.save(question);
+    }
+
+    /**
      * Build specification for filtering
      */
     private Specification<FreeTextQuestionRu> buildSpecification(String lang, String difficultyLevel, String tags, Boolean isActive) {
@@ -190,8 +266,23 @@ public class FreeTextQuestionRuService {
                 .id(freeTextQuestionRu.getId())
                 .question(freeTextQuestionRu.getQuestion())
                 .answer(freeTextQuestionRu.getAnswer())
+                .description(freeTextQuestionRu.getDescription())
+                .questiona(freeTextQuestionRu.getQuestiona())
+                .answera(freeTextQuestionRu.getAnswera())
+                .questionb(freeTextQuestionRu.getQuestionb())
+                .answerb(freeTextQuestionRu.getAnswerb())
+                .questionc(freeTextQuestionRu.getQuestionc())
+                .answerc(freeTextQuestionRu.getAnswerc())
+                .questiond(freeTextQuestionRu.getQuestiond())
+                .answerd(freeTextQuestionRu.getAnswerd())
+                .questione(freeTextQuestionRu.getQuestione())
+                .answere(freeTextQuestionRu.getAnswere())
+                .questionf(freeTextQuestionRu.getQuestionf())
+                .answerf(freeTextQuestionRu.getAnswerf())
                 .explanation(freeTextQuestionRu.getExplanation())
                 .difficultyLevel(freeTextQuestionRu.getDifficultyLevel())
+                .failCount(freeTextQuestionRu.getFailCount())
+                .successCount(freeTextQuestionRu.getSuccessCount())
                 .term(freeTextQuestionRu.getTerm())
                 .week(freeTextQuestionRu.getWeek())
                 .tags(freeTextQuestionRu.getTags())

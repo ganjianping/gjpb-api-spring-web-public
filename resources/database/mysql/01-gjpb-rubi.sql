@@ -207,10 +207,27 @@ CREATE TABLE `rubi_multiple_choice_question` (
 -- Free Text Answer Questions Table
 CREATE TABLE `rubi_free_text_question` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',
-  `question` varchar(500) NOT NULL COMMENT 'The question text',
-  `answer` varchar(1000) NOT NULL COMMENT 'The correct answer',
+  `question` varchar(500) DEFAULT NULL COMMENT 'The question text',
+  `answer` varchar(1000) DEFAULT NULL COMMENT 'The correct answer',
+  
+  `description` varchar(1000) DEFAULT NULL COMMENT 'Additional description or context for the below questions',
+  `questiona` varchar(500) DEFAULT NULL COMMENT 'Alternative question text A',
+  `answera` varchar(1000) DEFAULT NULL COMMENT 'Alternative answer A',
+  `questionb` varchar(500) DEFAULT NULL COMMENT 'Alternative question text B',
+  `answerb` varchar(1000) DEFAULT NULL COMMENT 'Alternative answer B',
+  `questionc` varchar(500) DEFAULT NULL COMMENT 'Alternative question text C',
+  `answerc` varchar(1000) DEFAULT NULL COMMENT 'Alternative answer C',
+  `questiond` varchar(500) DEFAULT NULL COMMENT 'Alternative question text D',
+  `answerd` varchar(1000) DEFAULT NULL COMMENT 'Alternative answer D',
+  `questione` varchar(500) DEFAULT NULL COMMENT 'Alternative question text E',
+  `answere` varchar(1000) DEFAULT NULL COMMENT 'Alternative answer E',
+  `questionf` varchar(500) DEFAULT NULL COMMENT 'Alternative question text F',
+  `answerf` varchar(1000) DEFAULT NULL COMMENT 'Alternative answer F',
+
   `explanation` varchar(2000) DEFAULT NULL COMMENT 'Explanation for the correct answer',  
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
+  `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
+  `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
 
   `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
   `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
@@ -241,7 +258,8 @@ CREATE TABLE `rubi_free_text_question` (
   CONSTRAINT `fk_rubi_ftq_created_by` FOREIGN KEY (`created_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_rubi_ftq_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `auth_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
   
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Short answer questions for vocabulary practice';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Free text answer questions';
+
 
 CREATE TABLE `rubi_true_false_question` (
   `id` char(36) NOT NULL COMMENT 'Primary Key (UUID)',

@@ -258,4 +258,16 @@ public class PublicRubiController {
         publicRubiService.incrementFillBlankQuestionFailCount(id);
         return ApiResponse.success(null, "Fail count incremented");
     }
+
+    @PutMapping("/free-text-question-rus/{id}/success")
+    public ApiResponse<Void> incrementFreeTextQuestionSuccess(@PathVariable String id) {
+        publicRubiService.incrementFreeTextQuestionSuccessCount(id);
+        return ApiResponse.success(null, "Success count incremented");
+    }
+
+    @PutMapping("/free-text-question-rus/{id}/fail")
+    public ApiResponse<Void> incrementFreeTextQuestionFail(@PathVariable String id) {
+        publicRubiService.incrementFreeTextQuestionFailCount(id);
+        return ApiResponse.success(null, "Fail count incremented");
+    }
 }
