@@ -14,10 +14,7 @@ import org.ganjp.blog.rubi.model.entity.FreeTextQuestionRu;
 @AllArgsConstructor
 public class CreateFreeTextQuestionRuRequest {
 
-    @NotBlank(message = "Question is required")
     private String question;
-
-    @NotBlank(message = "Answer is required")
     private String answer;
 
     private String description;

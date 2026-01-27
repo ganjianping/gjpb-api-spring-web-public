@@ -24,10 +24,10 @@ public class FreeTextQuestionRu extends BaseEntity {
     @Column(name = "id", length = 36)
     private String id;
 
-    @Column(name = "question", length = 1000, nullable = false)
+    @Column(name = "question", length = 1000)
     private String question;
 
-    @Column(name = "answer", length = 1000, nullable = false)
+    @Column(name = "answer", length = 1000)
     private String answer;
 
     @Column(name = "description", length = 1000)

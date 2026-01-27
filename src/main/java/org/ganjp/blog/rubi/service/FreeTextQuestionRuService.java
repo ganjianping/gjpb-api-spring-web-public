@@ -94,10 +94,10 @@ public class FreeTextQuestionRuService {
         FreeTextQuestionRu freeTextQuestionRu = freeTextQuestionRuRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("FreeTextQuestion not found with id: " + id));
 
-        if (StringUtils.hasText(request.getQuestion())) {
+        if (request.getQuestion() != null) {
             freeTextQuestionRu.setQuestion(request.getQuestion());
         }
-        if (StringUtils.hasText(request.getAnswer())) {
+        if (request.getAnswer() != null) {
             freeTextQuestionRu.setAnswer(request.getAnswer());
         }
         if (request.getDescription() != null) {
