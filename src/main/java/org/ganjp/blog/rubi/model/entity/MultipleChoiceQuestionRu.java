@@ -78,6 +78,12 @@ public class MultipleChoiceQuestionRu extends BaseEntity {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "grammar_chapter", length = 40)
+    private String grammarChapter;
+
+    @Column(name = "science_chapter", length = 40)
+    private String scienceChapter;
+
     /**
      * Language enumeration
      */

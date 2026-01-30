@@ -60,6 +60,8 @@ public class FreeTextQuestionRuService {
                 .lang(request.getLang())
                 .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
+                .grammarChapter(request.getGrammarChapter())
+                .scienceChapter(request.getScienceChapter())
                 .build();
 
         FreeTextQuestionRu savedFreeTextQuestionRu = freeTextQuestionRuRepository.save(freeTextQuestionRu);
@@ -162,6 +164,12 @@ public class FreeTextQuestionRuService {
         }
         if (request.getIsActive() != null) {
             freeTextQuestionRu.setIsActive(request.getIsActive());
+        }
+        if (request.getGrammarChapter() != null) {
+            freeTextQuestionRu.setGrammarChapter(request.getGrammarChapter());
+        }
+        if (request.getScienceChapter() != null) {
+            freeTextQuestionRu.setScienceChapter(request.getScienceChapter());
         }
 
         freeTextQuestionRu.setUpdatedBy(updatedBy);
@@ -289,6 +297,8 @@ public class FreeTextQuestionRuService {
                 .lang(freeTextQuestionRu.getLang())
                 .displayOrder(freeTextQuestionRu.getDisplayOrder())
                 .isActive(freeTextQuestionRu.getIsActive())
+                .grammarChapter(freeTextQuestionRu.getGrammarChapter())
+                .scienceChapter(freeTextQuestionRu.getScienceChapter())
                 .createdAt(freeTextQuestionRu.getCreatedAt())
                 .updatedAt(freeTextQuestionRu.getUpdatedAt())
                 .createdBy(freeTextQuestionRu.getCreatedBy())

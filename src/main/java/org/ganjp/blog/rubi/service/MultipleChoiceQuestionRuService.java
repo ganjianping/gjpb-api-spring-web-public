@@ -49,6 +49,8 @@ public class MultipleChoiceQuestionRuService {
                 .lang(request.getLang())
                 .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
+                .grammarChapter(request.getGrammarChapter())
+                .scienceChapter(request.getScienceChapter())
                 .build();
 
         MultipleChoiceQuestionRu savedMultipleChoiceQuestionRu = multipleChoiceQuestionRuRepository.save(multipleChoiceQuestionRu);
@@ -124,6 +126,12 @@ public class MultipleChoiceQuestionRuService {
         }
         if (request.getIsActive() != null) {
             multipleChoiceQuestionRu.setIsActive(request.getIsActive());
+        }
+        if (request.getGrammarChapter() != null) {
+            multipleChoiceQuestionRu.setGrammarChapter(request.getGrammarChapter());
+        }
+        if (request.getScienceChapter() != null) {
+            multipleChoiceQuestionRu.setScienceChapter(request.getScienceChapter());
         }
 
         multipleChoiceQuestionRu.setUpdatedBy(updatedBy);
@@ -242,6 +250,8 @@ public class MultipleChoiceQuestionRuService {
                 .lang(multipleChoiceQuestionRu.getLang())
                 .displayOrder(multipleChoiceQuestionRu.getDisplayOrder())
                 .isActive(multipleChoiceQuestionRu.getIsActive())
+                .grammarChapter(multipleChoiceQuestionRu.getGrammarChapter())
+                .scienceChapter(multipleChoiceQuestionRu.getScienceChapter())
                 .createdAt(multipleChoiceQuestionRu.getCreatedAt())
                 .updatedAt(multipleChoiceQuestionRu.getUpdatedAt())
                 .createdBy(multipleChoiceQuestionRu.getCreatedBy())

@@ -169,12 +169,14 @@ CREATE TABLE `rubi_multiple_choice_question` (
   `option_d` varchar(200) DEFAULT NULL COMMENT 'Option D',
   `answer` varchar(10) NOT NULL COMMENT 'Comma-separated correct answer options (e.g., A,C)',
   `explanation` varchar(1000) DEFAULT NULL COMMENT 'Explanation for the correct answer',
+  
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
-  `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
-  `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
-
+  `grammar_chapter` varchar(40) DEFAULT NULL COMMENT 'Grammar chapter associated with the question',
+  `science_chapter` varchar(40) DEFAULT NULL COMMENT 'Science chapter associated with the question',
   `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
   `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
+  `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
+  `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
 
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',
@@ -226,6 +228,8 @@ CREATE TABLE `rubi_free_text_question` (
 
   `explanation` varchar(2000) DEFAULT NULL COMMENT 'Explanation for the correct answer',  
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
+  `grammar_chapter` varchar(40) DEFAULT NULL COMMENT 'Grammar chapter associated with the question',
+  `science_chapter` varchar(40) DEFAULT NULL COMMENT 'Science chapter associated with the question',
   `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
   `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
 
@@ -266,10 +270,12 @@ CREATE TABLE `rubi_true_false_question` (
   `question` varchar(500) NOT NULL COMMENT 'The question text',
   `answer` enum('TRUE','FALSE') NOT NULL COMMENT 'Correct answer for the question',
   `explanation` varchar(1000) DEFAULT NULL COMMENT 'Explanation for the correct answer',
+
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
+  `grammar_chapter` varchar(40) DEFAULT NULL COMMENT 'Grammar chapter associated with the question',
+  `science_chapter` varchar(40) DEFAULT NULL COMMENT 'Science chapter associated with the question',
   `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
   `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
-
   `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
   `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
 
@@ -313,12 +319,14 @@ CREATE TABLE `rubi_fill_blank_question` (
   `question` varchar(500) NOT NULL COMMENT 'Question text with blank(s), e.g. "I ___ to school yesterday."',
   `answer` varchar(200) NOT NULL COMMENT 'Comma-separated correct answers for the blank',
   `explanation` varchar(1000) DEFAULT NULL COMMENT 'Explanation for the correct answer(s)',
-  `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
-  `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
-  `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
 
+  `difficulty_level` varchar(20) DEFAULT NULL COMMENT 'Difficulty level of the question',
+  `grammar_chapter` varchar(40) DEFAULT NULL COMMENT 'Grammar chapter associated with the question',
+  `science_chapter` varchar(40) DEFAULT NULL COMMENT 'Science chapter associated with the question',
   `term` smallint DEFAULT NULL COMMENT 'Term number for curriculum organization',
   `week` smallint DEFAULT NULL COMMENT 'Week number for curriculum organization',
+  `fail_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered incorrectly',
+  `success_count` int NOT NULL DEFAULT '0' COMMENT 'Number of times users answered correctly',
 
   `tags` varchar(500) DEFAULT NULL COMMENT 'Comma-separated tags for categorization and search',
   `lang` enum('EN','ZH') NOT NULL DEFAULT 'EN' COMMENT 'Language for the question content',

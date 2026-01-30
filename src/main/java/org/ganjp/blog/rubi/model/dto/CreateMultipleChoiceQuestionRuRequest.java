@@ -43,4 +43,6 @@ public class CreateMultipleChoiceQuestionRuRequest {
 
     private Integer displayOrder;
     private Boolean isActive;
+    private String grammarChapter;
+    private String scienceChapter;
 }

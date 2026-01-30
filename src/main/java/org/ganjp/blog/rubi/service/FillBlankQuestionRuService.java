@@ -47,6 +47,8 @@ public class FillBlankQuestionRuService {
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .failCount(0)
                 .successCount(0)
+                .grammarChapter(request.getGrammarChapter())
+                .scienceChapter(request.getScienceChapter())
                 .build();
 
         FillBlankQuestionRu savedFillBlankQuestionRu = fillBlankQuestionRuRepository.save(fillBlankQuestionRu);
@@ -110,6 +112,12 @@ public class FillBlankQuestionRuService {
         }
         if (request.getIsActive() != null) {
             fillBlankQuestionRu.setIsActive(request.getIsActive());
+        }
+        if (request.getGrammarChapter() != null) {
+            fillBlankQuestionRu.setGrammarChapter(request.getGrammarChapter());
+        }
+        if (request.getScienceChapter() != null) {
+            fillBlankQuestionRu.setScienceChapter(request.getScienceChapter());
         }
 
         fillBlankQuestionRu.setUpdatedBy(updatedBy);
@@ -224,6 +232,8 @@ public class FillBlankQuestionRuService {
                 .lang(fillBlankQuestionRu.getLang())
                 .displayOrder(fillBlankQuestionRu.getDisplayOrder())
                 .isActive(fillBlankQuestionRu.getIsActive())
+                .grammarChapter(fillBlankQuestionRu.getGrammarChapter())
+                .scienceChapter(fillBlankQuestionRu.getScienceChapter())
                 .createdAt(fillBlankQuestionRu.getCreatedAt())
                 .updatedAt(fillBlankQuestionRu.getUpdatedAt())
                 .createdBy(fillBlankQuestionRu.getCreatedBy())

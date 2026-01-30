@@ -194,6 +194,8 @@ public class PublicRubiService {
                 .tags(r.getTags())
                 .lang(r.getLang())
                 .displayOrder(r.getDisplayOrder())
+                .grammarChapter(r.getGrammarChapter())
+                .scienceChapter(r.getScienceChapter())
                 .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
                 .build()
         ).toList();
@@ -220,6 +222,8 @@ public class PublicRubiService {
                 .tags(r.getTags())
                 .lang(r.getLang())
                 .displayOrder(r.getDisplayOrder())
+                .grammarChapter(r.getGrammarChapter())
+                .scienceChapter(r.getScienceChapter())
                 .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
                 .build()
         ).toList();
@@ -259,6 +263,8 @@ public class PublicRubiService {
                 .tags(r.getTags())
                 .lang(r.getLang())
                 .displayOrder(r.getDisplayOrder())
+                .grammarChapter(r.getGrammarChapter())
+                .scienceChapter(r.getScienceChapter())
                 .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
                 .build()
         ).toList();
@@ -285,6 +291,8 @@ public class PublicRubiService {
                 .tags(r.getTags())
                 .lang(r.getLang())
                 .displayOrder(r.getDisplayOrder())
+                .grammarChapter(r.getGrammarChapter())
+                .scienceChapter(r.getScienceChapter())
                 .updatedAt(r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null)
                 .build()
         ).toList();

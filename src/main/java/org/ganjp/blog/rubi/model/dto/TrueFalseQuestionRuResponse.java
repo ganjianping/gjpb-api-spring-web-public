@@ -27,6 +27,8 @@ public class TrueFalseQuestionRuResponse {
     private TrueFalseQuestionRu.Language lang;
     private Integer displayOrder;
     private Boolean isActive;
+    private String grammarChapter;
+    private String scienceChapter;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;

@@ -22,4 +22,6 @@ public class UpdateTrueFalseQuestionRuRequest {
     private TrueFalseQuestionRu.Language lang;
     private Integer displayOrder;
     private Boolean isActive;
+    private String grammarChapter;
+    private String scienceChapter;
 }

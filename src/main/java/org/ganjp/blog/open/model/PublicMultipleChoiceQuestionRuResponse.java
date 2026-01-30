@@ -27,5 +27,7 @@ public class PublicMultipleChoiceQuestionRuResponse {
     private String tags;
     private MultipleChoiceQuestionRu.Language lang;
     private Integer displayOrder;
+    private String grammarChapter;
+    private String scienceChapter;
     private String updatedAt;
 }

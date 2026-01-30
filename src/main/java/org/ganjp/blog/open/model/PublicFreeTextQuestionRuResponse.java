@@ -36,5 +36,7 @@ public class PublicFreeTextQuestionRuResponse {
     private String tags;
     private FreeTextQuestionRu.Language lang;
     private Integer displayOrder;
+    private String grammarChapter;
+    private String scienceChapter;
     private String updatedAt;
 }

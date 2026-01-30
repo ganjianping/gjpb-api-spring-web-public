@@ -23,5 +23,7 @@ public class PublicFillBlankQuestionRuResponse {
     private String tags;
     private FillBlankQuestionRu.Language lang;
     private Integer displayOrder;
+    private String grammarChapter;
+    private String scienceChapter;
     private String updatedAt;
 }

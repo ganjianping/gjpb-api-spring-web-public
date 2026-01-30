@@ -23,5 +23,7 @@ public class PublicTrueFalseQuestionRuResponse {
     private String tags;
     private TrueFalseQuestionRu.Language lang;
     private Integer displayOrder;
+    private String grammarChapter;
+    private String scienceChapter;
     private String updatedAt;
 }

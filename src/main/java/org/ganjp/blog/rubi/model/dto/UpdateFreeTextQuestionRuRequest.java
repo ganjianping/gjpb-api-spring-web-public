@@ -35,4 +35,6 @@ public class UpdateFreeTextQuestionRuRequest {
     private FreeTextQuestionRu.Language lang;
     private Integer displayOrder;
     private Boolean isActive;
+    private String grammarChapter;
+    private String scienceChapter;
 }

@@ -31,4 +31,6 @@ public class CreateTrueFalseQuestionRuRequest {
 
     private Integer displayOrder;
     private Boolean isActive;
+    private String grammarChapter;
+    private String scienceChapter;
 }

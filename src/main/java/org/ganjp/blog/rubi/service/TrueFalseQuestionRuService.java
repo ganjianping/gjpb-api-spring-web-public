@@ -47,6 +47,8 @@ public class TrueFalseQuestionRuService {
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .failCount(0)
                 .successCount(0)
+                .grammarChapter(request.getGrammarChapter())
+                .scienceChapter(request.getScienceChapter())
                 .build();
 
         TrueFalseQuestionRu savedTrueFalseQuestionRu = trueFalseQuestionRuRepository.save(trueFalseQuestionRu);
@@ -110,6 +112,12 @@ public class TrueFalseQuestionRuService {
         }
         if (request.getIsActive() != null) {
             trueFalseQuestionRu.setIsActive(request.getIsActive());
+        }
+        if (request.getGrammarChapter() != null) {
+            trueFalseQuestionRu.setGrammarChapter(request.getGrammarChapter());
+        }
+        if (request.getScienceChapter() != null) {
+            trueFalseQuestionRu.setScienceChapter(request.getScienceChapter());
         }
 
         trueFalseQuestionRu.setUpdatedBy(updatedBy);
@@ -224,6 +232,8 @@ public class TrueFalseQuestionRuService {
                 .lang(trueFalseQuestionRu.getLang())
                 .displayOrder(trueFalseQuestionRu.getDisplayOrder())
                 .isActive(trueFalseQuestionRu.getIsActive())
+                .grammarChapter(trueFalseQuestionRu.getGrammarChapter())
+                .scienceChapter(trueFalseQuestionRu.getScienceChapter())
                 .createdAt(trueFalseQuestionRu.getCreatedAt())
                 .updatedAt(trueFalseQuestionRu.getUpdatedAt())
                 .createdBy(trueFalseQuestionRu.getCreatedBy())
